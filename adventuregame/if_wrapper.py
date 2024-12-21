@@ -1205,9 +1205,10 @@ class AdventureIFInterpreter(GameResourceLocator):
             # set operations would
             if world_state_effects:
                 for removed_fact in world_state_effects['removed']:
-                    # logger.info(f"Removing fact {removed_fact} from exploration state.")
-                    self.exploration_state.remove(removed_fact)
-                    # logger.info(f"Fact {removed_fact} in exploration state: {removed_fact in self.exploration_state}")
+                    if removed_fact in self.exploration_state:
+                        # logger.info(f"Removing fact {removed_fact} from exploration state.")
+                        self.exploration_state.remove(removed_fact)
+                        # logger.info(f"Fact {removed_fact} in exploration state: {removed_fact in self.exploration_state}")
 
             logger.info(f"Current exploration_state: {self.exploration_state}")
             # record current exploration state:
@@ -1219,8 +1220,6 @@ class AdventureIFInterpreter(GameResourceLocator):
             logger.info("Recording initial exploration state.")
             self.exploration_state = self.get_current_perceived()
             self.exploration_history.append(self.exploration_state)
-
-
 
     def parse_action_input(self, action_input: str) -> [bool, Union[dict, str], Union[dict, Set]]:
         """
@@ -1335,7 +1334,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
     def check_fact(self, fact_tuple) -> bool:
         """Check if a fact tuple is in the world state."""
-        # print("Checking for", fact_tuple)
+        # logger.info(f"IF.check_fact() checking for {fact_tuple}")
         # always return True for fact tuples with None, as this marks optional action arguments
         if None in fact_tuple:
             return True
@@ -1476,7 +1475,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 return False
 
         if 'predicate' in conditions:
-            # print("Bare predicate condition:", conditions)
+            # logger.info(f"IF.check_conditions() bare predicate condition: {conditions}")
             predicate_tuple = self.predicate_to_tuple(conditions, variable_map)
             # print("predicate_tuple:", predicate_tuple)
             if check_precon_idx:
@@ -2126,36 +2125,95 @@ class AdventureIFInterpreter(GameResourceLocator):
                 for goal_state_idx, goal_state in enumerate(goals_achieved_response):
                     goals_achieved_response[goal_state_idx] = fact_tuple_to_str(goal_state)
                 goals_achieved_response = set(goals_achieved_response)
+                logger.info(f"Achieved goal states: {goals_achieved_response}")
 
                 # successful action returns extra information instead of failure information:
                 extra_action_info = dict()
-
                 extra_action_info['action_type'] = parse_result['type']
 
                 # EXPLORATION TRACKING
                 self.track_exploration(fail['world_state_effects'])
-                extra_action_info['exploration_state'] = list(self.exploration_state)
+
+                extra_action_info['exploration_info'] = {'exploration_state': list(self.exploration_state)}
+
+                exploration_info = extra_action_info['exploration_info']
 
                 # get epistemic/pragmatic info for action:
-                action_epistemic_pragmatic = {'epistemic': self.action_types[parse_result['type']]['epistemic'],
-                                              'pragmatic': self.action_types[parse_result['type']]['pragmatic']}
-                # print(action_epistemic_pragmatic)
+                exploration_info['action_epistemic'] = self.action_types[parse_result['type']]['epistemic']
+                exploration_info['action_pragmatic'] = self.action_types[parse_result['type']]['pragmatic']
 
-                extra_action_info['epist_pragma'] = action_epistemic_pragmatic
-
-                # TODO: check epistemic gain to differentiate 'truly epistemic' actions
+                # extra_action_info['epist_pragma'] = action_epistemic_pragmatic
 
                 epistemic_gain_removed = self.exploration_history[-2].difference(self.exploration_state)
                 epistemic_gain_added = self.exploration_state.difference(self.exploration_history[-2])
                 logger.info(f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}")
 
-                # TODO?: differentiate between 'self-made' epistemic gain like from TAKE from true exploration as from GO?
+                # if action_epistemic_pragmatic['epistemic']:
+                if exploration_info['action_epistemic']:
+                    effective_epistemic_gain = epistemic_gain_added
+                    effective_epistemic_gain_amount = len(effective_epistemic_gain)
+                    logger.info(f"Epistemic action '{parse_result['type']}' resulted in effective epistemic gain: {effective_epistemic_gain}")
+                    exploration_info['effective_epistemic_gain_facts'] = list(effective_epistemic_gain)
+                    logger.info(f"Epistemic gain amount: {effective_epistemic_gain_amount}")
+                    exploration_info['effective_epistemic_gain_amount'] = effective_epistemic_gain_amount
 
-                if action_epistemic_pragmatic['epistemic']:
-                    true_epistemic_gain = epistemic_gain_added
-                    logger.info(f"Epistemic action {parse_result['type']} resulted in epistemic gain: {true_epistemic_gain}")
+                # all entities:
+                all_entities = set()
+                for fact in self.world_state:
+                    if fact[0] == 'type':
+                        all_entities.add(fact[1])
 
-                # TODO?: track 'known entities'?
+                # known entities:
+                known_entities = set()
+                for fact in self.exploration_state:
+                    if fact[0] == "at":
+                        known_entities.add(fact)
+                logger.info(f"Known entities: {known_entities}")
+                exploration_info['known_entities'] = list(known_entities)
+
+                known_entities_ratio = len(known_entities) / len(all_entities)
+                logger.info(f"Known entities ratio: {known_entities_ratio}")
+                exploration_info['known_entities_ratio'] = known_entities_ratio
+
+                # all rooms:
+                all_rooms = set()
+                for fact in self.world_state:
+                    if fact[0] == 'room':
+                        all_rooms.add(fact[1])
+
+                # visited rooms:
+                visited_rooms = set()
+                for exploration_state in self.exploration_history:
+                    for exploration_fact in exploration_state:
+                        if exploration_fact[0] == 'at' and exploration_fact[1] == 'player1':
+                            visited_rooms.add(exploration_fact[2])
+                logger.info(f"Visited rooms: {visited_rooms}")
+                exploration_info['visited_rooms'] = list(visited_rooms)
+
+                visited_rooms_ratio = len(visited_rooms)/len(all_rooms)
+                logger.info(f"Visited rooms ratio: {visited_rooms_ratio}")
+                exploration_info['visited_rooms_ratio'] = visited_rooms_ratio
+
+                # get goal entitiy set:
+                goal_entities = set()
+                for goal_fact in self.goal_state:
+                    goal_entities.add(goal_fact[1])
+                    goal_entities.add(goal_fact[2])
+                logger.info(f"Goal entities: {goal_entities}")
+
+                # check which goal-relevant entities are known:
+                known_goal_entities = set()
+                for goal_fact in self.goal_state:
+                    for known_entity in known_entities:
+                        if known_entity[1] in goal_fact:
+                            known_goal_entities.add(known_entity)
+                logger.info(f"Known goal entities: {known_goal_entities}")
+                exploration_info['known_goal_entities'] = list(known_goal_entities)
+
+                # ratio of known goal-relevant entities:
+                known_goal_entities_ratio = len(known_goal_entities)/len(goal_entities)
+                logger.info(f"Known goal entities ratio: {known_goal_entities_ratio}")
+                exploration_info['known_goal_entities_ratio'] = known_goal_entities_ratio
 
                 # handle DONE action:
                 if parse_result['type'] == "done":
@@ -2186,6 +2244,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         logger.info(f"Plan command sequence: {command_sequence}")
         # deepcopy world state before plan execution to assure proper reversion:
         pre_plan_world_state = deepcopy(self.world_state)
+        pre_plan_exploration_state = deepcopy(self.exploration_state)
 
         result_sequence: list = list()
         world_state_change_count: int = 0
@@ -2214,12 +2273,16 @@ class AdventureIFInterpreter(GameResourceLocator):
             logger.info(f"Plan world state change count: {world_state_change_count}; reverting changes")
             # deepcopy world state after plan execution to prevent reference issues:
             post_plan_world_state = deepcopy(self.world_state)
+            post_plan_exploration_state = deepcopy(self.exploration_state)
             # logger.info(f"World state history before reverting: {self.world_state_history}")
             logger.info(f"World state history length before reverting: {len(self.world_state_history)}")
+            logger.info(f"Exploration history length before reverting: {len(self.exploration_history)}")
             # reset world state history to before executed plan:
             self.world_state_history = self.world_state_history[:-world_state_change_count]
+            self.exploration_history = self.exploration_history[:-world_state_change_count]
             # logger.info(f"World state history after reverting: {self.world_state_history}")
             logger.info(f"World state history length after reverting: {len(self.world_state_history)}")
+            logger.info(f"Exploration history length after reverting: {len(self.exploration_history)}")
             # check that world state has been properly reset:
             if self.world_state_history[-1] == pre_plan_world_state:
                 logger.info(f"Last world state history item matches pre-plan world state")
@@ -2231,6 +2294,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 logger.info(f"Last world state history item does not match post-plan world state")
             # reset world state to before plan execution:
             self.world_state = deepcopy(self.world_state_history[-1])
+            self.exploration_state = deepcopy(self.exploration_history[-1])
             # double-check that world state has been reset properly:
             if self.world_state == pre_plan_world_state:
                 logger.info(f"Pre-plan world state matches reverted post-plan world state")
@@ -2239,9 +2303,6 @@ class AdventureIFInterpreter(GameResourceLocator):
             # log specific reverted fact changes from plan:
             post_plan_changes = post_plan_world_state.difference(self.world_state)
             logger.info(f"Reverted plan world state changes: {post_plan_changes}")
-
-            # TODO: revert exploration state as well
-
         else:
             logger.info(f"Plan world state change count: {world_state_change_count}; no changes to revert")
 

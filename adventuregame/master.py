@@ -99,7 +99,11 @@ class AdventureGameMaster(DialogueGameMaster):
         :param utterance: The response string to be potentially modified.
         :return: The (modified) response and if to log the parse action (default: True)
         """
+        # logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
         if self.if_variant == 'plan':
+            # do not split for next actions plan if action is 'done'
+            if utterance == "> done":
+                return utterance, True
             # split the response to extract only the planned actions:
             new_plan = utterance.split("\nNext actions:")[1]
             # split by comma and strip to get assumed individual action commands:
@@ -161,7 +165,7 @@ class AdventureGameMaster(DialogueGameMaster):
             # send to IF interpreter to process action:
             goals_achieved, if_response, action_info = self.if_interpreter.process_action(if_input)
             # IF interpreter returns: set of achieved goal states in string form,
-            # textual feedback response, failure dict
+            # textual feedback response, failure/action info dict
             logger.info(f"IF response: {if_response}")
 
             if 'fail_type' in action_info:
@@ -172,12 +176,12 @@ class AdventureGameMaster(DialogueGameMaster):
 
             # catch DONE action to end game after this turn:
             if 'done_action' in action_info:
-                logger.info(f"model_done: {action_info}")
+                logger.info(f"model_done: {action_info['done_action']}")
                 self.log_to_self("model_done", if_input)
                 self.model_done = True
 
-            # if 'epist_pragma' in action_info:
-            #    self.log_to_self("action_info", action_info)
+            if 'exploration_info' in action_info:
+                self.log_to_self("exploration_info", action_info['exploration_info'])
 
             # handle goals:
             self.goals_achieved = goals_achieved
