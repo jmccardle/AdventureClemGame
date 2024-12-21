@@ -105,13 +105,18 @@ class AdventureGameMaster(DialogueGameMaster):
             if utterance == "> done":
                 return utterance, True
             # split the response to extract only the planned actions:
-            new_plan = utterance.split("\nNext actions:")[1]
-            # split by comma and strip to get assumed individual action commands:
-            plan_sequence = [command.strip() for command in new_plan.split(",")]
-            # add new plan sequence to plan history:
-            self.plan_history.append(plan_sequence)
-            # record the new plan for processing:
-            self.log_to_self(f"turn_plan", plan_sequence)
+            split_response = utterance.split("\nNext actions:")
+            if len(split_response) >= 2:
+                new_plan = utterance.split("\nNext actions:")[1]
+                # split by comma and strip to get assumed individual action commands:
+                plan_sequence = [command.strip() for command in new_plan.split(",")]
+                # add new plan sequence to plan history:
+                self.plan_history.append(plan_sequence)
+                # record the new plan for processing:
+                self.log_to_self(f"turn_plan", plan_sequence)
+                return utterance, True
+            else:
+                return utterance, False
 
         return utterance, True
 

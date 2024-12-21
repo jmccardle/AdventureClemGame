@@ -5,11 +5,4 @@
         player inventory floor table sidetable counter refrigerator cupboard wardrobe shelf freezer pottedplant chair bed couch broom mop sandwich apple banana orange peach plate book pillow - entity
         inventory floor table sidetable counter refrigerator cupboard wardrobe shelf freezer chair bed couch - receptacle
         )
-    (:functions
-        (item_count ?i - inventory)
-        )
-    (:event INVENTORY-LIMIT
-        :parameters (?i - inventory)
-
-        )
     )
