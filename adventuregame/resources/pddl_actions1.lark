@@ -8,7 +8,7 @@ parameters: ":parameters" WS (type_list | pred) WS+
 precondition: ":precondition" WS (andp | orp) WS+
 effect: ":effect" WS andp WS+
 
-andp: ANDL WS+ ((type_list | pred | notp | forall | equal | orp | when | increase | decrease | assign) WS*)* ")" WS*
+andp: ANDL WS+ ((type_list | pred | notp | forall | equal | orp | when) WS*)* ")" WS*
 ANDL.1: "(and"
 
 orp: ORL WS+ ((type_list | pred | notp | forall | equal | andp) WS*)+ ")" WS*
@@ -33,30 +33,5 @@ WORDP: WORD (DASH | UNDERSCORE | WORD | NUMBER)*
 var: "?" WORDP
 pred: "(" (WORDP | var) WS* (WORDP WS* | var WS*)* ")"
 
-
-function: ("(" WORDP WS var ")" | NUMBER)
-
-increase: INCREASEL WS function WS function WS* ")"
-INCREASEL.1: "(increase"
-
-decrease: DECREASEL WS function WS function WS* ")"
-DECREASEL.1: "(decrease"
-
-assign: ASSIGNL WS function WS function WS* ")"
-ASSIGNL.1: "(assign"
-
-
-equal: EQL WS function WS function ")"
+equal: EQL WS (WORDP | var) WS (WORDP | var) ")"
 EQL.1: "(="
-
-less: LESSL WS function WS function ")"
-LESSL.1: "(<"
-
-leq: LEQL WS function WS function ")"
-LEQL.1: "(<="
-
-greater: GREATERL WS function WS function ")"
-GREATERL.1: "(>"
-
-greq: GREQL WS function WS function ")"
-GREQL.1: "(>="

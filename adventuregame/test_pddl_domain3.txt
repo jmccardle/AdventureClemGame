@@ -8,4 +8,22 @@
     (:functions
         (itemcount ?i - inventory)
         )
+    (:event INVENTORY-FULL
+        :parameters (?i - inventory)
+        :precondition (and
+            (>= (itemcount ?i) 2)
+            )
+        :effect (and
+            (full ?i)
+            )
     )
+    (:event INVENTORY-FREE
+        :parameters (?i - inventory)
+        :precondition (and
+            (< (itemcount ?i) 2)
+            )
+        :effect (and
+            (not (full ?i))
+            )
+    )
+)
