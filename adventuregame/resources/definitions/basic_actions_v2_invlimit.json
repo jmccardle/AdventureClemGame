@@ -75,8 +75,8 @@
         "You can't see a {{ e }} here.",
         "The {{ e }} is already in your inventory.",
         "You can't see a {{ s }} here.",
-        "Your inventory can not hold more than two objects.",
         "You can't see a {{ e }} here.",
+        "Your inventory can not hold more than two objects.",
         "The {{ e }} is not on the {{ s }}.",
         "The {{ s }} is not a support.",
         "The {{ s }} is not open.",
@@ -92,7 +92,7 @@
   {
     "type_name": "put",
     "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\" | \"drop\") WS",
-    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (when\n            (in ?e ?i)\n            (decrease (itemcount ?i) 1) \n            )\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
+    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (when\n            (in ?e ?i)\n            (decrease (itemcount ?i) 1)\n            )\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?t": ["arg2"],

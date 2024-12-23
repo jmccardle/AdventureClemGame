@@ -10,7 +10,7 @@ type_list: "(" type_list_element+ ")"
 type_list_element: (var WS | WORDP WS)+ DASH WS WORDP WS*
 
 
-define: DEFINEL WS+ domain_id WS+ types WS+ functions WS+ (event WS*)* WS* ")"
+define: DEFINEL WS+ domain_id WS+ types WS* (functions WS*)* (event WS*)* WS* ")"
 DEFINEL.1: "(define"
 
 

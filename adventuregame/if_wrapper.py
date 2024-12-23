@@ -194,13 +194,6 @@ class PDDLActionTransformer(Transformer):
 
         return {'type_list_element': cat_name, 'items': type_list_items}
 
-    def equal(self, content):
-        # print("equal cont:", content)
-        # the (= X Y) can only ever take two arguments, thus directly accessing them:
-        equal_dict = {'equal': [content[2], content[4]]}
-        # print("equal returns:", equal_dict)
-        return equal_dict
-
     def pred(self, content):
         # print("pred content:", content)
         if type(content[0]) == lark.Token:
@@ -238,6 +231,118 @@ class PDDLActionTransformer(Transformer):
         # print(content[0])
         return {'variable': content[0].value}
 
+    def function(self, content):
+        # print("function content:", content)
+
+        function_dict = dict()
+
+        if content[0].type == 'NUMBER':
+            # print("function NUMBER:", content[0].value)
+            function_dict['function_number'] = content[0].value
+        else:
+            function_dict['function_id'] = content[0].value
+            function_dict['function_variable'] = content[2]
+
+        # print("function_dict:", function_dict)
+
+        return function_dict
+
+    def equal(self, content):
+        # print("greq content:", content)
+
+        equal_dict = {'num_comp': "equal"}
+
+        equal_dict['arg1'] = content[2]
+        equal_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return equal_dict
+
+    def greater(self, content):
+        # print("greq content:", content)
+
+        greater_dict = {'num_comp': "greater"}
+
+        greater_dict['arg1'] = content[2]
+        greater_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return greater_dict
+
+    def greq(self, content):
+        # print("greq content:", content)
+
+        greq_dict = {'num_comp': "greq"}
+
+        greq_dict['arg1'] = content[2]
+        greq_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return greq_dict
+
+    def less(self, content):
+        # print("greq content:", content)
+
+        less_dict = {'num_comp': "less"}
+
+        less_dict['arg1'] = content[2]
+        less_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return less_dict
+
+    def leq(self, content):
+        # print("greq content:", content)
+
+        leq_dict = {'num_comp': "leq"}
+
+        leq_dict['arg1'] = content[2]
+        leq_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return leq_dict
+
+    def assign(self, content):
+        # print("greq content:", content)
+
+        assign_dict = {'function_change': "assign"}
+
+        assign_dict['arg1'] = content[2]
+        assign_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return assign_dict
+
+    def increase(self, content):
+        # print("greq content:", content)
+
+        increase_dict = {'function_change': "increase"}
+
+        increase_dict['arg1'] = content[2]
+        increase_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return increase_dict
+
+    def decrease(self, content):
+        # print("greq content:", content)
+
+        decrease_dict = {'function_change': "decrease"}
+
+        decrease_dict['arg1'] = content[2]
+        decrease_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return decrease_dict
+
 
 class PDDLDomainTransformer(Transformer):
     """PDDL domain definition transformer to convert Lark parse to python dict for further use.
@@ -252,15 +357,23 @@ class PDDLDomainTransformer(Transformer):
 
         for cont in content:
             # print(type(cont))
+            # print("define item:", cont)
             if type(cont) == lark.Token:
                 # print("lark token:", cont.type, cont.value)
                 pass
             else:
-                # print("non-Token", cont)
+                # print("non-Token:", cont)
                 if 'domain_id' in cont:
                     domain_def_dict['domain_id'] = cont['domain_id']
                 if 'types' in cont:
                     domain_def_dict['types'] = cont['types']
+                if 'functions' in cont:
+                    domain_def_dict['functions'] = cont['functions']
+                if 'event_id' in cont:
+                    if not 'events' in domain_def_dict:
+                        domain_def_dict['events'] = [cont]
+                    else:
+                        domain_def_dict['events'].append(cont)
 
         # action: lark.Tree = content[0]
         # action_type = action.data  # main grammar rule the input was parsed as
@@ -311,7 +424,6 @@ class PDDLDomainTransformer(Transformer):
             cat_name = content[-1].value
         # print("type_list_item return:", {'type_list_item': cat_name, 'items': type_list_items})
         return {'type_list_element': cat_name, 'items': type_list_items}
-
 
     def parameters(self, content):
         parameter_list = None
@@ -387,15 +499,6 @@ class PDDLDomainTransformer(Transformer):
         # (not X) always wraps only one item, hence:
         return {'not': content[2]}
 
-
-
-    def equal(self, content):
-        # print("equal cont:", content)
-        # the (= X Y) can only ever take two arguments, thus directly accessing them:
-        equal_dict = {'equal': [content[2], content[4]]}
-        # print("equal returns:", equal_dict)
-        return equal_dict
-
     def pred(self, content):
         # print("pred content:", content)
         if type(content[0]) == lark.Token:
@@ -432,6 +535,169 @@ class PDDLDomainTransformer(Transformer):
     def var(self, content):
         # print(content[0])
         return {'variable': content[0].value}
+
+    def functions(self, content):
+        # print("functions content:", content)
+        functions_dict = {'functions': list()}
+        for functions_item in content:
+            if 'function_def_predicate' in functions_item:
+                functions_dict['functions'].append(functions_item)
+
+        return functions_dict
+
+    def function_list_element(self, content):
+        # print("function_list_element content:", content)
+
+        # for function_item in content:
+        #    print("function_list_element item:", function_item)
+
+        function_def_predicate = content[0].value
+        # print("function_predicate:", function_predicate)
+
+        function_def_variable = content[2]
+        # print("function_variable:", function_variable)
+
+        function_def_type = content[6].value
+        # print("function_type:", function_type)
+
+        function_dict = {'function_def_predicate': function_def_predicate,
+                         'function_def_variable': function_def_variable,
+                         "function_def_type": function_def_type}
+
+        return function_dict
+
+    def function(self, content):
+        # print("function content:", content)
+
+        function_dict = dict()
+
+        if content[0].type == 'NUMBER':
+            # print("function NUMBER:", content[0].value)
+            function_dict['function_number'] = content[0].value
+        else:
+            function_dict['function_id'] = content[0].value
+            function_dict['function_variable'] = content[2]
+
+        # print("function_dict:", function_dict)
+
+        return function_dict
+
+    def event(self, content):
+        # print("event content:", content)
+
+        event_id = content[2].value
+        # print("event_id:", event_id)
+
+        event_dict = {'event_id': content[2].value}
+
+        for event_item in content[4:]:
+            # print("event_item:", event_item)
+            if 'parameters' in event_item:
+                event_dict['event_parameters'] = event_item['parameters']
+            if 'precondition' in event_item:
+                event_dict['event_precondition'] = event_item['precondition']
+            if 'effect' in event_item:
+                event_dict['event_effect'] = event_item['effect']
+
+        # print("event_dict:", event_dict)
+
+        return event_dict
+
+    def equal(self, content):
+        # print("greq content:", content)
+
+        equal_dict = {'num_comp': "equal"}
+
+        equal_dict['arg1'] = content[2]
+        equal_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return equal_dict
+
+    def greater(self, content):
+        # print("greq content:", content)
+
+        greater_dict = {'num_comp': "greater"}
+
+        greater_dict['arg1'] = content[2]
+        greater_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return greater_dict
+
+    def greq(self, content):
+        # print("greq content:", content)
+
+        greq_dict = {'num_comp': "greq"}
+
+        greq_dict['arg1'] = content[2]
+        greq_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return greq_dict
+
+    def less(self, content):
+        # print("greq content:", content)
+
+        less_dict = {'num_comp': "less"}
+
+        less_dict['arg1'] = content[2]
+        less_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return less_dict
+
+    def leq(self, content):
+        # print("greq content:", content)
+
+        leq_dict = {'num_comp': "leq"}
+
+        leq_dict['arg1'] = content[2]
+        leq_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return leq_dict
+
+    def assign(self, content):
+        # print("greq content:", content)
+
+        assign_dict = {'function_change': "assign"}
+
+        assign_dict['arg1'] = content[2]
+        assign_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return assign_dict
+
+    def increase(self, content):
+        # print("greq content:", content)
+
+        increase_dict = {'function_change': "increase"}
+
+        increase_dict['arg1'] = content[2]
+        increase_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return increase_dict
+
+    def decrease(self, content):
+        # print("greq content:", content)
+
+        decrease_dict = {'function_change': "decrease"}
+
+        decrease_dict['arg1'] = content[2]
+        decrease_dict['arg2'] = content[4]
+
+        # print("greq_dict:", greq_dict)
+
+        return decrease_dict
 
 
 class AdventureIFInterpreter(GameResourceLocator):
@@ -667,6 +933,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Initialize the world state set from instance data.
         Converts List[Str] world state format into Set[Tuple].
         """
+        # INITIAL STATE:
         for fact_string in self.game_instance['initial_state']:
             self.world_state.add(fact_str_to_tuple(fact_string))
 
@@ -754,6 +1021,32 @@ class AdventureIFInterpreter(GameResourceLocator):
         self.world_state = self.world_state.union(facts_to_add)
         # add initial world state to world state history:
         self.world_state_history.append(deepcopy(self.world_state))
+
+        # FUNCTIONS
+        if 'functions' in self.domain:
+            # logger.info(f"Domain functions: {self.domain['functions']}")
+            for function_def in self.domain['functions']:
+                # logger.info(f"Checking domain function: {function_def}")
+                found_function_facts = list()
+                for fact in self.world_state:
+                    if fact[0] == function_def['function_def_predicate']:
+                        found_function_facts.append(fact)
+                # logger.info(f"Found function facts: {found_function_facts}")
+                # remove non-number function facts and replace with number function facts:
+                for found_function_fact in found_function_facts:
+                    self.world_state.remove(found_function_fact)
+                    found_function_fact_list = list(found_function_fact)
+                    if "." in found_function_fact_list[2]:
+                        found_function_fact_list[2] = float(found_function_fact_list[2])
+                    else:
+                        found_function_fact_list[2] = int(found_function_fact_list[2])
+                    found_function_fact_tuple = tuple(found_function_fact_list)
+                    self.world_state.add(found_function_fact_tuple)
+
+            # TODO?: augment initial world state with missing function facts based on defined functions, domain types
+            #  and entity type facts in world state?
+
+        # GOALS
         # get goal state fact set:
         for fact_string in self.game_instance['goal_state']:
             self.goal_state.add(fact_str_to_tuple(fact_string))
@@ -1138,7 +1431,8 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         visible_room_contents = self.get_player_room_contents_visible()
         for fact in self.world_state:
-            if fact[1] in visible_room_contents and fact[0] in ("open", "closed", "at", "in", "on"):
+            # TODO: de-hardcode mutable predicates tracked here
+            if fact[1] in visible_room_contents and fact[0] in ("open", "closed", "at", "in", "on", "itemcount"):
                 current_perceived.add(fact)
 
         inventory_content = self.get_inventory_content()
@@ -1489,10 +1783,122 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             if precon_trace:
                 predicate_dict = {'predicate_tuple': predicate_tuple, 'checks_out': is_fact, 'precon_idx': self.precon_idx}
-                # print("predicate_dict:", predicate_dict)
+                # logger.info(f"predicate condition precon_trace predicate_dict: {predicate_dict}")
                 return predicate_dict
 
             return is_fact
+
+        if 'num_comp' in conditions:
+            # logger.info(f"IF.check_conditions() num_comp condition: {conditions}")
+
+            # get direct number argument values or function fact argument values:
+            arg1_function_list = list()
+            arg1_is_number = False
+            if 'function_number' in conditions['arg1']:
+                arg1_is_number = True
+            elif 'function_id' in conditions['arg1']:
+                arg1_function_list.append(conditions['arg1']['function_id'])
+                arg1_function_var = conditions['arg1']['function_variable']['variable']
+                arg1_function_object = variable_map[arg1_function_var]
+                # logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
+                arg1_function_list.append(arg1_function_object)
+
+            if not arg1_is_number:
+                # get numerical value of first argument from function fact:
+                for fact in self.world_state:
+                    if fact[0] == arg1_function_list[0] and fact[1] == arg1_function_list[1]:
+                        arg1_function_list.append(fact[2])
+                        arg1_value = fact[2]
+            else:
+                arg1_value = conditions['arg1']['function_number']
+                if "." in arg1_value:
+                    arg1_value = float(arg1_value)
+                else:
+                    arg1_value = int(arg1_value)
+
+            arg2_function_list = list()
+            arg2_is_number = False
+            if 'function_number' in conditions['arg2']:
+                arg2_is_number = True
+            elif 'function_id' in conditions['arg2']:
+                arg2_function_list.append(conditions['arg2']['function_id'])
+                arg2_function_var = conditions['arg2']['function_variable']['variable']
+                arg2_function_object = variable_map[arg2_function_var]
+                # logger.info(f"num_comp condition arg2 function object: {arg2_function_object}")
+                arg2_function_list.append(arg2_function_object)
+
+            if not arg2_is_number:
+                # get numerical value of second argument from function fact:
+                for fact in self.world_state:
+                    if fact[0] == arg2_function_list[0] and fact[1] == arg2_function_list[1]:
+                        arg2_function_list.append(fact[2])
+                        arg2_value = fact[2]
+            else:
+                arg2_value = conditions['arg2']['function_number']
+                if "." in arg2_value:
+                    arg2_value = float(arg2_value)
+                else:
+                    arg2_value = int(arg2_value)
+
+            # get numerical comparison type:
+            num_comp_type = conditions['num_comp']
+
+            # numerical comparison:
+            predicate_tuple = list()
+            checks_out = False
+            match num_comp_type:
+                case "equal":
+                    if arg1_value == arg2_value:
+                        checks_out = True
+                    else:
+                        if arg1_function_list:
+                            predicate_tuple = arg1_function_list
+                        elif arg2_function_list:
+                            predicate_tuple = arg2_function_list
+                case "less":
+                    if arg1_value < arg2_value:
+                        checks_out = True
+                    else:
+                        if arg1_function_list:
+                            predicate_tuple = arg1_function_list
+                        elif arg2_function_list:
+                            predicate_tuple = arg2_function_list
+                case "leq":
+                    if arg1_value <= arg2_value:
+                        checks_out = True
+                    else:
+                        if arg1_function_list:
+                            predicate_tuple = arg1_function_list
+                        elif arg2_function_list:
+                            predicate_tuple = arg2_function_list
+                case "greater":
+                    if arg1_value > arg2_value:
+                        checks_out = True
+                    else:
+                        if arg1_function_list:
+                            predicate_tuple = arg1_function_list
+                        elif arg2_function_list:
+                            predicate_tuple = arg2_function_list
+                case "greq":
+                    if arg1_value >= arg2_value:
+                        checks_out = True
+                    else:
+                        if arg1_function_list:
+                            predicate_tuple = arg1_function_list
+                        elif arg2_function_list:
+                            predicate_tuple = arg2_function_list
+
+            if check_precon_idx:
+                self.precon_idx += 1
+                self.precon_tuples.append((tuple(predicate_tuple), checks_out, self.precon_idx))
+
+            if precon_trace:
+                predicate_dict = {'predicate_tuple': tuple(predicate_tuple), 'checks_out': checks_out,
+                                  'precon_idx': self.precon_idx}
+                # logger.info(f"num_comp condition precon_trace predicate_dict: {predicate_dict}")
+                return predicate_dict
+
+            return checks_out
 
         if 'and' in conditions:
             and_dict = {'and': list()}
@@ -1723,47 +2129,122 @@ class AdventureIFInterpreter(GameResourceLocator):
 
     def resolve_effect(self, effect, variable_map):
         """Add or remove fact from world state based on passed effect object."""
-        # print("effect passed to resolve_effect:", effect)
+        # logger.info(f"effect passed to resolve_effect: {effect}")
 
         resolve_effect_results = {'added': [], 'removed': []}
 
+        # catch 'not' effects:
         effect_polarity = True
         if 'not' in effect:
             effect_polarity = False
             effect = effect['not']
 
-        effect_list = [effect['predicate'], effect['arg1']]  # effect predicates always have at least one argument
-        if effect['arg2']:
-            # print("effect['arg2']:", effect['arg2'])
-            effect_list.append(effect['arg2'])
-            if effect['arg3']:
-                effect_list.append(effect['arg3'])
+        if 'predicate' in effect:
+            effect_list = [effect['predicate'], effect['arg1']]  # effect predicates always have at least one argument
+            if effect['arg2']:
+                # print("effect['arg2']:", effect['arg2'])
+                effect_list.append(effect['arg2'])
+                if effect['arg3']:
+                    effect_list.append(effect['arg3'])
 
-        # apply variable map:
-        for effect_arg_idx, effect_arg in enumerate(effect_list):
-            if effect_arg_idx == 0:  # predicate does not need variable value application
-                continue
-            # print(f"effect_arg {effect_arg_idx}:", effect_arg)
-            if type(effect_arg) == dict and 'variable' in effect_arg:
-                # print("effect_arg['variable']:", effect_arg['variable'])
-                effect_list[effect_arg_idx] = variable_map[effect_arg['variable']]
+            # apply variable map:
+            for effect_arg_idx, effect_arg in enumerate(effect_list):
+                if effect_arg_idx == 0:  # predicate does not need variable value application
+                    continue
+                # print(f"effect_arg {effect_arg_idx}:", effect_arg)
+                if type(effect_arg) == dict and 'variable' in effect_arg:
+                    # print("effect_arg['variable']:", effect_arg['variable'])
+                    effect_list[effect_arg_idx] = variable_map[effect_arg['variable']]
 
-        effect_tuple = tuple(effect_list)
-        # print("effect_tuple:", effect_tuple)
+            effect_tuple = tuple(effect_list)
+            # print("effect_tuple:", effect_tuple)
 
-        # return unfilled dict for fact tuples with None, as this marks optional action arguments:
-        if None in effect_tuple:
-            return resolve_effect_results
+            # return unfilled dict for fact tuples with None, as this marks optional action arguments:
+            if None in effect_tuple:
+                return resolve_effect_results
 
-        if effect_polarity:
-            # print(f"Adding {effect_tuple} to world state.")
-            self.world_state.add(effect_tuple)
-            resolve_effect_results['added'].append(effect_tuple)
-        elif not effect_polarity:
-            # print(f"Removing {effect_tuple} from world state.")
-            if effect_tuple in self.world_state:
-                self.world_state.remove(effect_tuple)
-            resolve_effect_results['removed'].append(effect_tuple)
+            if effect_polarity:
+                # print(f"Adding {effect_tuple} to world state.")
+                self.world_state.add(effect_tuple)
+                resolve_effect_results['added'].append(effect_tuple)
+            elif not effect_polarity:
+                # print(f"Removing {effect_tuple} from world state.")
+                if effect_tuple in self.world_state:
+                    self.world_state.remove(effect_tuple)
+                resolve_effect_results['removed'].append(effect_tuple)
+        elif 'function_change' in effect:
+            # logger.info(f"function_change effect passed to resolve_effect: {effect}")
+
+            # get direct number argument values or function fact argument values:
+            arg1_function_list = list()
+            arg1_is_number = False
+            if 'function_number' in effect['arg1']:
+                arg1_is_number = True
+            elif 'function_id' in effect['arg1']:
+                arg1_function_list.append(effect['arg1']['function_id'])
+                arg1_function_var = effect['arg1']['function_variable']['variable']
+                arg1_function_object = variable_map[arg1_function_var]
+                logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
+                arg1_function_list.append(arg1_function_object)
+
+            if not arg1_is_number:
+                # get numerical value of first argument from function fact:
+                for fact in self.world_state:
+                    if fact[0] == arg1_function_list[0] and fact[1] == arg1_function_list[1]:
+                        arg1_function_list.append(fact[2])
+                        arg1_value = fact[2]
+            else:
+                arg1_value = effect['arg1']['function_number']
+                if "." in arg1_value:
+                    arg1_value = float(arg1_value)
+                else:
+                    arg1_value = int(arg1_value)
+
+            arg2_function_list = list()
+            arg2_is_number = False
+            if 'function_number' in effect['arg2']:
+                arg2_is_number = True
+            elif 'function_id' in effect['arg2']:
+                arg2_function_list.append(effect['arg2']['function_id'])
+                arg2_function_var = effect['arg2']['function_variable']['variable']
+                arg2_function_object = variable_map[arg2_function_var]
+                logger.info(f"num_comp condition arg2 function object: {arg2_function_object}")
+                arg2_function_list.append(arg2_function_object)
+
+            if not arg2_is_number:
+                # get numerical value of second argument from function fact:
+                for fact in self.world_state:
+                    if fact[0] == arg2_function_list[0] and fact[1] == arg2_function_list[1]:
+                        arg2_function_list.append(fact[2])
+                        arg2_value = fact[2]
+            else:
+                arg2_value = effect['arg2']['function_number']
+                if "." in arg2_value:
+                    arg2_value = float(arg2_value)
+                else:
+                    arg2_value = int(arg2_value)
+
+            # remove old function value fact:
+            if tuple(arg1_function_list) in self.world_state:
+                self.world_state.remove(tuple(arg1_function_list))
+            resolve_effect_results['removed'].append(tuple(arg1_function_list))
+
+            # get function change type:
+            function_change_type = effect['function_change']
+
+            # numerical change:
+            match function_change_type:
+                case "increase":
+                    arg1_function_list[2] += arg2_value
+                case "decrease":
+                    arg1_function_list[2] -= arg2_value
+                case "assign":
+                    arg1_function_list[2] = arg2_value
+
+            self.world_state.add(tuple(arg1_function_list))
+            resolve_effect_results['added'].append(tuple(arg1_function_list))
+
+        # logger.info(f"resolve_effect results: {resolve_effect_results}")
 
         return resolve_effect_results
 
@@ -1967,6 +2448,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
 
             feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(self.precon_trace)
+
+            logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
 
             feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx]
 
