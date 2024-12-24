@@ -76,7 +76,7 @@
         "The {{ e }} is already in your inventory.",
         "You can't see a {{ s }} here.",
         "You can't see a {{ e }} here.",
-        "Your inventory can not hold more than two objects.",
+        "Your inventory can not hold more than two objects at the same time.",
         "The {{ e }} is not on the {{ s }}.",
         "The {{ s }} is not a support.",
         "The {{ s }} is not open.",

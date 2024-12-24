@@ -3,7 +3,7 @@
     "game_instances": [
       {"game_id": 0,
         "variant": "basic",
-        "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+        "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
         "initial_state": [
           "at(kitchen1floor1,kitchen1)", "at(pantry1floor1,pantry1)", "at(hallway1floor1,hallway1)", "at(livingroom1floor1,livingroom1)", "at(broomcloset1floor1,broomcloset1)",
           "at(bedroom1floor1,bedroom1)", "at(table1,livingroom1)", "at(sidetable1,livingroom1)", "at(counter1,kitchen1)", "at(refrigerator1,pantry1)", "at(cupboard1,kitchen1)",
@@ -27,7 +27,7 @@
           "movable(pottedplant1)", "movable(broom1)", "movable(mop1)", "movable(sandwich1)", "movable(apple1)", "movable(banana1)", "movable(orange1)", "movable(peach1)",
           "movable(plate1)", "movable(book1)", "movable(pillow1)", "needs_support(pottedplant1)", "needs_support(broom1)", "needs_support(mop1)", "needs_support(sandwich1)",
           "needs_support(apple1)", "needs_support(banana1)", "needs_support(orange1)", "needs_support(peach1)", "needs_support(plate1)", "needs_support(book1)",
-          "needs_support(pillow1)", "itemcount(inventory,0)"],
+          "needs_support(pillow1)"],
         "goal_state": ["on(pillow1,table1)", "on(book1,table1)", "on(plate1,table1)"],
         "max_turns": 50, "optimal_turns": 10,
         "optimal_solution": [["take", "pillow1"], ["go", "hallway1"], ["go", "kitchen1"], ["take", "plate1"], ["go", "livingroom1"], ["put", "plate1", "table1"], ["go", "kitchen1"], ["go", "livingroom1"], ["put", "pillow1", "table1"], ["put", "book1", "table1"]],

@@ -1025,6 +1025,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # FUNCTIONS
         if 'functions' in self.domain:
             # logger.info(f"Domain functions: {self.domain['functions']}")
+            # convert premade initial_state function fact string numbers to proper numbers:
             for function_def in self.domain['functions']:
                 # logger.info(f"Checking domain function: {function_def}")
                 found_function_facts = list()
@@ -1043,8 +1044,27 @@ class AdventureIFInterpreter(GameResourceLocator):
                     found_function_fact_tuple = tuple(found_function_fact_list)
                     self.world_state.add(found_function_fact_tuple)
 
-            # TODO?: augment initial world state with missing function facts based on defined functions, domain types
-            #  and entity type facts in world state?
+                # add function facts with value 0 for defined functions in the domain for corresponding type instances:
+                for fact in self.world_state:
+                    # TODO?: use domain type inheritance to augment in addition to direct type?
+                    if fact[0] == 'type' and fact[2] == function_def['function_def_type']:
+                        augmentable_function_fact = [function_def['function_def_predicate'], fact[1], 0]
+                        function_fact_already_exists = False
+                        for fact2 in self.world_state:
+                            if fact2[0] == function_def['function_def_predicate'] and fact2[1] == fact[1]:
+                                function_fact_already_exists = True
+                        if not function_fact_already_exists:
+                            self.world_state.add(tuple(augmentable_function_fact))
+
+                # add missing function fact(s) with value 0 for inventory as there is no type fact for inventory:
+                if function_def['function_def_type'] == "inventory":
+                    inventory_function_fact_already_exists = False
+                    for fact in self.world_state:
+                        if fact[0] == function_def['function_def_predicate'] and fact[1] == "inventory":
+                            inventory_function_fact_already_exists = True
+                    if not inventory_function_fact_already_exists:
+                        self.world_state.add((function_def['function_def_predicate'], "inventory", 0))
+
 
         # GOALS
         # get goal state fact set:
@@ -1432,12 +1452,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         visible_room_contents = self.get_player_room_contents_visible()
         for fact in self.world_state:
             # TODO: de-hardcode mutable predicates tracked here
-            if fact[1] in visible_room_contents and fact[0] in ("open", "closed", "at", "in", "on", "itemcount"):
+            if fact[1] in visible_room_contents and fact[0] in ("open", "closed", "at", "in", "on"):
                 current_perceived.add(fact)
 
         inventory_content = self.get_inventory_content()
         for fact in self.world_state:
             if fact[1] in inventory_content and fact[0] in ("at", "in"):
+                current_perceived.add(fact)
+            if fact[1] == "inventory" and fact[0] == "itemcount":  # TODO: de-hardcode this
                 current_perceived.add(fact)
 
         # current_room_exits = self.get_player_room_exits()
@@ -2250,10 +2272,6 @@ class AdventureIFInterpreter(GameResourceLocator):
 
     def resolve_action(self, action_dict: dict) -> [bool, Union[Set, str], Union[dict, Set]]:
         # print("resolve_action input action_dict:", action_dict)
-        # vars for keeping track:
-        state_changed = False  # main bool controlling final result world state fact set union/removal
-        facts_to_remove = list()  # facts to be removed by world state set removal
-        facts_to_add = list()  # facts to union with world state fact set
 
         # deepcopy the world state to prevent referential interaction:
         prior_world_state = deepcopy(self.world_state)
@@ -2412,6 +2430,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             # NOTE: The first precondition fact that does not check out is used for feedback. This means that the order
             # of predicates (and clauses) in the precondition PDDL for the action determines feedback priority!
 
+            logger.info(f"precon_trace: {self.precon_trace}")
+
             def feedback_idx_from_precon_trace(precon_trace):
                 # iterate over precon trace:
                 for item in precon_trace[-1]['and']:
@@ -2428,21 +2448,34 @@ class AdventureIFInterpreter(GameResourceLocator):
                                     for and_item in or_item['and']:
                                         if not and_item['checks_out']:
                                             # print("or and_item does not check out:", and_item)
+                                            if 'not' in and_item:
+                                                feedback_idx = and_item['not']['precon_idx']
+                                                return feedback_idx, and_item
                                             feedback_idx = and_item['precon_idx']
                                             return feedback_idx, and_item
                                 elif 'predicate_tuple' in or_item:
                                     if not or_item['checks_out']:
+                                        if 'not' in or_item:
+                                            feedback_idx = or_item['not']['precon_idx']
+                                            return feedback_idx, or_item
                                         feedback_idx = or_item['precon_idx']
                                         return feedback_idx, or_item
                         elif 'and' in item:
                             for and_item in item['and']:
                                 if not and_item['checks_out']:
                                     # print("or and_item does not check out:", and_item)
+                                    if 'not' in and_item:
+                                        feedback_idx = and_item['not']['precon_idx']
+                                        return feedback_idx, and_item
                                     feedback_idx = and_item['precon_idx']
                                     return feedback_idx, and_item
                         elif 'predicate_tuple' in item:
                             if not item['checks_out']:
                                 feedback_idx = item['precon_idx']
+                                return feedback_idx, item
+                        elif 'not' in item:
+                            if not item['checks_out']:
+                                feedback_idx = item['not']['precon_idx']
                                 return feedback_idx, item
 
             # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
@@ -2457,10 +2490,6 @@ class AdventureIFInterpreter(GameResourceLocator):
             # fill feedback template:
             clean_feedback_variable_map = deepcopy(variable_map)
             for key in clean_feedback_variable_map:
-
-                # while clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                #    clean_feedback_variable_map[key] = clean_feedback_variable_map[key][:-1]
-
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
 
@@ -2523,10 +2552,6 @@ class AdventureIFInterpreter(GameResourceLocator):
         clean_feedback_variable_map = deepcopy(variable_map)
         for key in clean_feedback_variable_map:
             if clean_feedback_variable_map[key]:
-
-                # while clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                #    clean_feedback_variable_map[key] = clean_feedback_variable_map[key][:-1]
-
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
 

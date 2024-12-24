@@ -1,6 +1,6 @@
 import json
 
-instances_file_path = "newword_instances.json"
+instances_file_path = "instances.json"
 
 with open(instances_file_path, 'r', encoding='utf-8') as instances_file:
     instances = json.load(instances_file)
