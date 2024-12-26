@@ -7514,7 +7514,7 @@
         {
           "game_id": 0,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -7740,7 +7740,7 @@
         {
           "game_id": 1,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -7976,7 +7976,7 @@
         {
           "game_id": 2,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -8192,7 +8192,7 @@
         {
           "game_id": 3,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -8438,7 +8438,7 @@
         {
           "game_id": 4,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -8669,7 +8669,7 @@
         {
           "game_id": 5,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -8910,7 +8910,7 @@
         {
           "game_id": 6,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -9138,7 +9138,7 @@
         {
           "game_id": 7,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -9366,7 +9366,7 @@
         {
           "game_id": 8,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -9597,7 +9597,7 @@
         {
           "game_id": 9,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -9828,7 +9828,7 @@
         {
           "game_id": 10,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -10056,7 +10056,7 @@
         {
           "game_id": 11,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -10284,7 +10284,7 @@
         {
           "game_id": 12,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -10510,7 +10510,7 @@
         {
           "game_id": 13,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -10761,7 +10761,7 @@
         {
           "game_id": 14,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -11007,7 +11007,7 @@
         {
           "game_id": 15,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -11268,7 +11268,7 @@
         {
           "game_id": 0,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -11494,7 +11494,7 @@
         {
           "game_id": 1,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -11730,7 +11730,7 @@
         {
           "game_id": 2,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -11946,7 +11946,7 @@
         {
           "game_id": 3,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -12192,7 +12192,7 @@
         {
           "game_id": 4,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -12423,7 +12423,7 @@
         {
           "game_id": 5,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -12664,7 +12664,7 @@
         {
           "game_id": 6,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -12892,7 +12892,7 @@
         {
           "game_id": 7,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -13120,7 +13120,7 @@
         {
           "game_id": 8,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -13351,7 +13351,7 @@
         {
           "game_id": 9,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -13582,7 +13582,7 @@
         {
           "game_id": 10,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -13810,7 +13810,7 @@
         {
           "game_id": 11,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -14038,7 +14038,7 @@
         {
           "game_id": 12,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -14264,7 +14264,7 @@
         {
           "game_id": 13,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -14515,7 +14515,7 @@
         {
           "game_id": 14,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the table, the book on the table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -14761,7 +14761,7 @@
         {
           "game_id": 15,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -23750,7 +23750,7 @@
         {
           "game_id": 0,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the counter, the book on the shelf and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the counter, the book on the shelf and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -24006,7 +24006,7 @@
         {
           "game_id": 1,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich in the freezer, the plate on the shelf and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich in the freezer, the plate on the shelf and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -24272,7 +24272,7 @@
         {
           "game_id": 2,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the banana in the freezer, the book on the side table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the banana in the freezer, the book on the side table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -24543,7 +24543,7 @@
         {
           "game_id": 3,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the apple in the freezer, the plate on the side table and the mop on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the apple in the freezer, the plate on the side table and the mop on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -24819,7 +24819,7 @@
         {
           "game_id": 4,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow in the refrigerator, the book in the wardrobe and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow in the refrigerator, the book in the wardrobe and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -25100,7 +25100,7 @@
         {
           "game_id": 5,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich in the freezer, the book in the wardrobe and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich in the freezer, the book in the wardrobe and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -25371,7 +25371,7 @@
         {
           "game_id": 6,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich on the side table, the book on the shelf and the mop in the cupboard.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich on the side table, the book on the shelf and the mop in the cupboard.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -25639,7 +25639,7 @@
         {
           "game_id": 7,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant in the freezer, the plate on the table and the mop in the refrigerator.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant in the freezer, the plate on the table and the mop in the refrigerator.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -25917,7 +25917,7 @@
         {
           "game_id": 8,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant in the cupboard, the orange on the table and the book on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant in the cupboard, the orange on the table and the book on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -26183,7 +26183,7 @@
         {
           "game_id": 9,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the apple in the cupboard, the book in the wardrobe and the broom in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the apple in the cupboard, the book in the wardrobe and the broom in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -26469,7 +26469,7 @@
         {
           "game_id": 10,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the side table, the book in the refrigerator and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the side table, the book in the refrigerator and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -26737,7 +26737,7 @@
         {
           "game_id": 11,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the shelf, the sandwich on the table and the broom on the counter.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the shelf, the sandwich on the table and the broom on the counter.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -26995,7 +26995,7 @@
         {
           "game_id": 12,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow in the freezer, the broom on the bed and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow in the freezer, the broom on the bed and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -27286,7 +27286,7 @@
         {
           "game_id": 13,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the table, the book in the refrigerator and the mop in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the table, the book in the refrigerator and the mop in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -27567,7 +27567,7 @@
         {
           "game_id": 14,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the broom on the shelf, the potted plant on the counter and the plate in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the broom on the shelf, the potted plant on the counter and the plate in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -27838,7 +27838,7 @@
         {
           "game_id": 15,
           "variant": "basic_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the side table, the plate on the shelf and the mop in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the side table, the plate on the shelf and the mop in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -28114,7 +28114,7 @@
         {
           "game_id": 0,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow on the counter, the book on the shelf and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow on the counter, the book on the shelf and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -28370,7 +28370,7 @@
         {
           "game_id": 1,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich in the freezer, the plate on the shelf and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich in the freezer, the plate on the shelf and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -28636,7 +28636,7 @@
         {
           "game_id": 2,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the banana in the freezer, the book on the side table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the banana in the freezer, the book on the side table and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -28907,7 +28907,7 @@
         {
           "game_id": 3,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the apple in the freezer, the plate on the side table and the mop on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the apple in the freezer, the plate on the side table and the mop on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -29183,7 +29183,7 @@
         {
           "game_id": 4,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow in the refrigerator, the book in the wardrobe and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow in the refrigerator, the book in the wardrobe and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -29464,7 +29464,7 @@
         {
           "game_id": 5,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich in the freezer, the book in the wardrobe and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich in the freezer, the book in the wardrobe and the mop on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -29735,7 +29735,7 @@
         {
           "game_id": 6,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the sandwich on the side table, the book on the shelf and the mop in the cupboard.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the sandwich on the side table, the book on the shelf and the mop in the cupboard.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -30003,7 +30003,7 @@
         {
           "game_id": 7,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant in the freezer, the plate on the table and the mop in the refrigerator.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant in the freezer, the plate on the table and the mop in the refrigerator.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -30281,7 +30281,7 @@
         {
           "game_id": 8,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant in the cupboard, the orange on the table and the book on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant in the cupboard, the orange on the table and the book on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -30547,7 +30547,7 @@
         {
           "game_id": 9,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the apple in the cupboard, the book in the wardrobe and the broom in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the apple in the cupboard, the book in the wardrobe and the broom in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -30833,7 +30833,7 @@
         {
           "game_id": 10,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the side table, the book in the refrigerator and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the side table, the book in the refrigerator and the plate on the shelf.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -31101,7 +31101,7 @@
         {
           "game_id": 11,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the book on the shelf, the sandwich on the table and the broom on the counter.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the book on the shelf, the sandwich on the table and the broom on the counter.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -31359,7 +31359,7 @@
         {
           "game_id": 12,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the pillow in the freezer, the broom on the bed and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the pillow in the freezer, the broom on the bed and the plate on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -31650,7 +31650,7 @@
         {
           "game_id": 13,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the table, the book in the refrigerator and the mop in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the table, the book in the refrigerator and the mop in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -31931,7 +31931,7 @@
         {
           "game_id": 14,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the broom on the shelf, the potted plant on the counter and the plate in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the broom on the shelf, the potted plant on the counter and the plate in the wardrobe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
@@ -32202,7 +32202,7 @@
         {
           "game_id": 15,
           "variant": "planning_inventory_limit_two",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory.\n\nYour goal for this game is: Put the potted plant on the side table, the plate on the shelf and the mop in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Write your plan for your next actions on the line below your action, starting with \"Next actions:\".\nFor example:\n> open cupboard\nNext actions: take orange, eat orange\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is: Put the potted plant on the side table, the plate on the shelf and the mop in the freezer.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",

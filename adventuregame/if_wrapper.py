@@ -1620,7 +1620,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # handle unnecessary inventory interaction:
                 if action_dict['arg2'] == "inventory":
                     # TODO: remove 'taking from inventory', now handled via PDDL precondition
-                    #  but PDDL handling does it via precondition (not (in <item> inventory)), not by checing for the
+                    #  but PDDL handling does it via precondition (not (in <item> inventory)), not by checking for the
                     #  second argument, so check if this handling here might still be useful
                     logger.info("Taking from inventory")
                     # get inventory content:

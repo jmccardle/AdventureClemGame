@@ -263,6 +263,8 @@ class AdventureGameScorer(GameScorer):
         :param episode_interactions: Dict containing episode records for entire episode and turns.
         """
 
+        # TODO: handle/'score' exploration info
+
         # TODO: handle new PDDL-based fail_dicts below
         #  old types: going_to_current_room, no_exit_to, multiple_exits_to, entity_already_inventory, thing_arg1_room,
         #  entity_not_accessible, multiple_entity_ambiguity, thing_arg2_room, pre_state_mismatch
@@ -278,6 +280,7 @@ class AdventureGameScorer(GameScorer):
                       'entity_not_accessible', 'multiple_entity_ambiguity', 'thing_arg2_room', 'pre_state_mismatch']
         turn_fails = []  # list eventually containing failure counts for each turn
         turn_hallucinations = []  # list eventually containing hallucinated finish counts for each turn
+        # TODO: handle DONE similarly to hallucinated finishes for now
         invalid_format: str = ""  # there can be only one invalid format or none, missing > or missing plan
         turn_limit_loss: bool = False
         successfully_finished = False

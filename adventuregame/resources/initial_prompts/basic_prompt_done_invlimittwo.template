@@ -2,7 +2,7 @@ You are playing a text adventure game. I will describe what you can perceive in 
 For example:
 > open cupboard
 
-You can have up to two objects in your inventory.
+You can have up to two objects in your inventory at the same time.
 
 Your goal for this game is: $GOAL$
 
