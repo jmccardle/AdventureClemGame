@@ -2403,6 +2403,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     feedback_str = feedback_jinja.render(jinja_args)
                     feedback_str = feedback_str.capitalize()
                     # print("parameter fail:", feedback_str)
+                    # TODO: use action def feedback fail type
                     fail_dict: dict = {'phase': "resolution", 'fail_type': "domain_parameter_mismatch", 'arg': variable_map[var_id]}
                     return False, feedback_str, fail_dict
 
@@ -2484,6 +2485,8 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
 
+            # textual failure feedback:
+
             feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx]
 
             feedback_jinja = jinja2.Template(feedback_template)
@@ -2500,6 +2503,8 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             failed_action_info = {'failed_action_type': action_dict['type'],
                                   'failed_precon_predicate': failed_precon_predicate}
+
+            # TODO: use action def feedback fail type
 
             fail_dict: dict = {'phase': "resolution", 'fail_type': "precondition_fail", 'arg': failed_action_info}
 
@@ -2595,6 +2600,95 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return True, feedback_str, {'world_state_effects': world_state_effects}
 
+    def get_exploration_info(self, action_type = None):
+        exploration_info = {'exploration_state': list(self.exploration_state)}
+
+        # exploration_info = extra_action_info['exploration_info']
+
+        # get epistemic/pragmatic info for action:
+        if action_type:
+            exploration_info['action_epistemic'] = self.action_types[action_type['type']]['epistemic']
+            exploration_info['action_pragmatic'] = self.action_types[action_type['type']]['pragmatic']
+        else:
+            exploration_info['action_epistemic'] = False
+            exploration_info['action_pragmatic'] = False
+
+        # extra_action_info['epist_pragma'] = action_epistemic_pragmatic
+
+        epistemic_gain_removed = self.exploration_history[-2].difference(self.exploration_state)
+        epistemic_gain_added = self.exploration_state.difference(self.exploration_history[-2])
+        logger.info(f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}")
+
+        # if action_epistemic_pragmatic['epistemic']:
+        if exploration_info['action_epistemic']:
+            effective_epistemic_gain = epistemic_gain_added
+            effective_epistemic_gain_amount = len(effective_epistemic_gain)
+            if action_type:
+                logger.info(f"Epistemic action '{action_type['type']}' resulted in effective epistemic gain: {effective_epistemic_gain}")
+            exploration_info['effective_epistemic_gain_facts'] = list(effective_epistemic_gain)
+            logger.info(f"Epistemic gain amount: {effective_epistemic_gain_amount}")
+            exploration_info['effective_epistemic_gain_amount'] = effective_epistemic_gain_amount
+
+        # all entities:
+        all_entities = set()
+        for fact in self.world_state:
+            if fact[0] == 'type':
+                all_entities.add(fact[1])
+
+        # known entities:
+        known_entities = set()
+        for fact in self.exploration_state:
+            if fact[0] == "at":
+                known_entities.add(fact)
+        logger.info(f"Known entities: {known_entities}")
+        exploration_info['known_entities'] = list(known_entities)
+
+        known_entities_ratio = len(known_entities) / len(all_entities)
+        logger.info(f"Known entities ratio: {known_entities_ratio}")
+        exploration_info['known_entities_ratio'] = known_entities_ratio
+
+        # all rooms:
+        all_rooms = set()
+        for fact in self.world_state:
+            if fact[0] == 'room':
+                all_rooms.add(fact[1])
+
+        # visited rooms:
+        visited_rooms = set()
+        for exploration_state in self.exploration_history:
+            for exploration_fact in exploration_state:
+                if exploration_fact[0] == 'at' and exploration_fact[1] == 'player1':
+                    visited_rooms.add(exploration_fact[2])
+        logger.info(f"Visited rooms: {visited_rooms}")
+        exploration_info['visited_rooms'] = list(visited_rooms)
+
+        visited_rooms_ratio = len(visited_rooms) / len(all_rooms)
+        logger.info(f"Visited rooms ratio: {visited_rooms_ratio}")
+        exploration_info['visited_rooms_ratio'] = visited_rooms_ratio
+
+        # get goal entitiy set:
+        goal_entities = set()
+        for goal_fact in self.goal_state:
+            goal_entities.add(goal_fact[1])
+            goal_entities.add(goal_fact[2])
+        logger.info(f"Goal entities: {goal_entities}")
+
+        # check which goal-relevant entities are known:
+        known_goal_entities = set()
+        for goal_fact in self.goal_state:
+            for known_entity in known_entities:
+                if known_entity[1] in goal_fact:
+                    known_goal_entities.add(known_entity)
+        logger.info(f"Known goal entities: {known_goal_entities}")
+        exploration_info['known_goal_entities'] = list(known_goal_entities)
+
+        # ratio of known goal-relevant entities:
+        known_goal_entities_ratio = len(known_goal_entities) / len(goal_entities)
+        logger.info(f"Known goal entities ratio: {known_goal_entities_ratio}")
+        exploration_info['known_goal_entities_ratio'] = known_goal_entities_ratio
+
+        return exploration_info
+
     def process_action(self, action_input: str):
         """
         Fully process an action input.
@@ -2604,6 +2698,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         parsed, parse_result, fail = self.parse_action_input(action_input)
         if not parsed:
             self.track_exploration()
+            fail['exploration_info'] = self.get_exploration_info()
+
             return self.goals_achieved, parse_result, fail
         else:
             # RESOLUTION PHASE
@@ -2614,12 +2710,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             resolved, resolution_result, fail = self.resolve_action(parse_result)
             if not resolved:
                 self.track_exploration()
-                 # get epistemic/pragmatic info for action:
-                action_epistemic_pragmatic = {'epistemic': self.action_types[parse_result['type']]['epistemic'],
-                                              'pragmatic': self.action_types[parse_result['type']]['pragmatic']}
-                # print(action_epistemic_pragmatic)
-                # add to fail info dict:
-                fail['epist_pragma'] = action_epistemic_pragmatic
+                 # get exploration info and add to fail dict:
+                fail['exploration_info'] = self.get_exploration_info(parse_result['type'])
 
                 return self.goals_achieved, resolution_result, fail
             else:
@@ -2635,93 +2727,14 @@ class AdventureIFInterpreter(GameResourceLocator):
                 goals_achieved_response = set(goals_achieved_response)
                 logger.info(f"Achieved goal states: {goals_achieved_response}")
 
-                # successful action returns extra information instead of failure information:
-                extra_action_info = dict()
-                extra_action_info['action_type'] = parse_result['type']
-
                 # EXPLORATION TRACKING
                 self.track_exploration(fail['world_state_effects'])
 
-                extra_action_info['exploration_info'] = {'exploration_state': list(self.exploration_state)}
-
-                exploration_info = extra_action_info['exploration_info']
-
-                # get epistemic/pragmatic info for action:
-                exploration_info['action_epistemic'] = self.action_types[parse_result['type']]['epistemic']
-                exploration_info['action_pragmatic'] = self.action_types[parse_result['type']]['pragmatic']
-
-                # extra_action_info['epist_pragma'] = action_epistemic_pragmatic
-
-                epistemic_gain_removed = self.exploration_history[-2].difference(self.exploration_state)
-                epistemic_gain_added = self.exploration_state.difference(self.exploration_history[-2])
-                logger.info(f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}")
-
-                # if action_epistemic_pragmatic['epistemic']:
-                if exploration_info['action_epistemic']:
-                    effective_epistemic_gain = epistemic_gain_added
-                    effective_epistemic_gain_amount = len(effective_epistemic_gain)
-                    logger.info(f"Epistemic action '{parse_result['type']}' resulted in effective epistemic gain: {effective_epistemic_gain}")
-                    exploration_info['effective_epistemic_gain_facts'] = list(effective_epistemic_gain)
-                    logger.info(f"Epistemic gain amount: {effective_epistemic_gain_amount}")
-                    exploration_info['effective_epistemic_gain_amount'] = effective_epistemic_gain_amount
-
-                # all entities:
-                all_entities = set()
-                for fact in self.world_state:
-                    if fact[0] == 'type':
-                        all_entities.add(fact[1])
-
-                # known entities:
-                known_entities = set()
-                for fact in self.exploration_state:
-                    if fact[0] == "at":
-                        known_entities.add(fact)
-                logger.info(f"Known entities: {known_entities}")
-                exploration_info['known_entities'] = list(known_entities)
-
-                known_entities_ratio = len(known_entities) / len(all_entities)
-                logger.info(f"Known entities ratio: {known_entities_ratio}")
-                exploration_info['known_entities_ratio'] = known_entities_ratio
-
-                # all rooms:
-                all_rooms = set()
-                for fact in self.world_state:
-                    if fact[0] == 'room':
-                        all_rooms.add(fact[1])
-
-                # visited rooms:
-                visited_rooms = set()
-                for exploration_state in self.exploration_history:
-                    for exploration_fact in exploration_state:
-                        if exploration_fact[0] == 'at' and exploration_fact[1] == 'player1':
-                            visited_rooms.add(exploration_fact[2])
-                logger.info(f"Visited rooms: {visited_rooms}")
-                exploration_info['visited_rooms'] = list(visited_rooms)
-
-                visited_rooms_ratio = len(visited_rooms)/len(all_rooms)
-                logger.info(f"Visited rooms ratio: {visited_rooms_ratio}")
-                exploration_info['visited_rooms_ratio'] = visited_rooms_ratio
-
-                # get goal entitiy set:
-                goal_entities = set()
-                for goal_fact in self.goal_state:
-                    goal_entities.add(goal_fact[1])
-                    goal_entities.add(goal_fact[2])
-                logger.info(f"Goal entities: {goal_entities}")
-
-                # check which goal-relevant entities are known:
-                known_goal_entities = set()
-                for goal_fact in self.goal_state:
-                    for known_entity in known_entities:
-                        if known_entity[1] in goal_fact:
-                            known_goal_entities.add(known_entity)
-                logger.info(f"Known goal entities: {known_goal_entities}")
-                exploration_info['known_goal_entities'] = list(known_goal_entities)
-
-                # ratio of known goal-relevant entities:
-                known_goal_entities_ratio = len(known_goal_entities)/len(goal_entities)
-                logger.info(f"Known goal entities ratio: {known_goal_entities_ratio}")
-                exploration_info['known_goal_entities_ratio'] = known_goal_entities_ratio
+                # successful action returns extra information instead of failure information:
+                extra_action_info = dict()
+                extra_action_info['action_type'] = parse_result['type']
+                # exploration info:
+                extra_action_info['exploration_info'] = self.get_exploration_info(parse_result['type'])
 
                 # handle DONE action:
                 if parse_result['type'] == "done":

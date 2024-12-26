@@ -185,8 +185,8 @@ class AdventureGameMaster(DialogueGameMaster):
                 self.log_to_self("model_done", if_input)
                 self.model_done = True
 
-            if 'exploration_info' in action_info:
-                self.log_to_self("exploration_info", action_info['exploration_info'])
+            # if 'exploration_info' in action_info:
+            #    self.log_to_self("exploration_info", action_info['exploration_info'])
 
             # handle goals:
             self.goals_achieved = goals_achieved
