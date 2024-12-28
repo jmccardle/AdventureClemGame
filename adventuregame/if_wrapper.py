@@ -2598,34 +2598,38 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return True, feedback_str, {'world_state_effects': world_state_effects}
 
-    def get_exploration_info(self, action_type = None):
-        exploration_info = {'exploration_state': list(self.exploration_state)}
+    def get_exploration_info(self, action_type = None, full_exploration_state = False, full_exploration_history = False):
+        exploration_info = dict()
 
-        # exploration_info = extra_action_info['exploration_info']
+        if full_exploration_state:
+            exploration_info['exploration_state'] = list(self.exploration_state)
+        if full_exploration_history:
+            exploration_info['exploration_history'] = list(self.exploration_history)
 
         # get epistemic/pragmatic info for action:
         if action_type:
-            exploration_info['action_epistemic'] = self.action_types[action_type['type']]['epistemic']
-            exploration_info['action_pragmatic'] = self.action_types[action_type['type']]['pragmatic']
+            # logger.info(f"action_type: {action_type}")
+            # logger.info(f"self.action_types[action_type]['epistemic']: {self.action_types[action_type]['epistemic']}")
+            exploration_info['action_epistemic'] = self.action_types[action_type]['epistemic']
+            exploration_info['action_pragmatic'] = self.action_types[action_type]['pragmatic']
         else:
             exploration_info['action_epistemic'] = False
             exploration_info['action_pragmatic'] = False
-
-        # extra_action_info['epist_pragma'] = action_epistemic_pragmatic
 
         epistemic_gain_removed = self.exploration_history[-2].difference(self.exploration_state)
         epistemic_gain_added = self.exploration_state.difference(self.exploration_history[-2])
         logger.info(f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}")
 
-        # if action_epistemic_pragmatic['epistemic']:
         if exploration_info['action_epistemic']:
             effective_epistemic_gain = epistemic_gain_added
             effective_epistemic_gain_amount = len(effective_epistemic_gain)
             if action_type:
-                logger.info(f"Epistemic action '{action_type['type']}' resulted in effective epistemic gain: {effective_epistemic_gain}")
+                logger.info(f"Epistemic action '{action_type}' resulted in effective epistemic gain: {effective_epistemic_gain}")
             exploration_info['effective_epistemic_gain_facts'] = list(effective_epistemic_gain)
             logger.info(f"Epistemic gain amount: {effective_epistemic_gain_amount}")
             exploration_info['effective_epistemic_gain_amount'] = effective_epistemic_gain_amount
+        else:
+            exploration_info['effective_epistemic_gain_amount'] = 0
 
         # all entities:
         all_entities = set()

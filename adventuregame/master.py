@@ -265,22 +265,21 @@ class AdventureGameScorer(GameScorer):
 
         # TODO: handle/'score' exploration info
 
-        # TODO: handle new PDDL-based fail_dicts below
-        #  old types: going_to_current_room, no_exit_to, multiple_exits_to, entity_already_inventory, thing_arg1_room,
-        #  entity_not_accessible, multiple_entity_ambiguity, thing_arg2_room, pre_state_mismatch
-
         # get adventure/episode-level info:
         adventure_info: dict = episode_interactions['adventure_info']
         turn_scores = []
         # IF interpreter interaction fail phases/types; first two must be 'parsing' and 'resolution' phases:
         fail_types = ['parsing', 'resolution', 'lark_exception', 'malformed_command', 'undefined_action_verb',
                       'undefined_action', 'undefined_repr_str', 'manipulating_room', 'undefined_argument_type',
-                      'taking_from_inventory', 'other_room_argument', 'not_room_type', 'going_to_current_room',
-                      'no_exit_to', 'multiple_exits_to', 'entity_already_inventory', 'thing_arg1_room',
-                      'entity_not_accessible', 'multiple_entity_ambiguity', 'thing_arg2_room', 'pre_state_mismatch']
+                      'taking_from_inventory', 'other_room_argument',
+                      'domain_trait_type_mismatch', 'domain_type_discrepancy',
+                      'world_state_discrepancy', 'entity_not_accessible', 'entity_state_mismatch',
+                      'entity_trait_mismatch', 'entity_already_inventory', 'going_to_current_room', 'no_exit_to',
+                      'inventory_limit_exceeded']
         turn_fails = []  # list eventually containing failure counts for each turn
         turn_hallucinations = []  # list eventually containing hallucinated finish counts for each turn
-        # TODO: handle DONE similarly to hallucinated finishes for now
+        turn_explorations = []
+
         invalid_format: str = ""  # there can be only one invalid format or none, missing > or missing plan
         turn_limit_loss: bool = False
         successfully_finished = False
@@ -294,15 +293,22 @@ class AdventureGameScorer(GameScorer):
             turn_fail = {fail_type: 0 for fail_type in fail_types}  # start with zero failures
             plan_record = {plan_type: 0 for plan_type in plan_types}  # start with zero plan values
             hallucination = 0
+            turn_exploration = dict()
             # iterate over individual record entries for turn:
             for event in turn:  # 'event' following clembench nomenclature, not connected to IF events
                 action = event["action"]  # 'action' following clembench nomenclature, not connected to IF actions
                 # check for format failures:
                 if action["type"] == "invalid_format":
                     invalid_format = action['content']
+
                 # check for hallucinated finishes:
                 if action["type"] == "hallucinated_finish":
                     hallucination = 1
+
+                # handle DONE as hallucinated finish for now:
+                if action["type"] == "action_info" and action['content']['action_type'] == "done":
+                    hallucination = 1
+
                 # check for IF interaction failures:
                 if action["type"] == "action_fail":
                     # check for unlisted fail type:
@@ -312,6 +318,24 @@ class AdventureGameScorer(GameScorer):
                     turn_fail[action['content']['phase']] = 1
                     # record IF interaction fail type:
                     turn_fail[action['content']['fail_type']] = 1
+
+                # get exploration values:
+                if action["type"] == "action_info" or action["type"] == "action_fail":
+                    exploration_info = action['content']['exploration_info']
+                    logger.info(f"exploration_info: {exploration_info}")
+                    if exploration_info['action_epistemic']:
+                        turn_exploration['epistemic_action'] = 1
+                    else:
+                        turn_exploration['epistemic_action'] = 0
+                    if exploration_info['action_pragmatic']:
+                        turn_exploration['pragmatic_action'] = 1
+                    else:
+                        turn_exploration['pragmatic_action'] = 0
+                    turn_exploration['effective_epistemic_gain_amount'] = exploration_info['effective_epistemic_gain_amount']
+                    turn_exploration['known_entities_ratio'] = exploration_info['known_entities_ratio']
+                    turn_exploration['visited_rooms_ratio'] = exploration_info['visited_rooms_ratio']
+                    turn_exploration['known_goal_entities_ratio'] = exploration_info['known_goal_entities_ratio']
+
                 # get plan values:
                 if action["type"] in plan_types:
                     plan_record[action["type"]] = action["content"]
@@ -356,10 +380,22 @@ class AdventureGameScorer(GameScorer):
                 self.log_turn_score(turn_idx, fail_type, turn_fail[fail_type])
             # record turn-level goal score:
             self.log_turn_score(turn_idx, 'goal_score', turn_score["goal_score"])
+
+            # exploration:
+            if turn_exploration:
+                self.log_turn_score(turn_idx, 'epistemic_action', turn_exploration['epistemic_action'])
+                self.log_turn_score(turn_idx, 'pragmatic_action', turn_exploration['pragmatic_action'])
+                self.log_turn_score(turn_idx, 'effective_epistemic_gain_amount', turn_exploration['effective_epistemic_gain_amount'])
+                self.log_turn_score(turn_idx, 'known_entities_ratio', turn_exploration['known_entities_ratio'])
+                self.log_turn_score(turn_idx, 'visited_rooms_ratio', turn_exploration['visited_rooms_ratio'])
+                self.log_turn_score(turn_idx, 'known_goal_entities_ratio', turn_exploration['known_goal_entities_ratio'])
+
             # append turn values to episode-level lists:
             turn_scores.append(turn_score)
             turn_fails.append(turn_fail)
             turn_hallucinations.append(hallucination)
+            turn_explorations.append(turn_exploration)
+
             # record planning values:
             for plan_type in plan_types:
                 self.log_turn_score(turn_idx, plan_type, plan_record[plan_type])
@@ -382,9 +418,11 @@ class AdventureGameScorer(GameScorer):
         request_count = sum([turn["request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT, request_count)
         self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS, parsed_request_count / request_count)
+
         # sum up and record episode-level action hallucination values:
         hallucination_count = sum(turn_hallucinations)
         self.log_episode_score('hallucination_count', hallucination_count)
+
         # sum up and record episode-level action fail scores:
         action_parsing_fail_count = sum([turn["parsing"] for turn in turn_fails])
         self.log_episode_score('action_parsing_fail', action_parsing_fail_count)
@@ -396,12 +434,16 @@ class AdventureGameScorer(GameScorer):
         fail_sum = action_parsing_fail_count + action_resolution_fail_count
         sucessful_actions = parsed_request_count - fail_sum
         self.log_episode_score('successful_actions', sucessful_actions)
+
         # record turn limit exceeding loss:
         if turn_limit_loss:
             self.log_episode_score("turn_limit_loss", 1)
         else:
             self.log_episode_score("turn_limit_loss", 0)
+
         # SPEED
+        # NOTE: Speed metrics were not informative in v1, and are now inaccurate, specially with inventory limit
+        # NOTE: Instance generation and optimal solving are yet to be updated to take v2 changes into account
         # turn count for metrics based on it:
         turn_count: int = len(turn_scores)
         # get optimal turns for this episode:
@@ -426,6 +468,7 @@ class AdventureGameScorer(GameScorer):
             self.log_episode_score("finish_speed", finish_speed_rating)
         else:
             self.log_episode_score("finish_speed", np.nan)
+
         # MAIN SCORE
         # count goals achieved:
         final_goal_score = len(final_goals_achieved)
