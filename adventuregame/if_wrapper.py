@@ -1776,9 +1776,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             if precon_trace:
                 not_dict['not'] = inner_condition_is_fact
                 not_true = False
-                if inner_condition_is_fact['checks_out'] == conditions_polarity:
+                if inner_condition_is_fact['fulfilled'] == conditions_polarity:
                     not_true = True
-                not_dict['checks_out'] = not_true
+                not_dict['fulfilled'] = not_true
                 self.precon_trace.append(not_dict)
 
                 # print("not_dict:", not_dict)
@@ -1804,7 +1804,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_tuples.append((predicate_tuple, is_fact, self.precon_idx))
 
             if precon_trace:
-                predicate_dict = {'predicate_tuple': predicate_tuple, 'checks_out': is_fact, 'precon_idx': self.precon_idx}
+                predicate_dict = {'predicate_tuple': predicate_tuple, 'fulfilled': is_fact, 'precon_idx': self.precon_idx}
                 # logger.info(f"predicate condition precon_trace predicate_dict: {predicate_dict}")
                 return predicate_dict
 
@@ -1867,11 +1867,11 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             # numerical comparison:
             predicate_tuple = list()
-            checks_out = False
+            fulfilled = False
             match num_comp_type:
                 case "equal":
                     if arg1_value == arg2_value:
-                        checks_out = True
+                        fulfilled = True
                     else:
                         if arg1_function_list:
                             predicate_tuple = arg1_function_list
@@ -1879,7 +1879,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             predicate_tuple = arg2_function_list
                 case "less":
                     if arg1_value < arg2_value:
-                        checks_out = True
+                        fulfilled = True
                     else:
                         if arg1_function_list:
                             predicate_tuple = arg1_function_list
@@ -1887,7 +1887,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             predicate_tuple = arg2_function_list
                 case "leq":
                     if arg1_value <= arg2_value:
-                        checks_out = True
+                        fulfilled = True
                     else:
                         if arg1_function_list:
                             predicate_tuple = arg1_function_list
@@ -1895,7 +1895,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             predicate_tuple = arg2_function_list
                 case "greater":
                     if arg1_value > arg2_value:
-                        checks_out = True
+                        fulfilled = True
                     else:
                         if arg1_function_list:
                             predicate_tuple = arg1_function_list
@@ -1903,7 +1903,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             predicate_tuple = arg2_function_list
                 case "greq":
                     if arg1_value >= arg2_value:
-                        checks_out = True
+                        fulfilled = True
                     else:
                         if arg1_function_list:
                             predicate_tuple = arg1_function_list
@@ -1912,15 +1912,15 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             if check_precon_idx:
                 self.precon_idx += 1
-                self.precon_tuples.append((tuple(predicate_tuple), checks_out, self.precon_idx))
+                self.precon_tuples.append((tuple(predicate_tuple), fulfilled, self.precon_idx))
 
             if precon_trace:
-                predicate_dict = {'predicate_tuple': tuple(predicate_tuple), 'checks_out': checks_out,
+                predicate_dict = {'predicate_tuple': tuple(predicate_tuple), 'fulfilled': fulfilled,
                                   'precon_idx': self.precon_idx}
                 # logger.info(f"num_comp condition precon_trace predicate_dict: {predicate_dict}")
                 return predicate_dict
 
-            return checks_out
+            return fulfilled
 
         if 'and' in conditions:
             and_dict = {'and': list()}
@@ -1932,18 +1932,18 @@ class AdventureIFInterpreter(GameResourceLocator):
             for and_condition in conditions:
                 # print("and_condition:", and_condition)
 
-                # checks_out = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+                # fulfilled = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
 
-                checks_out = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
-                # print("and item checks_out:", checks_out)
+                fulfilled = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+                # print("and item fulfilled:", fulfilled)
                 # since all facts need to check out for 'and' clauses, immediately return failure:
-                # if not checks_out:
+                # if not fulfilled:
                 #    return False
                 if precon_trace:
-                    and_conditions_checklist.append(checks_out['checks_out'])
-                    and_dict['and'].append(checks_out)
+                    and_conditions_checklist.append(fulfilled['fulfilled'])
+                    and_dict['and'].append(fulfilled)
                 else:
-                    and_conditions_checklist.append(checks_out)
+                    and_conditions_checklist.append(fulfilled)
                 # print()
             # print("and_conditions_checklist:", and_conditions_checklist)
 
@@ -1952,7 +1952,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 and_phrase_true = False
                 if not False in and_conditions_checklist:
                     and_phrase_true = True
-                and_dict['checks_out'] = and_phrase_true
+                and_dict['fulfilled'] = and_phrase_true
                 self.precon_trace.append(and_dict)
                 # print("and_dict:", and_dict)
                 return and_dict
@@ -1972,15 +1972,15 @@ class AdventureIFInterpreter(GameResourceLocator):
             # print("Extracted or conditions list:", conditions)
             for or_condition in conditions:
                 # print("or_condition:", or_condition)
-                checks_out = self.check_conditions(or_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
-                # print("or item checks_out:", checks_out)
+                fulfilled = self.check_conditions(or_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+                # print("or item fulfilled:", fulfilled)
 
                 if precon_trace:
-                    or_conditions_checklist.append(checks_out['checks_out'])
+                    or_conditions_checklist.append(fulfilled['fulfilled'])
                     # print("or_conditions_checklist:", or_conditions_checklist)
-                    or_dict['or'].append(checks_out)
+                    or_dict['or'].append(fulfilled)
                 else:
-                    or_conditions_checklist.append(checks_out)
+                    or_conditions_checklist.append(fulfilled)
                 # print()
             # print("or_conditions_checklist:", or_conditions_checklist)
 
@@ -1990,7 +1990,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # print("or_conditions_checklist:", or_conditions_checklist)
                 if True in or_conditions_checklist:
                     or_phrase_true = True
-                or_dict['checks_out'] = or_phrase_true
+                or_dict['fulfilled'] = or_phrase_true
                 self.precon_trace.append(or_dict)
                 return or_dict
             else:
@@ -2426,7 +2426,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("Checked precon tuples:", self.precon_tuples)
 
         # if checked_conditions:
-        if self.precon_trace[-1]['checks_out']:
+        if self.precon_trace[-1]['fulfilled']:
             logger.info("Preconditions fulfilled!")
             pass
         else:
@@ -2441,8 +2441,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # iterate over precon trace:
                 for item in precon_trace[-1]['and']:
                     # print("precon_trace item:", item)
-                    # print("Checks out:", item['checks_out'])
-                    if not item['checks_out']:
+                    # print("Checks out:", item['fulfilled'])
+                    if not item['fulfilled']:
                         # print("Precon trace item does not check out:")
                         # print(item)
                         if 'or' in item:
@@ -2451,7 +2451,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 # print("or_item:", or_item)
                                 if 'and' in or_item:
                                     for and_item in or_item['and']:
-                                        if not and_item['checks_out']:
+                                        if not and_item['fulfilled']:
                                             # print("or and_item does not check out:", and_item)
                                             if 'not' in and_item:
                                                 feedback_idx = and_item['not']['precon_idx']
@@ -2459,7 +2459,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                                             feedback_idx = and_item['precon_idx']
                                             return feedback_idx, and_item
                                 elif 'predicate_tuple' in or_item:
-                                    if not or_item['checks_out']:
+                                    if not or_item['fulfilled']:
                                         if 'not' in or_item:
                                             feedback_idx = or_item['not']['precon_idx']
                                             return feedback_idx, or_item
@@ -2467,7 +2467,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                                         return feedback_idx, or_item
                         elif 'and' in item:
                             for and_item in item['and']:
-                                if not and_item['checks_out']:
+                                if not and_item['fulfilled']:
                                     # print("or and_item does not check out:", and_item)
                                     if 'not' in and_item:
                                         feedback_idx = and_item['not']['precon_idx']
@@ -2475,11 +2475,11 @@ class AdventureIFInterpreter(GameResourceLocator):
                                     feedback_idx = and_item['precon_idx']
                                     return feedback_idx, and_item
                         elif 'predicate_tuple' in item:
-                            if not item['checks_out']:
+                            if not item['fulfilled']:
                                 feedback_idx = item['precon_idx']
                                 return feedback_idx, item
                         elif 'not' in item:
-                            if not item['checks_out']:
+                            if not item['fulfilled']:
                                 feedback_idx = item['not']['precon_idx']
                                 return feedback_idx, item
 
