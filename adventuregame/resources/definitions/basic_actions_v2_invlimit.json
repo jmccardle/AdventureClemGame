@@ -10,14 +10,14 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ e }} is not openable.",
-        "{{ r }} is not a room. (This should not occur.)",
-        "{{ p }} is not a player. (This should not occur.)"
+        ["{{ e }} is not openable.", "domain_trait_type_mismatch"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You can't see a {{ e }} here.",
-        "The {{ e }} is not closed."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["The {{ e }} is not closed.", "entity_state_mismatch"]
       ]
     },
     "success_feedback": "The {{ e }} is now open. {{ container_content }}",
@@ -36,14 +36,14 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ e }} is not openable.",
-        "{{ r }} is not a room. (This should not occur.)",
-        "{{ p }} is not a player. (This should not occur.)"
+        ["{{ e }} is not openable.", "domain_trait_type_mismatch"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You can't see a {{ e }} here.",
-        "The {{ e }} is not open."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["The {{ e }} is not open.", "entity_state_mismatch"]
       ]
     },
     "success_feedback": "The {{ e }} is now closed.",
@@ -64,24 +64,24 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ e }} is not takeable.",
-        "{{ s }} is not a receptacle.",
-        "{{ p }} is not a player. (This should not occur.)",
-        "{{ i }} is not an inventory. (This should not occur.)",
-        "{{ r }} is not a room. (This should not occur.)"
+        ["{{ e }} is not takeable.", "domain_trait_type_mismatch"],
+        ["{{ s }} is not a receptacle.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You can't see a {{ e }} here.",
-        "The {{ e }} is already in your inventory.",
-        "You can't see a {{ s }} here.",
-        "You can't see a {{ e }} here.",
-        "Your inventory can not hold more than two objects at the same time.",
-        "The {{ e }} is not on the {{ s }}.",
-        "The {{ s }} is not a support.",
-        "The {{ s }} is not open.",
-        "The {{ s }} is not a container.",
-        "The {{ e }} is not in the {{ s }}."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["The {{ e }} is already in your inventory.", "entity_already_inventory"],
+        ["You can't see a {{ s }} here.", "entity_not_accessible"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["Your inventory can not hold more than two objects at the same time.", "inventory_limit_exceeded"],
+        ["The {{ e }} is not on the {{ s }}.", "entity_state_mismatch"],
+        ["The {{ s }} is not a support.", "entity_trait_mismatch"],
+        ["The {{ s }} is not open.", "entity_state_mismatch"],
+        ["The {{ s }} is not a container.", "entity_trait_mismatch"],
+        ["The {{ e }} is not in the {{ s }}.", "entity_state_mismatch"]
       ]
     },
     "success_feedback": "You take the {{ e }}. {{ inventory_desc }}",
@@ -102,19 +102,19 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ e }} is not moveable.",
-        "{{ t }} is not a receptacle.",
-        "{{ p }} is not a player. (This should not occur.)",
-        "{{ i }} is not an inventory. (This should not occur.)",
-        "{{ r }} is not a room. (This should not occur.)"
+        ["{{ e }} is not moveable.", "domain_trait_type_mismatch"],
+        ["{{ t }} is not a receptacle.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You can't see a {{ e }} here.",
-        "You can't see a {{ t }} here.",
-        "The {{ t }} is not a container.",
-        "The {{ t }} is not open.",
-        "The {{ t }} is not a support."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["You can't see a {{ t }} here.", "entity_not_accessible"],
+        ["The {{ t }} is not a container.", "entity_trait_mismatch"],
+        ["The {{ t }} is not open.", "entity_state_mismatch"],
+        ["The {{ t }} is not a support.", "entity_trait_mismatch"]
       ]
     },
     "success_feedback": "You put the {{ e }} {{ prep }} the {{ t }}.",
@@ -134,15 +134,15 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ c }} is not a room.",
-        "{{ d }} is not a room.",
-        "{{ p }} is not a player. (This should not occur.)",
-        "{{ i }} is not an inventory. (This should not occur.)"
+        ["{{ c }} is not a room.", "domain_trait_type_mismatch"],
+        ["{{ d }} is not a room.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You are already in the {{ d }}.",
-        "You can't go to a {{ d }} from here."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You are already in the {{ d }}.", "going_to_current_room"],
+        ["You can't go to a {{ d }} from here.", "no_exit_to"]
       ]
     },
     "success_feedback": "{{ room_desc }}",
@@ -160,11 +160,11 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ p }} is not a player. (This should not occur.)",
-        "{{ r }} is not a room. (This should not occur.)"
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)"
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"]
       ]
     },
     "success_feedback": "You consider yourself done.",
@@ -183,15 +183,15 @@
     },
     "failure_feedback": {
       "parameters": [
-        "{{ p }} is not a player. (This should not occur.)",
-        "{{ r }} is not a room. (This should not occur.)",
-        "{{ e }} is not an entity. (This should not occur.)"
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ e }} is not an entity. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
-        "You are not where you are! (This should not occur.)",
-        "You can't see a {{ e }} here.",
-        "Your inventory is not an entity. (This should not occur.)",
-        "You can't see a {{ e }} here."
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["Your inventory is not an entity. (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"]
       ]
     },
     "success_feedback": "{{ arg1_desc }}",

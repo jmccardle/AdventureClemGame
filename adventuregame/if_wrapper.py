@@ -2043,7 +2043,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         # get all type-matched objects:
                         type_matched_objects = list()
                         for fact in self.world_state:
-                            # TODO: use domain type definitions, employ object type inheritance
+                            # TODO?: use domain type definitions, employ object type inheritance?
                             if fact[0] == type_list_type:  # relies on type facts for now
                                 type_matched_objects.append(fact[1])
                         # assign all matched objects to forall variable map:
@@ -2396,15 +2396,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # get the index of the mismatched variable:
                     var_idx = list(cur_action_pddl_map.keys()).index(f"?{var_id}")
                     # get fail feedback template using mismatched variable index:
-                    feedback_template = cur_action_def['failure_feedback']['parameters'][var_idx]
+                    feedback_template = cur_action_def['failure_feedback']['parameters'][var_idx][0]
                     feedback_jinja = jinja2.Template(feedback_template)
                     # fill feedback template:
                     jinja_args = {var_id: variable_map[var_id]}
                     feedback_str = feedback_jinja.render(jinja_args)
                     feedback_str = feedback_str.capitalize()
-                    # print("parameter fail:", feedback_str)
-                    # TODO: use action def feedback fail type
-                    fail_dict: dict = {'phase': "resolution", 'fail_type': "domain_parameter_mismatch", 'arg': variable_map[var_id]}
+                    # use action def feedback fail type:
+                    fail_type = cur_action_def['failure_feedback']['parameters'][var_idx][1]
+
+                    failed_action_info = {'failed_action_type': action_dict['type'],
+                                          'failed_parameter': variable_map[var_id]}
+
+                    fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
                     return False, feedback_str, fail_dict
 
         # variable map is filled during parameter checking
@@ -2482,31 +2486,25 @@ class AdventureIFInterpreter(GameResourceLocator):
             # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
 
             feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(self.precon_trace)
-
             logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
 
-            # textual failure feedback:
-
-            feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx]
-
+            # get textual failure feedback template:
+            feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx][0]
             feedback_jinja = jinja2.Template(feedback_template)
             # fill feedback template:
             clean_feedback_variable_map = deepcopy(variable_map)
             for key in clean_feedback_variable_map:
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
-
             jinja_args = clean_feedback_variable_map
             feedback_str = feedback_jinja.render(jinja_args)
             feedback_str = feedback_str.capitalize()
-            # print("fail:", feedback_str)
-
+            # failed action information for records:
             failed_action_info = {'failed_action_type': action_dict['type'],
                                   'failed_precon_predicate': failed_precon_predicate}
-
-            # TODO: use action def feedback fail type
-
-            fail_dict: dict = {'phase': "resolution", 'fail_type': "precondition_fail", 'arg': failed_action_info}
+            # use action def feedback fail type:
+            fail_type = cur_action_def['failure_feedback']['precondition'][feedback_idx][1]
+            fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
 
             return False, feedback_str, fail_dict
 

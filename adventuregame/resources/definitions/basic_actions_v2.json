@@ -11,8 +11,8 @@
     "failure_feedback": {
       "parameters": [
         ["{{ e }} is not openable.", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
@@ -37,8 +37,8 @@
     "failure_feedback": {
       "parameters": [
         ["{{ e }} is not openable.", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
@@ -66,9 +66,9 @@
       "parameters": [
         ["{{ e }} is not takeable.", "domain_trait_type_mismatch"],
         ["{{ s }} is not a receptacle.", "domain_trait_type_mismatch"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ i }} is not an inventory. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
@@ -103,9 +103,9 @@
       "parameters": [
         ["{{ e }} is not moveable.", "domain_trait_type_mismatch"],
         ["{{ t }} is not a receptacle.", "domain_trait_type_mismatch"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ i }} is not an inventory. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
@@ -135,8 +135,8 @@
       "parameters": [
         ["{{ c }} is not a room.", "domain_trait_type_mismatch"],
         ["{{ d }} is not a room.", "domain_trait_type_mismatch"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ i }} is not an inventory. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
@@ -159,8 +159,8 @@
     },
     "failure_feedback": {
       "parameters": [
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"]
@@ -182,9 +182,9 @@
     },
     "failure_feedback": {
       "parameters": [
-        ["{{ p }} is not a player. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_trait_type_mismatch"],
-        ["{{ e }} is not an entity. (This should not occur.)", "domain_trait_type_mismatch"]
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ e }} is not an entity. (This should not occur.)", "domain_type_discrepancy"]
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
