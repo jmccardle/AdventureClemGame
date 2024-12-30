@@ -1526,7 +1526,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         self.exploration_state.remove(removed_fact)
                         # logger.info(f"Fact {removed_fact} in exploration state: {removed_fact in self.exploration_state}")
 
-            logger.info(f"Current exploration_state: {self.exploration_state}")
+            # logger.info(f"Current exploration_state: {self.exploration_state}")
             # record current exploration state:
             self.exploration_history.append(deepcopy(self.exploration_state))
             # logger.info(f"Current exploration_history: {self.exploration_history}")
