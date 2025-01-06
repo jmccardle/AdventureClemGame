@@ -216,7 +216,8 @@ class AdventureGameMaster(DialogueGameMaster):
                 # get successful planned actions:
                 cur_plan_successes: list = list()
                 for plan_result in cur_plan_results:
-                    if not plan_result[2]:  # plan_result[2] is the failure dict, if it is empty, the action succeeded
+                    # plan_result[2] is action_info dict, if it does not contain fail_type key, the action succeeded
+                    if 'fail_type' not in plan_result[2]:
                         cur_plan_successes.append(plan_result)
                 # calculate the ratio of successful planned actions:
                 cur_plan_success_ratio: float = len(cur_plan_successes) / cur_plan_command_count
