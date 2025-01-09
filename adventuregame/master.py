@@ -130,24 +130,26 @@ class AdventureGameMaster(DialogueGameMaster):
     def _does_game_proceed(self) -> bool:
         """
         Checks if game proceeds.
-        Game does NOT proceed due to: Invalid output format, achieving all adventure goals or reaching the turn limit.
+        Game does NOT proceed due to: Invalid output format or reaching the turn limit. Achieving all goal states is
+        recorded here, but does not end the episode anymore.
         """
         # record invalid format failures:
         if self.invalid_format:
             self.log_to_self("invalid_format", self.invalid_format)
             return False
-        # stop game when all goal states have been achieved:
+        # check if all goal states have been achieved:
         if self.goals_achieved == self.goals_required:
             self.finished = True
             self.log_to_self("adventure_finished", list(self.goals_achieved))  # can be JSON'd; for easier eval
-            return False
+            # return False
+            return True  # do not stop game when all goal states have been achieved
         # stop game when turn limit is reached:
         if len(self.turns) >= self.game_instance['max_turns']:
-            self.log_to_self("turn_limit_reached", self.game_instance['max_turns'])
+            self.log_to_self("turn_limit_reached", f"Turn limit {self.game_instance['max_turns']} reached, end episode.")
             return False
         # stop game when model used DONE action:
         if self.model_done:
-            self.log_to_self("model_done", len(self.turns))
+            self.log_to_self("model_done", f"Model produced DONE action at turn {len(self.turns)}, end episode.")
             return False
         # otherwise keep playing:
         return True
@@ -263,9 +265,6 @@ class AdventureGameScorer(GameScorer):
         Writes to score file in the episode directory.
         :param episode_interactions: Dict containing episode records for entire episode and turns.
         """
-
-        # TODO: handle/'score' exploration info
-
         # get adventure/episode-level info:
         adventure_info: dict = episode_interactions['adventure_info']
         turn_scores = []
@@ -302,13 +301,18 @@ class AdventureGameScorer(GameScorer):
                 if action["type"] == "invalid_format":
                     invalid_format = action['content']
 
+                # check for adventure finish:
+                if action["type"] == "adventure_finished":
+                    successfully_finished = True
+
                 # check for hallucinated finishes:
                 if action["type"] == "hallucinated_finish":
                     hallucination = 1
 
-                # handle DONE as hallucinated finish for now:
+                # handle DONE as hallucinated finish if the adventure is not finished:
                 if action["type"] == "action_info" and action['content']['action_type'] == "done":
-                    hallucination = 1
+                    if not successfully_finished:
+                        hallucination = 1
 
                 # check for IF interaction failures:
                 if action["type"] == "action_fail":
@@ -343,6 +347,9 @@ class AdventureGameScorer(GameScorer):
                 # check for turn limit episode end:
                 if action["type"] == "turn_limit_reached":
                     turn_limit_loss = True
+                    # with DONE ending now being mandatory, episode is effectively lost without DONE before turn limit
+                    # even if all goal states have been achieved:
+                    successfully_finished = False
                 # get goal values:
                 if action["type"] == "goal_status":
                     turn_score["goal_score"] = action['content']['turn_goal_score']
@@ -499,6 +506,8 @@ class AdventureGameScorer(GameScorer):
             else:
                 self.log_episode_score(metrics.METRIC_SUCCESS, 0)
                 self.log_episode_score(metrics.METRIC_LOSE, 1)
+
+        # TODO?: count turn_limit_reached as ABORTED?
 
         # planning episode-level:
         # plan following:

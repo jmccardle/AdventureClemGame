@@ -1090,11 +1090,21 @@ class AdventureIFInterpreter(GameResourceLocator):
             inst_type: str = self.inst_to_type_dict[inst]
         elif inst in self.room_to_type_dict:
             inst_type: str = self.room_to_type_dict[inst]
+        else:  # fallback for potential edge cases
+            # TODO: retrace why this can fail
+            logger.info(f"_get_inst_str got {inst}, which is not in the _to_type dicts! "
+                        f"Heuristically culling numbers from inst string end as fallback...")
+            inst_type = deepcopy(inst)
+            while inst_type.endswith(("0","1","2","3","4","5","6","7","8","9")):
+                inst_type = inst_type[:-1]
+            logger.info(f"inst_type after heuristic culling: {inst_type}")
         # get surface string for instance type:
         if inst_type in self.entity_types:
             inst_str: str = self.entity_types[inst_type]['repr_str']
         elif inst_type in self.room_types:
             inst_str: str = self.room_types[inst_type]['repr_str']
+        else:  # fallback for potential edge cases
+            inst_str: str = inst_type
         # combine into full surface string:
         inst_adjs.append(inst_str)
         adj_str = " ".join(inst_adjs)
