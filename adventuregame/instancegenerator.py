@@ -128,7 +128,7 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 
                 # Create a game instance
                 game_instance = self.add_game_instance(basic_invlimit_experiment, adventure_id)
-                game_instance["variant"] = "basic_inventory_limit_two"  # game parameters
+                game_instance["variant"] = "basic"  # game parameters
                 game_instance["prompt"] = instance_prompt  # game parameters
                 # game_instance["goal_str"] = goal_str  # game parameters
                 # game_instance["first_room_str"] = first_room_str  # game parameters
@@ -166,7 +166,7 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 
                 # Create a game instance
                 game_instance = self.add_game_instance(planning_invlimit_experiment, adventure_id)
-                game_instance["variant"] = "planning_inventory_limit_two"  # game parameters
+                game_instance["variant"] = "plan"  # game parameters
                 game_instance["prompt"] = instance_prompt  # game parameters
                 # game_instance["goal_str"] = goal_str  # game parameters
                 # game_instance["first_room_str"] = first_room_str  # game parameters
