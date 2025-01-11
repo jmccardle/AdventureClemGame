@@ -130,8 +130,8 @@ class AdventureGameMaster(DialogueGameMaster):
     def _does_game_proceed(self) -> bool:
         """
         Checks if game proceeds.
-        Game does NOT proceed due to: Invalid output format or reaching the turn limit. Achieving all goal states is
-        recorded here, but does not end the episode anymore.
+        Game does NOT proceed due to: Invalid output format, reaching the turn limit or model performing DONE action.
+        Achieving all goal states is recorded here, but does not end the episode.
         """
         # record invalid format failures:
         if self.invalid_format:
@@ -141,8 +141,7 @@ class AdventureGameMaster(DialogueGameMaster):
         if self.goals_achieved == self.goals_required:
             self.finished = True
             self.log_to_self("adventure_finished", list(self.goals_achieved))  # can be JSON'd; for easier eval
-            # return False
-            return True  # do not stop game when all goal states have been achieved
+            # return False  # do not stop game when all goal states have been achieved
         # stop game when turn limit is reached:
         if len(self.turns) >= self.game_instance['max_turns']:
             self.log_to_self("turn_limit_reached", f"Turn limit {self.game_instance['max_turns']} reached, end episode.")
