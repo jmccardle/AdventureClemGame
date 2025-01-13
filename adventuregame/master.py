@@ -183,7 +183,7 @@ class AdventureGameMaster(DialogueGameMaster):
             # catch DONE action to end game after this turn:
             if 'done_action' in action_info:
                 logger.info(f"model_done: {action_info['done_action']}")
-                self.log_to_self("model_done", if_input)
+                # self.log_to_self("model_done", if_input)
                 self.model_done = True
 
             # if 'exploration_info' in action_info:
