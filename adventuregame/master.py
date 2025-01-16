@@ -161,6 +161,7 @@ class AdventureGameMaster(DialogueGameMaster):
             # IF INTERACTION
             # get the last player action from message history:
             last_action: str = self.messages_by_names[self.player.descriptor][-1]['content']
+            logger.info(f"Raw last message:\n{last_action}")
             # strip player action to IF input; only first line action command is used:
             if_input: str = last_action[1:].split("\n")[0].strip()
             logger.info(f"Stripped IF input: {if_input}")
