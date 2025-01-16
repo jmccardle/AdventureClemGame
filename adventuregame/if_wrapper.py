@@ -1821,7 +1821,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             return is_fact
 
         if 'num_comp' in conditions:
-            # logger.info(f"IF.check_conditions() num_comp condition: {conditions}")
+            logger.info(f"IF.check_conditions() num_comp condition: {conditions}")
 
             # get direct number argument values or function fact argument values:
             arg1_function_list = list()
@@ -1830,17 +1830,25 @@ class AdventureIFInterpreter(GameResourceLocator):
                 arg1_is_number = True
             elif 'function_id' in conditions['arg1']:
                 arg1_function_list.append(conditions['arg1']['function_id'])
+                logger.info(f"arg1_function_list: {arg1_function_list}")
                 arg1_function_var = conditions['arg1']['function_variable']['variable']
+                logger.info(f"arg1_function_var: {arg1_function_var}")
                 arg1_function_object = variable_map[arg1_function_var]
-                # logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
+                logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
                 arg1_function_list.append(arg1_function_object)
 
             if not arg1_is_number:
+                logger.info(f"num_comp condition arg1 is function")
+                arg1_function_fact_found = False
                 # get numerical value of first argument from function fact:
                 for fact in self.world_state:
                     if fact[0] == arg1_function_list[0] and fact[1] == arg1_function_list[1]:
+                        logger.info(f"Found world state fact '{fact}' matching arg1_function_list '{arg1_function_list}")
+                        arg1_function_fact_found = True
                         arg1_function_list.append(fact[2])
                         arg1_value = fact[2]
+                if not arg1_function_fact_found:
+                    logger.info(f"No world state fact matching arg1_function_list '{arg1_function_list}' found!")
             else:
                 arg1_value = conditions['arg1']['function_number']
                 if "." in arg1_value:
