@@ -1019,8 +1019,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                 facts_to_add.add(('accessible', fact[1]))
 
         self.world_state = self.world_state.union(facts_to_add)
-        # add initial world state to world state history:
-        self.world_state_history.append(deepcopy(self.world_state))
 
         # FUNCTIONS
         if 'functions' in self.domain:
@@ -1065,6 +1063,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                     if not inventory_function_fact_already_exists:
                         self.world_state.add((function_def['function_def_predicate'], "inventory", 0))
 
+        # add initial world state to world state history:
+        self.world_state_history.append(deepcopy(self.world_state))
 
         # GOALS
         # get goal state fact set:
