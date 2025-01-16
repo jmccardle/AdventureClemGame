@@ -66,6 +66,7 @@ class AdventureGameMaster(DialogueGameMaster):
         self.add_user_message(self.player, first_message)
 
     def _validate_player_response(self, player: Player, utterance: str) -> bool:
+        # logger.info(f"Player response:\n{utterance}")
         # check player response:
         if player == self.player:
             # check rule: response must start with IF >
@@ -99,7 +100,7 @@ class AdventureGameMaster(DialogueGameMaster):
         :param utterance: The response string to be potentially modified.
         :return: The (modified) response and if to log the parse action (default: True)
         """
-        # logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
+        logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
         if self.if_variant == 'plan':
             # do not split for next actions plan if action is 'done'
             if utterance == "> done":
