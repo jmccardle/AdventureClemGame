@@ -100,7 +100,7 @@ class AdventureGameMaster(DialogueGameMaster):
         :param utterance: The response string to be potentially modified.
         :return: The (modified) response and if to log the parse action (default: True)
         """
-        logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
+        # logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
         if self.if_variant == 'plan':
             # do not split for next actions plan if action is 'done'
             if utterance == "> done":
@@ -162,7 +162,7 @@ class AdventureGameMaster(DialogueGameMaster):
             # IF INTERACTION
             # get the last player action from message history:
             last_action: str = self.messages_by_names[self.player.descriptor][-1]['content']
-            logger.info(f"Raw last message:\n{last_action}")
+            # logger.info(f"Raw last message:\n{last_action}")
             # strip player action to IF input; only first line action command is used:
             if_input: str = last_action[1:].split("\n")[0].strip()
             logger.info(f"Stripped IF input: {if_input}")
