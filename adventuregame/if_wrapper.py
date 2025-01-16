@@ -2714,13 +2714,15 @@ class AdventureIFInterpreter(GameResourceLocator):
         Fully process an action input.
         First parses the input, then resolves the parsed action, and returns feedback and goal achievement.
         """
-        logger.info(f"Pre-process_action world state:\n{self.world_state}")
+        # logger.info(f"Pre-process_action world state:\n{self.world_state}")
+        logger.info(f"itemcount 0 in world state pre-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
         # PARSING PHASE
         parsed, parse_result, fail = self.parse_action_input(action_input)
         if not parsed:
             self.track_exploration()
             fail['exploration_info'] = self.get_exploration_info()
-            logger.info(f"Post-process_action world state:\n{self.world_state}")
+            # logger.info(f"Post-process_action world state:\n{self.world_state}")
+            logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
             return self.goals_achieved, parse_result, fail
         else:
             # RESOLUTION PHASE
@@ -2733,7 +2735,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.track_exploration()
                  # get exploration info and add to fail dict:
                 fail['exploration_info'] = self.get_exploration_info(parse_result['type'])
-                logger.info(f"Post-process_action world state:\n{self.world_state}")
+                # logger.info(f"Post-process_action world state:\n{self.world_state}")
+                logger.info(
+                    f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
                 return self.goals_achieved, resolution_result, fail
             else:
                 logger.info(f"Resolution result: {resolution_result}")
@@ -2760,7 +2764,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # handle DONE action:
                 if parse_result['type'] == "done":
                     extra_action_info['done_action'] = True
-                logger.info(f"Post-process_action world state:\n{self.world_state}")
+                # logger.info(f"Post-process_action world state:\n{self.world_state}")
+                logger.info(
+                    f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
                 return goals_achieved_response, base_result_str, extra_action_info
 
     def execute_optimal_solution(self):
