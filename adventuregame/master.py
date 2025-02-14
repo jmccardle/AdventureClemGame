@@ -478,7 +478,6 @@ class AdventureGameScorer(GameScorer):
         else:
             self.log_episode_score("finish_speed", np.nan)
 
-        # MAIN SCORE
         # count goals achieved:
         final_goal_score = len(final_goals_achieved)
         # ratio of goals achieved to total number of goals:
@@ -490,8 +489,16 @@ class AdventureGameScorer(GameScorer):
         partial_success_rating = achieved_ratio
         # scale full rating to 0-100:
         partial_success_rating = partial_success_rating * 100
-        # log full rating as main score:
-        self.log_episode_score(metrics.BENCH_SCORE, partial_success_rating)
+        # log partial success rating score:
+        self.log_episode_score("achieved_goal_rating", partial_success_rating)
+
+        # MAIN SCORE
+        # use binary success rating as main score:
+        if successfully_finished:
+            total_success_rating = 100
+        else:
+            total_success_rating = 0
+        self.log_episode_score(metrics.BENCH_SCORE, total_success_rating)
 
         # invalid format or turn limit aborted:
         if invalid_format or turn_limit_loss:

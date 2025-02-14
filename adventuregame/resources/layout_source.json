@@ -1,11 +1,12 @@
-{"initial_state": [
+{
+  "initial_state": [
             "at(kitchen1floor1,kitchen1)",
             "at(pantry1floor1,pantry1)",
             "at(hallway1floor1,hallway1)",
             "at(livingroom1floor1,livingroom1)",
             "at(broomcloset1floor1,broomcloset1)",
             "at(bedroom1floor1,bedroom1)",
-            "at(table1,livingroom1)",
+            "at(table1,pantry1)",
             "at(sidetable1,livingroom1)",
             "at(counter1,kitchen1)",
             "at(refrigerator1,pantry1)",
@@ -27,7 +28,7 @@
             "at(plate1,kitchen1)",
             "at(book1,livingroom1)",
             "at(pillow1,bedroom1)",
-            "at(player1,pantry1)",
+            "at(player1,livingroom1)",
             "type(kitchen1floor1,floor)",
             "type(pantry1floor1,floor)",
             "type(hallway1floor1,floor)",
@@ -99,8 +100,8 @@
             "exit(livingroom1,kitchen1)",
             "exit(livingroom1,hallway1)",
             "exit(broomcloset1,hallway1)",
-            "exit(bedroom1,hallway1)",
-            "exit(hallway1,bedroom1)",
+            "exit(bedroom1,livingroom1)",
+            "exit(livingroom1,bedroom1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -147,4 +148,5 @@
             "on(pillow1,table1)",
             "on(book1,table1)",
             "on(plate1,table1)"
-          ]}
+          ]
+}
