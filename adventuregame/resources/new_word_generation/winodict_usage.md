@@ -14,7 +14,7 @@ python -m nltk.downloader omw-1.4
 python -m nltk.downloader wordnet
 python -m spacy download en_core_web_md-3.0.0a1
 ```
-(DL'ing datasets might not be needed, just like much of the code files)
+(Downloading datasets might not be needed, just like much of the code files.)
 ## 3. Generate new word files
 To generate a words file, with `/resources/new_word_generation/wino_dict` as working directory, run
 ```
