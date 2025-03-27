@@ -149,6 +149,8 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
         new_word_idx += 1
         replacement_dict[old_repr_str] = cur_def['repr_str']
 
+    # TODO?: new-word mutability traits and/or mutable states?
+
     return new_entity_definitions, new_word_idx, replacement_dict
 
 
@@ -268,8 +270,8 @@ Explanations (to be put into initial prompts)
 - circumscription: Handwritten for the small amount of existing default actions
 """
 
-def new_word_actions_replace(source_definition_file_path: str, num_replace: int = 0, last_new_words_idx: int = 0,
-                            seed: int = 42):
+def new_word_actions_replace(source_definition_file_path: str, num_replace: int = 0, is_like_explanations: bool = False,
+                             last_new_words_idx: int = 0, seed: int = 42):
     """Replace action definition strings of an existing actions definition with new words.
     This leaves other values intact, only changing the surface form of the actions. The key/id of the action will not
     change, only surface grammar is adapted.
@@ -277,6 +279,8 @@ def new_word_actions_replace(source_definition_file_path: str, num_replace: int 
         source_definition_file_path: Path to the source definition file.
         num_replace: How many of the action definitions in the source definition file will have their representation
             replaced by new words. If this value is 0 (default), all action types will have surface strings replaced.
+        is_like_explanations: Instead of replacing the verb in the original explanation, the explanation will be 'To
+            NEW-WORD is like to ORIGINAL.'
         last_new_words_idx: New word source index of next new word to use when iterating.
         seed: Seed number for the RNG.
     """
@@ -312,7 +316,12 @@ def new_word_actions_replace(source_definition_file_path: str, num_replace: int 
         cur_def['lark'] = new_lark
         # store new word surface verb form for explanation filling:
         cur_def['new_word'] = new_action_verb
-
+        # explanation replacement:
+        if is_like_explanations:
+            cur_def['explanation'] = f"To {new_action_verb} is like to {cur_def['type_name']}."
+        else:
+            cur_def['explanation'] = cur_def['explanation'].replace("VERB", new_action_verb)
+        # record replacement:
         replacement_dict[cur_def['type_name']] = new_action_verb
 
     return new_action_definitions, new_word_idx, replacement_dict
@@ -424,32 +433,586 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
     created_actions_count = 0
     # iterate through trait dict and create actions resulting in transitions between mutable states:
     for trait, trait_features in trait_dict.items():
-        if trait_features['interaction'] == "irreversible":
-            # single action
+        if trait_features['interaction'] == "irreversible" and created_actions_count < num_actions_created:
+            # create single action type
             new_action = dict()
 
             new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
             new_word_idx += 1
 
+            action_tag = new_word.upper()
+
             new_action['type_name'] = new_word
             # lark grammar snippet:
-            # "open: OPEN thing\nOPEN.1: \"open\" WS"
-            lark_string = f"{new_word}: {new_word.upper()} thing\n{new_word.upper()}.1: \"{new_word}\" WS"
-            print(lark_string)
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
 
             # PDDL
-            # expose values to allow feedback creation
+            # expose values to allow feedback creation?
 
-        break
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+
+            # precondition:
+            if trait_features['mutable_set_type'] == "singular":
+                pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n)"
+            elif trait_features['mutable_set_type'] == "paired":
+                # NB: new word mutable state is always third precondition item
+                pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][0]} ?e)\n        )"
+
+            # effect:
+            if trait_features['mutable_set_type'] == "singular":
+                # just add mutable state
+                pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e))\n    )"
+            elif trait_features['mutable_set_type'] == "paired":
+                # add second mutable state, remove first mutable state
+                pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"
+
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            if trait_features['mutable_set_type'] == "singular":
+                # since there is no mutable state precondition just the base accessibility needs feedback
+                fail_precondition = [
+                    ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                    ["You can't see a {{ e }} here.", "entity_not_accessible"]
+                ]
+            elif trait_features['mutable_set_type'] == "paired":
+                fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE", trait_features['mutable_states'][0])
+                fail_precondition = [
+                    ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                    ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                    [fail_precondition_entity_state, "entity_state_mismatch"]
+                ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            if trait_features['mutable_set_type'] == "singular":
+                success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST", trait_features['mutable_states'][0])
+            elif trait_features['mutable_set_type'] == "paired":
+                success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST",
+                                                                                trait_features['mutable_states'][1])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            if trait_features['mutable_set_type'] == "singular":
+                explanation_text = f"To {new_word} is to make something {trait} {trait_features['mutable_states'][0]}."
+            elif trait_features['mutable_set_type'] == "paired":
+                explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][0]} be {trait_features['mutable_states'][1]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+        if trait_features['interaction'] == "binary" and created_actions_count < num_actions_created:
+            # create two action types
+            # FIRST ACTION TYPE: A->B
+            new_action = dict()
+
+            new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
+            new_word_idx += 1
+
+            action_tag = new_word.upper()
+
+            new_action['type_name'] = new_word
+            # lark grammar snippet:
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
+
+            # PDDL
+            # expose values to allow feedback creation?
+
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+            # precondition:
+            # NB: new word mutable state is always third precondition item
+            pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][0]} ?e)\n        )"
+            # effect:
+            # add second mutable state, remove first mutable state
+            pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE", trait_features['mutable_states'][0])
+            fail_precondition = [
+                ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                [fail_precondition_entity_state, "entity_state_mismatch"]
+            ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST", trait_features['mutable_states'][1])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][0]} be {trait_features['mutable_states'][1]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+            # SECOND ACTION TYPE: B->A
+            new_action = dict()
+
+            new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
+            new_word_idx += 1
+
+            action_tag = new_word.upper()
+
+            new_action['type_name'] = new_word
+            # lark grammar snippet:
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
+
+            # PDDL
+            # expose values to allow feedback creation?
+
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+            # precondition:
+            # NB: new word mutable state is always third precondition item
+            pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][1]} ?e)\n        )"
+            # effect:
+            # add second mutable state, remove first mutable state
+            pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e)\n        (not ({trait_features['mutable_states'][1]} ?e))\n    )"
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE",
+                                                                                         trait_features[
+                                                                                             'mutable_states'][1])
+            fail_precondition = [
+                ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                [fail_precondition_entity_state, "entity_state_mismatch"]
+            ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST",
+                                                                                trait_features['mutable_states'][0])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][1]} be {trait_features['mutable_states'][0]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+        if trait_features['interaction'] == "trinary" and created_actions_count < num_actions_created:
+            # create three action types
+            # FIRST ACTION TYPE: A->B
+            new_action = dict()
+
+            new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
+            new_word_idx += 1
+
+            action_tag = new_word.upper()
+
+            new_action['type_name'] = new_word
+            # lark grammar snippet:
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
+
+            # PDDL
+            # expose values to allow feedback creation?
+
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+            # precondition:
+            # NB: new word mutable state is always third precondition item
+            pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][0]} ?e)\n        )"
+            # effect:
+            # add second mutable state, remove first mutable state
+            pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE",
+                                                                                         trait_features[
+                                                                                             'mutable_states'][0])
+            fail_precondition = [
+                ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                [fail_precondition_entity_state, "entity_state_mismatch"]
+            ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST",
+                                                                                trait_features['mutable_states'][1])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][0]} be {trait_features['mutable_states'][1]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+            # SECOND ACTION TYPE: B->C
+            new_action = dict()
+
+            new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
+            new_word_idx += 1
+
+            action_tag = new_word.upper()
+
+            new_action['type_name'] = new_word
+            # lark grammar snippet:
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
+
+            # PDDL
+            # expose values to allow feedback creation?
+
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+            # precondition:
+            # NB: new word mutable state is always third precondition item
+            pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][1]} ?e)\n        )"
+            # effect:
+            # add second mutable state, remove first mutable state
+            pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][2]} ?e)\n        (not ({trait_features['mutable_states'][1]} ?e))\n    )"
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE",
+                                                                                         trait_features[
+                                                                                             'mutable_states'][1])
+            fail_precondition = [
+                ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                [fail_precondition_entity_state, "entity_state_mismatch"]
+            ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST",
+                                                                                trait_features['mutable_states'][2])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][1]} be {trait_features['mutable_states'][2]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+            # THIRD ACTION TYPE: C->A
+            new_action = dict()
+
+            new_word = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['VB']
+            new_word_idx += 1
+
+            action_tag = new_word.upper()
+
+            new_action['type_name'] = new_word
+            # lark grammar snippet:
+            lark_string = f"{new_word}: {action_tag} thing\n{action_tag}.1: \"{new_word}\" WS"
+            # print(lark_string)
+            new_action['lark'] = lark_string
+
+            # PDDL
+            # expose values to allow feedback creation?
+
+            # parameters:
+            # NB: new word mutable state is always first parameters item
+            pddl_parameters = f":parameters (?e - {trait} ?r - room ?p - player)"
+            # precondition:
+            # NB: new word mutable state is always third precondition item
+            pddl_precondition = f":precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        ({trait_features['mutable_states'][2]} ?e)\n        )"
+            # effect:
+            # add second mutable state, remove first mutable state
+            pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e)\n        (not ({trait_features['mutable_states'][2]} ?e))\n    )"
+            # full PDDL action string:
+            pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
+            # print(pddl_action)
+            new_action['pddl'] = pddl_action
+
+            # PDDL parameter mapping:
+            new_action['pddl_parameter_mapping'] = {
+                "?e": ["arg1"],
+                "?r": ["current_player_room"],
+                "?p": ["player"]
+            }
+
+            # FAILURE FEEDBACK
+            # parameters failures:
+            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait)
+            fail_parameters = [
+                [fail_parameters_trait_type, "domain_trait_type_mismatch"],
+                ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+                ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+            ]
+
+            # precondition failures:
+            fail_precondition_entity_state = "The {{ e }} is not MUTABLE_STATE.".replace("MUTABLE_STATE",
+                                                                                         trait_features[
+                                                                                             'mutable_states'][2])
+            fail_precondition = [
+                ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+                ["You can't see a {{ e }} here.", "entity_not_accessible"],
+                [fail_precondition_entity_state, "entity_state_mismatch"]
+            ]
+
+            # full failure feedback:
+            new_action['failure_feedback'] = {
+                'parameters': fail_parameters,
+                'precondition': fail_precondition
+            }
+
+            # SUCCESS FEEDBACK
+            success_feedback = "The {{ e }} is now MUTABLE_STATE_POST.".replace("MUTABLE_STATE_POST",
+                                                                                trait_features['mutable_states'][0])
+            new_action['success_feedback'] = success_feedback
+
+            # Note: ASP skipped for now, hopefully PDDL->ASP conversion is in the cards to automate this
+
+            # EPISTEMIC/PRAGMATIC
+            new_action['epistemic'] = False
+            new_action['pragmatic'] = True
+
+            # EXPLANATION
+            # generic and containing full mutable state and trait info
+            explanation_text = f"To {new_word} is to make something {trait} and {trait_features['mutable_states'][2]} be {trait_features['mutable_states'][0]}."
+            new_action['explanation'] = explanation_text
+
+            # FINISH ACTION
+            new_word_actions_definitions.append(new_action)
+            created_actions_count += 1
+
+        # break
 
     return new_word_actions_definitions, new_word_idx
 
+
 # DOMAINS
 # best after other def types, as it relies on their contents existing in adventure/domain
+# not covering functions, basic facts are enough for planned experiments
+
+def process_to_pddl_domain(domain_name: str, room_definitions: list, entity_definitions: list):
+    """Get domain definition from room and entity definitions.
+    Covers only type definition for now, functions not required for v2.2 experiments.
+    Args:
+        domain_name: Name of the resulting domain. (For PDDL conformation, but might get used for experiments/instances)
+        room_definitions: List of room type definitions.
+        entity_definitions: List of entity type definitions.
+    """
+    # ROOMS
+    room_types = list()
+    for room_type in room_definitions:
+        room_types.append(room_type['type_name'])
+    room_line = f"        {' '.join(room_types)} - room\n"
+
+    # ENTITIES
+    entity_types = list()
+    for entity_type in entity_definitions:
+        entity_types.append(entity_type['type_name'])
+    entity_line = f"        player inventory floor {' '.join(entity_types)} - entity\n"
+
+    # TRAITS
+    # get all traits:
+    traits = list()
+    for entity_def in entity_definitions:
+        for trait in entity_def['traits']:
+            if trait not in traits:
+                traits.append(trait)
+
+    trait_lines = list()
+    for trait in traits:
+        entities_with_trait = list()
+        for entity_def in entity_definitions:
+            if trait in entity_def['traits']:
+                entities_with_trait.append(entity_def['type_name'])
+        trait_line = f"        {' '.join(entities_with_trait)} - {trait}\n"
+        trait_lines.append(trait_line)
+
+    # COMBINED DOMAIN DEFINITION
+    full_domain = f"(define\n    (domain {domain_name})\n    (:types\n{room_line}{entity_line}{''.join(trait_lines)}        )\n    )"
+
+    return full_domain
 
 
+# COMBINED CREATION FUNCTIONS
 
 def create_new_words_definitions_set():
+    """Create an entire set of new-word definitions.
+    Returns:
+        Tuple of: New room definitions, entity definitions, action definitions and domain definition.
+    """
     new_room_definitions, last_new_word_idx = new_word_rooms_create()
     new_entity_definitions, last_new_word_idx, trait_pool, adjective_pool = new_word_entities_create(new_room_definitions,
                                                                                                      add_traits=True, limited_trait_pool=3, min_traits=1,
@@ -457,7 +1020,9 @@ def create_new_words_definitions_set():
     new_action_definitions, last_new_word_idx = new_word_actions_create(new_entity_definitions,
                                                                         last_new_words_idx=last_new_word_idx)
 
-    return new_action_definitions
+    new_domain_definition = process_to_pddl_domain("new_words", new_room_definitions, new_entity_definitions)
+
+    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition
 
 if __name__ == "__main__":
     """
@@ -465,9 +1030,19 @@ if __name__ == "__main__":
     print(new_word_rooms)
     print(replacement_dict)
     """
-    """
-    created_room_defs, last_new_word_idx = new_word_rooms_create()
-    print(created_room_defs)
-    """
+
     # new_word_actions, new_word_idx, replacement_dict = new_word_actions_replace("../definitions/basic_actions_v2-2.json")
-    create_new_words_definitions_set()
+
+    # create set of new word rooms, entities and actions:
+    new_rooms, new_entities, new_actions, new_domain = create_new_words_definitions_set()
+    print(new_domain)
+
+    # save created definitions to JSON:
+    with open("new_rooms_test.json", 'w', encoding='utf-8') as rooms_out_file:
+        json.dump(new_rooms, rooms_out_file, indent=2)
+    with open("new_entities_test.json", 'w', encoding='utf-8') as entities_out_file:
+        json.dump(new_entities, entities_out_file, indent=2)
+    with open("new_actions_test.json", 'w', encoding='utf-8') as actions_out_file:
+        json.dump(new_actions, actions_out_file, indent=2)
+    with open("new_domain_test.json", 'w', encoding='utf-8') as domain_out_file:
+        json.dump({'pddl_domain': new_domain}, domain_out_file, indent=2)
