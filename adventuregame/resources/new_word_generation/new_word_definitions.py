@@ -465,7 +465,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # effect:
             if trait_features['mutable_set_type'] == "singular":
                 # just add mutable state
-                pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e))\n    )"
+                pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e)\n    )"
             elif trait_features['mutable_set_type'] == "paired":
                 # add second mutable state, remove first mutable state
                 pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"

@@ -1218,6 +1218,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             visible_contents_str = " " + visible_contents_str
 
         # get predicate state facts of visible objects and create textual representations:
+        # TODO: de-hardcode this, anticipate localization
         visible_content_state_strs = list()
         for thing in internal_visible_contents:
             for fact in self.world_state:

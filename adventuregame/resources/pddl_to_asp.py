@@ -1,6 +1,7 @@
 """
 Functions to convert PDDL definitions to ASP for instance generation.
 """
+import json
 
 import lark
 from lark import Lark
@@ -24,7 +25,6 @@ domain_def_parser = Lark(domain_def_grammar, start="define")
 
 domain_def_transformer = PDDLDomainTransformer()
 
-
 example_pddl_action = {
     "pddl": "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)",
     "pddl_parameter_mapping": {
@@ -41,6 +41,14 @@ example_pddl_action2 = {
     "pddl": "(:action MATOR\n    :parameters (?e - dented-able ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n)\n    :effect (and\n        (dented ?e)\n    )\n)"}
 
 sample_pddl = "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)"
+
+
+
+with open("new_word_generation/new_actions_test.json", 'r', encoding='utf-8') as new_word_actions_file:
+    new_word_actions = json.load(new_word_actions_file)
+# print(new_word_actions)
+
+example_pddl_action3 = new_word_actions[0]
 
 """
 (:action OPEN\n
@@ -76,17 +84,6 @@ sample_pddl = "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - play
     )\n
 )
 """
-# TODO: fix spurious ) in generated new-words action pddl:
-"""
-lark.exceptions.UnexpectedCharacters: No terminal matches '
-' in the current parser context, at line 9 col 6
-
-    )
-     ^
-"""
-
-
-# TODO: incorporate parameter portion and match types to make singular irreversible new-word action work
 
 """
 { action_t(TURN,open,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\n
@@ -100,11 +97,15 @@ Potential action at turn:
 -> precondition
 """
 
+# print(example_pddl_action3['pddl'])
+
+action_asp_rules = list()
+
 # PARAMETERS AND PRECONDITION
 
 # parsed_action_pddl = action_def_parser.parse(sample_pddl)
 # parsed_action_pddl = action_def_parser.parse(example_pddl_action['pddl'])
-parsed_action_pddl = action_def_parser.parse(example_pddl_action2['pddl'])
+parsed_action_pddl = action_def_parser.parse(example_pddl_action3['pddl'])
 processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
 
 # print(processed_action_pddl)
@@ -121,7 +122,6 @@ for param in params['type_list']:
 param_asp_template = "MUTABILITY(THING)"
 mutability_asp_strings = [f"{mutability['type_list_element']}(THING)" for mutability in important_params]
 # print(mutability_asp_strings)
-
 
 # TODO: make mutability type facts in base ASP solver script
 
@@ -142,6 +142,7 @@ for precon_fact in precon_and:
 important_precon_mutables = [precon['predicate'] for precon in important_precon_facts]
 # print(important_precon_mutables)
 
+# TODO: handle more complex preconditions with OR etc
 
 asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
 asp_potential_action = asp_potential_action.replace("ACTION_TYPE", processed_action_pddl['action_name'])
@@ -155,27 +156,54 @@ asp_potential_action = asp_potential_action.replace("PRECON_FACTS", ",".join(mut
 
 # print(asp_potential_action)
 
+action_asp_rules.append(asp_potential_action)
+
 # EFFECT
 
 effect = processed_action_pddl['effect'][0]['and']
 
-print(effect)
+# print("effect:", effect)
 
-effect_predicates = list()
+effect_add_predicates = list()
+effect_sub_predicates = list()
+
 for effect_pred in effect:
-    effect_predicates.append(effect_pred['predicate'])
+    # print("effect_pred:", effect_pred)
+
+    if 'not' in effect_pred:
+        # effect_sub_predicates.append(effect_pred['not']['predicate'])
+        effect_sub_predicates.append(effect_pred['not'])
+    else:
+        # effect_add_predicates.append(effect_pred['predicate'])
+        effect_add_predicates.append(effect_pred)
+
+# print("effect_add_predicates:", effect_add_predicates)
+
+# TODO: handle more complex effects with WHEN etc
+
+asp_next_turn_add = "MUTABLE_FACTS :- action_t(TURN,ACTION_TYPE,THING)."
+asp_next_turn_add = asp_next_turn_add.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+
+effect_add_asp_strings = [f"{pred}_t(TURN+1,THING)" for pred in [effect_pred['predicate'] for effect_pred in effect_add_predicates]]
+
+asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", ",".join(effect_add_asp_strings))
+# print(asp_next_turn_add)
+
+action_asp_rules.append(asp_next_turn_add)
 
 
-asp_next_turn_effect = "MUTABLE_FACTS :- action_t(TURN,ACTION_TYPE,THING)."
-asp_next_turn_effect = asp_next_turn_effect.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+"open_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING)."
+# print("effect_sub_predicates:", effect_sub_predicates)
 
-"open_t(TURN+1,THING)"
+for sub_pred in effect_sub_predicates:
+    # asp_next_turn_sub = "MUTABLE_FACT :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
+    asp_next_turn_sub = "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
+    asp_next_turn_sub = asp_next_turn_sub.replace("ACTION_TYPE", processed_action_pddl['action_name'])
 
-# effect_fact_asp_strings = [f"{pred}_t(TURN,THING)" for pred in effect_predicates]
-effect_fact_asp_strings = [f"{pred}_t(TURN+1,THING)" for pred in [effect_pred['predicate'] for effect_pred in effect]]
-# print(effect_fact_asp_strings)
+    effect_sub_asp_string = f"{sub_pred['predicate']}"
 
-asp_next_turn_effect = asp_next_turn_effect.replace("MUTABLE_FACTS", ",".join(effect_fact_asp_strings))
-print(asp_next_turn_effect)
+    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT", effect_sub_asp_string)
+    print(asp_next_turn_sub)
+    action_asp_rules.append(asp_next_turn_sub)
 
-# TODO: third ASP rule for actions that change mutable fact
+print(action_asp_rules)

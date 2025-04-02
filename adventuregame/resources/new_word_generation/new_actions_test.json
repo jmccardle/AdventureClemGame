@@ -2,21 +2,42 @@
   {
     "type_name": "mator",
     "lark": "mator: MATOR thing\nMATOR.1: \"mator\" WS",
-    "pddl": "(:action MATOR\n    :parameters (?e - dented-able ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n)\n    :effect (and\n        (dented ?e))\n    )\n)",
+    "pddl": "(:action MATOR\n    :parameters (?e - dented-able ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n)\n    :effect (and\n        (dented ?e)\n    )\n)",
     "pddl_parameter_mapping": {
-      "?e": ["arg1"],
-      "?r": ["current_player_room"],
-      "?p": ["player"]
+      "?e": [
+        "arg1"
+      ],
+      "?r": [
+        "current_player_room"
+      ],
+      "?p": [
+        "player"
+      ]
     },
     "failure_feedback": {
       "parameters": [
-        ["{{ e }} is not dented-able.", "domain_trait_type_mismatch"],
-        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
-        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"]
+        [
+          "{{ e }} is not dented-able.",
+          "domain_trait_type_mismatch"
+        ],
+        [
+          "{{ r }} is not a room. (This should not occur.)",
+          "domain_type_discrepancy"
+        ],
+        [
+          "{{ p }} is not a player. (This should not occur.)",
+          "domain_type_discrepancy"
+        ]
       ],
       "precondition": [
-        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
-        ["You can't see a {{ e }} here.", "entity_not_accessible"]
+        [
+          "You are not where you are! (This should not occur.)",
+          "world_state_discrepancy"
+        ],
+        [
+          "You can't see a {{ e }} here.",
+          "entity_not_accessible"
+        ]
       ]
     },
     "success_feedback": "The {{ e }} is now dented.",
