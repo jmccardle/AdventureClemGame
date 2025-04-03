@@ -1,6 +1,5 @@
 {
   "home_deliver_two": {
-    "use_premade_definitions": true,
     "action_definitions": ["basic_actions.json"],
     "room_definitions": ["home_rooms.json"],
     "entity_definitions": ["home_entities.json"],
@@ -19,7 +18,6 @@
     "bench_turn_limit": 50
   },
   "home_deliver_three": {
-    "use_premade_definitions": true,
     "action_definitions": ["basic_actions_v2.json"],
     "room_definitions": ["home_rooms.json"],
     "entity_definitions": ["home_entities.json"],
@@ -29,25 +27,6 @@
     },
     "task_config": {
       "task": "deliver",
-      "deliver_to_floor": false
-    },
-    "goal_count": 3,
-    "mutable_fact_types": ["at", "in", "on", "closed", "open"],
-    "optimal_solver_turn_limit": 50,
-    "min_optimal_turns": 5,
-    "max_optimal_turns": 30,
-    "bench_turn_limit": 50
-  },
-  "new-words_created": {
-    "use_premade_definitions": false,
-    "definition_method": "create",
-    "initial_state_config": {
-      "entity_adjectives": "none",
-      "add_floors_to_rooms": false,
-      "assign_mutable_states_from_set": true
-    },
-    "task_config": {
-      "task": "new-word_states",
       "deliver_to_floor": false
     },
     "goal_count": 3,

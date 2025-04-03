@@ -309,6 +309,9 @@ class PDDLDomainTransformer(Transformer):
                     domain_def_dict['domain_id'] = cont['domain_id']
                 if 'types' in cont:
                     domain_def_dict['types'] = cont['types']
+                if 'predicates' in cont:
+                    # print("predicates found!")
+                    domain_def_dict['predicates'] = cont['predicates']
                 if 'functions' in cont:
                     domain_def_dict['functions'] = cont['functions']
                 if 'event_id' in cont:
@@ -366,6 +369,22 @@ class PDDLDomainTransformer(Transformer):
             cat_name = content[-1].value
         # print("type_list_item return:", {'type_list_item': cat_name, 'items': type_list_items})
         return {'type_list_element': cat_name, 'items': type_list_items}
+
+    def predicates(self, content):
+        predicate_list = list()
+        for predicate in content:
+            if 'predicate_id' in predicate:
+                predicate_list.append(predicate)
+        return {'predicates': predicate_list}
+
+    def predicate(self, content):
+        predicate_dict = dict()
+        predicate_dict['predicate_id'] = content[0].value
+        for predicate_element in content:
+            if "variable" in predicate_element:
+                predicate_dict['variable'] = predicate_element['variable']
+        predicate_dict['mutability'] = content[-1].value
+        return predicate_dict
 
     def parameters(self, content):
         parameter_list = None
@@ -678,7 +697,37 @@ if __name__ == "__main__":
     """
     sample_pddl = "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)"
 
-    parsed_action_pddl = action_def_parser.parse(sample_pddl)
-    processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
+    # parsed_action_pddl = action_def_parser.parse(sample_pddl)
+    # processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
 
-    print(processed_action_pddl)
+    # print(processed_action_pddl)
+
+
+    """
+    (define\n
+        (domain new_words)\n
+        (:types\n
+            unree iness uness cally - room\n
+            player inventory floor subst scont diale sness mical eness pante inat enticed decte - entity\n
+            subst scont diale mical inat enticed - dented-able\n
+            diale sness mical eness pante enticed - unsust-able\n
+            sness inat decte - mateny-able\n
+            )\n
+        (:predicates\n
+            (dented ?e - dented-able)\n
+            (unsust ?e - unsust-able)\n
+            (exper ?e - unsust-able)\n
+            (mateny ?e - mateny-able)\n
+            (stord ?e - mateny-able)\n
+            (aphoned ?e - mateny-able)\n
+            )\n
+        )
+    """
+
+    sample_domain = "(define\n    (domain new_words)\n    (:types\n        unree iness uness cally - room\n        player inventory floor subst scont diale sness mical eness pante inat enticed decte - entity\n        subst scont diale mical inat enticed - dented-able\n        diale sness mical eness pante enticed - unsust-able\n        sness inat decte - mateny-able\n        )\n    (:predicates\n        (dented ?e - dented-able)\n        (unsust ?e - unsust-able)\n        (exper ?e - unsust-able)\n        (mateny ?e - mateny-able)\n        (stord ?e - mateny-able)\n        (aphoned ?e - mateny-able)\n        )\n    )"
+
+    parsed_domain_pddl = domain_def_parser.parse(sample_domain)
+    # print(parsed_domain_pddl)
+    processed_domain_pddl = domain_def_transformer.transform(parsed_domain_pddl)
+
+    print(processed_domain_pddl)

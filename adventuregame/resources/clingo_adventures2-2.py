@@ -12,11 +12,17 @@ from typing import List, Tuple, Union, Optional
 import json
 from itertools import permutations
 from datetime import datetime
+import os
 
 import numpy as np
 from clingo.control import Control
+import lark
+from lark import Lark, Transformer
 
-from games.adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
+from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
+from adventuregame.resources.new_word_generation.new_word_definitions import create_new_words_definitions_set
+from adventuregame.resources.pddl_util import PDDLDomainTransformer, PDDLActionTransformer
+from adventuregame.resources.pddl_to_asp import augment_action_defs_with_asp
 
 
 def convert_action_to_tuple(action: str) -> Tuple:
@@ -34,15 +40,46 @@ class ClingoAdventureGenerator(object):
     def __init__(self, adventure_type: str = "home_deliver_two", rng_seed: int = 42):
         self.adv_type: str = adventure_type
         # load adventure type definition:
-        with open("definitions/adventure_types.json", 'r', encoding='utf-8') as adventure_types_file:
+        with open(f"definitions{os.sep}adventure_types.json", 'r', encoding='utf-8') as adventure_types_file:
             adventure_type_definitions = json.load(adventure_types_file)
             self.adv_type_def = adventure_type_definitions[self.adv_type]
 
         # TODO: overhaul adventure type definitions and usage
-        #   - mutable fact types from actions/mutability traits
+        #   - mutable fact types from domain
         #   - new-word experiment parameters; new-word generation
-        #   - definitions in individual instances?
+        #   - definitions in individual instances for new-words
 
+        self.rng_seed = rng_seed
+        self.rng = np.random.default_rng(seed=self.rng_seed)
+
+        self._initialize_pddl_definition_parsing()
+
+        if self.adv_type_def['use_premade_definitions']:
+            self._load_premade_room_definitions()
+            self._load_premade_entity_definitions()
+            self._load_premade_action_definitions()
+            self._load_premade_domain_definition()
+        else:
+            if self.adv_type_def['definition_method'] == "create":
+                self.new_word_iterate_idx = 0
+                self._create_assign_new_word_definitions()
+
+        # load clingo ASP templates:
+        with open("clingo_templates.json", 'r', encoding='utf-8') as templates_file:
+            self.clingo_templates = json.load(templates_file)
+
+    def _initialize_pddl_definition_parsing(self):
+        with open("pddl_actions.lark", 'r', encoding='utf-8') as pddl_actions_lark_file:
+            action_def_grammar = pddl_actions_lark_file.read()
+        self.action_def_parser = Lark(action_def_grammar, start="action")
+        self.action_def_transformer = PDDLActionTransformer()
+
+        with open("pddl_domain.lark", 'r', encoding='utf-8') as pddl_domain_lark_file:
+            domain_def_grammar = pddl_domain_lark_file.read()
+        self.domain_def_parser = Lark(domain_def_grammar, start="define")
+        self.domain_def_transformer = PDDLDomainTransformer()
+
+    def _load_premade_room_definitions(self):
         # load room type definitions:
         room_definitions: list = list()
         for room_def_source in self.adv_type_def["room_definitions"]:
@@ -57,6 +94,7 @@ class ClingoAdventureGenerator(object):
                     type_def_dict[type_key] = type_value
             self.room_definitions[type_def['type_name']] = type_def_dict
 
+    def _load_premade_entity_definitions(self):
         # load entity type definitions:
         entity_definitions: list = list()
         for entity_def_source in self.adv_type_def["entity_definitions"]:
@@ -71,6 +109,7 @@ class ClingoAdventureGenerator(object):
                     type_def_dict[type_key] = type_value
             self.entity_definitions[type_def['type_name']] = type_def_dict
 
+    def _load_premade_action_definitions(self):
         # load action type definitions:
         action_definitions: list = list()
         for action_def_source in self.adv_type_def["action_definitions"]:
@@ -85,12 +124,57 @@ class ClingoAdventureGenerator(object):
                     type_def_dict[type_key] = type_value
             self.action_definitions[type_def['type_name']] = type_def_dict
 
-        self.rng_seed = rng_seed
-        self.rng = np.random.default_rng(seed=self.rng_seed)
+    def _load_premade_domain_definition(self):
+        # load domain definition:
+        # domain_definitions: list = list()
+        # for domain_def_source in self.adv_type_def["domain_definitions"]:
+        #    with open(f"definitions/{domain_def_source}", 'r', encoding='utf-8') as domain_file:
+        #        domain_definitions += json.load(domain_file)
 
-        # load clingo ASP templates:
-        with open("clingo_templates.json", 'r', encoding='utf-8') as templates_file:
-            self.clingo_templates = json.load(templates_file)
+        with open(f"definitions/{self.adv_type_def['domain_definitions'][0]}", 'r', encoding='utf-8') as domain_file:
+            domain_definition = json.load(domain_file)
+
+        # currently hardcoded to only use the first listed domain
+        # print(domain_definition)
+        domain_definition_pddl = domain_definition['pddl_domain']
+        parsed_domain_definition_pddl = self.domain_def_parser.parse(domain_definition_pddl)
+        self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
+
+    def _create_assign_new_word_definitions(self):
+        # create new-words definitions:
+        new_rooms, new_entities, new_actions, new_domain, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+        # keep track of new-words database iteration:
+        self.new_word_iterate_idx = last_new_word_idx
+        # assign room definitions:
+        self.room_definitions = dict()
+        for type_def in new_rooms:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.room_definitions[type_def['type_name']] = type_def_dict
+        # assign entity definitions:
+        self.entity_definitions = dict()
+        for type_def in new_entities:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.entity_definitions[type_def['type_name']] = type_def_dict
+        # add ASP from PDDL to created action definitions:
+        new_actions = augment_action_defs_with_asp(new_actions)
+        # assign action definitions:
+        self.action_definitions = dict()
+        for type_def in new_actions:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.action_definitions[type_def['type_name']] = type_def_dict
+        # parse and assign domain definition:
+        # print(new_domain)
+        parsed_domain_definition_pddl = self.domain_def_parser.parse(new_domain)
+        self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
 
     def _generate_room_layouts_asp(self):
         """
@@ -107,20 +191,26 @@ class ClingoAdventureGenerator(object):
             # Ex: room(kitchen1,kitchen) = there is a room with internal ID kitchen1 which has the room type kitchen
             clingo_str += "\n" + type_atom
 
-            # add floor to room:
-            floor_id = f"{room_id}floor1"
-            floor_atom = f"type({floor_id},floor)."
-            # Ex: type(kitchen1floor,floor) = there is an entity kitchen1floor which has the entity type floor
-            clingo_str += "\n" + floor_atom
-            # add at() for room floor:
-            floor_at = f"at({floor_id},{room_id})."
-            # Ex: at(kitchen1floor,kitchen1) = at kitchen1 there is a floor with internal ID kitchen1floor
-            clingo_str += "\n" + floor_at
-            # add support trait atom for floor:
-            floor_support = f"support({floor_id})."
-            # Ex: support(kitchen1floor) = the entity with internal ID kitchen1floor can support moveable entities,
-            # meaning it can be the second argument of put actions, and there can be on(X,kitchen1floor) facts
-            clingo_str += "\n" + floor_support
+            add_floors = True
+            if 'add_floors_to_rooms' in self.adv_type_def['initial_state_config']:
+                if not self.adv_type_def['initial_state_config']['add_floors_to_rooms']:
+                    add_floors = False
+
+            if add_floors:
+                # add floor to room:
+                floor_id = f"{room_id}floor1"
+                floor_atom = f"type({floor_id},floor)."
+                # Ex: type(kitchen1floor,floor) = there is an entity kitchen1floor which has the entity type floor
+                clingo_str += "\n" + floor_atom
+                # add at() for room floor:
+                floor_at = f"at({floor_id},{room_id})."
+                # Ex: at(kitchen1floor,kitchen1) = at kitchen1 there is a floor with internal ID kitchen1floor
+                clingo_str += "\n" + floor_at
+                # add support trait atom for floor:
+                floor_support = f"support({floor_id})."
+                # Ex: support(kitchen1floor) = the entity with internal ID kitchen1floor can support moveable entities,
+                # meaning it can be the second argument of put actions, and there can be on(X,kitchen1floor) facts
+                clingo_str += "\n" + floor_support
 
             # add exit rule:
             # room definitions contain a list of possible adjacent rooms
@@ -161,7 +251,10 @@ class ClingoAdventureGenerator(object):
         # = there can be at() facts for the player for each room and there must be exactly one at() fact for the player
         clingo_str += "\n" + player_location_rule
 
+        # print(self.entity_definitions)
+
         for entity_type_name, entity_type_values in self.entity_definitions.items():
+            # print(entity_type_name, entity_type_values)
             if "standard_locations" in entity_type_values:
                 # entity definitions contain a list of rooms the entity type is allowed to be at
                 # basic atoms:
@@ -198,7 +291,24 @@ class ClingoAdventureGenerator(object):
                         closed_atom = f"closed({entity_id})."
                         clingo_str += "\n" + closed_atom
 
-                # no adjectives were used in v1 adventures
+                    if "assign_mutable_states_from_set" in self.adv_type_def['initial_state_config']:
+                        if self.adv_type_def['initial_state_config']["assign_mutable_states_from_set"]:
+                            # get entity mutability sets:
+                            possible_mutable_lists = list()
+                            for trait in entity_type_values['traits']:
+                                # print(entity_type_values['repr_str'], ":", trait)
+                                mutability_mutables = [predicate['predicate_id'] for predicate in self.domain_def['predicates'] if predicate['mutability'] == trait]
+                                # print(mutability_mutables)
+                                # print()
+                                possible_mutable_lists.append(mutability_mutables)
+                            # assign mutable states from mutability set:
+                            for possible_mutable_list in possible_mutable_lists:
+                                possible_mutable_asp_facts = [f"{mutable}({entity_id})" for mutable in possible_mutable_list]
+                                possible_mutable_asp = "1 { POSSIBLE_MUTABLES } 1."
+                                possible_mutable_asp = possible_mutable_asp.replace("POSSIBLE_MUTABLES", ";".join(possible_mutable_asp_facts))
+                                clingo_str += "\n" + possible_mutable_asp
+
+                # no adjectives were used in v1/v2.1/v2.2 adventures
                 if not self.adv_type_def['initial_state_config']["entity_adjectives"] == "none":
                     if "possible_adjs" in entity_type_values:
                         # adjective rule:
@@ -234,6 +344,7 @@ class ClingoAdventureGenerator(object):
         # iterate over initial world state, add fixed basic facts, add turn facts for changeable facts
         for fact in initial_facts:
             if fact[0] == "type":
+                # print("goal fact gen current type fact:", fact)
                 id_to_type_dict[fact[1]] = {'type': fact[2],
                                             'repr_str': self.entity_definitions[fact[2]]['repr_str']}
                 if 'traits' in self.entity_definitions[fact[2]]:
@@ -313,6 +424,55 @@ class ClingoAdventureGenerator(object):
                         duplicate = True
                 if not duplicate:
                     goal_combos.append(goal_strs)
+
+        elif task_config['task'] == "new-word_states":
+            # TODO?: externalize (more) goal parameters?
+
+            # get mutable predicates from domain:
+
+            # print(self.domain_def['predicates'])
+
+            mutables = [predicate['predicate_id'] for predicate in self.domain_def['predicates']]
+            # print(mutables)
+            mutabilities = list()
+            for predicate in self.domain_def['predicates']:
+                if predicate['mutability'] not in mutabilities:
+                    mutabilities.append(predicate['mutability'])
+            # print(mutabilities)
+
+
+            # TODO: convert underscore mutabilities to dashed for surface
+
+            # get initial mutable states of entities:
+            mutable_state_entities: dict = dict()
+            for fact in initial_facts:
+                if fact[0] in mutabilities:
+                    # print(fact)
+                    if fact[1] not in mutable_state_entities:
+                        mutable_state_entities[fact[1]] = {'type': id_to_type_dict[fact[1]]['type'],
+                                                           'mutabilities': [fact[0]]}
+                    else:
+                        mutable_state_entities[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
+                        mutable_state_entities[fact[1]]['mutabilities'].append(fact[0])
+
+                    for fact1 in initial_facts:
+                        if fact1[1] == fact[1]:
+                            print(fact1)
+
+                            # TODO: get mutable states for each of the mutability sets this entity instance has
+
+                            pass
+                    print()
+
+            # print(mutable_state_entities)
+
+            for mutable_state_entity_id, mutable_state_entity_values in mutable_state_entities.items():
+                print(mutable_state_entity_id, mutable_state_entity_values)
+                for fact in initial_facts:
+                    pass
+
+
+            pass
 
         return goal_combos
 
@@ -518,6 +678,7 @@ class ClingoAdventureGenerator(object):
             initial_states_clingo: Control = Control(["0"])  # ["0"] argument to return all models
             # generate initial state ASP encoding:
             cur_initial_states_asp = self._generate_initial_states_asp(room_layout)
+            # print("cur_initial_states_asp:", cur_initial_states_asp)
             # add initial state ASP encoding to clingo:
             initial_states_clingo.add(cur_initial_states_asp)
             # ground controller:
@@ -531,6 +692,10 @@ class ClingoAdventureGenerator(object):
                         initial_states_per_layout_count += 1
                     else:
                         break
+
+        # print(initial_states)
+        # print(len(initial_states))
+        # print(list(range(initial_state_limit)))
 
         # get initial states to generate adventures with:
         if initial_state_picking == "iterative":
@@ -807,6 +972,10 @@ class ClingoAdventureGenerator(object):
 
 if __name__ == "__main__":
     # init generator:
-    adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
+
     # generate adventure including metadata from manually edited source:
-    adventure_generator.generate_from_initial_goals_file("adv_source.json")
+    # adventure_generator.generate_from_initial_goals_file("adv_source.json")
+
+    adventure_generator.generate_adventures(initial_state_limit=24)

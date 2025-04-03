@@ -8,8 +8,8 @@ import nltk
 from nltk import corpus
 from nltk import lm
 
-from wino_dict.create_new_words import NGramGenerator, generate_ngram_examples, read_morph_rules
-from wino_dict.create_new_words import add_morphology_to_examples
+from adventuregame.resources.new_word_generation.wino_dict.create_new_words import NGramGenerator, generate_ngram_examples, read_morph_rules
+from adventuregame.resources.new_word_generation.wino_dict.create_new_words import add_morphology_to_examples
 
 
 def read_new_words_file(file_path:str) -> Dict:

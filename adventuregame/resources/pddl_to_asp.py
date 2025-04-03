@@ -25,185 +25,126 @@ domain_def_parser = Lark(domain_def_grammar, start="define")
 
 domain_def_transformer = PDDLDomainTransformer()
 
-example_pddl_action = {
-    "pddl": "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)",
-    "pddl_parameter_mapping": {
-      "?e": ["arg1"],
-      "?r": ["current_player_room"],
-      "?p": ["player"]
-    },
-    "asp": "{ action_t(TURN,open,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nopen_t(TURN+1,THING) :- action_t(TURN,open,THING).\nopen_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING)."
-}
 
-example_pddl_action2 = {
-    "type_name": "mator",
-    "lark": "mator: MATOR thing\nMATOR.1: \"mator\" WS",
-    "pddl": "(:action MATOR\n    :parameters (?e - dented-able ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n)\n    :effect (and\n        (dented ?e)\n    )\n)"}
+def action_to_asp(action_def: dict):
+    """Create ASP encoding rules from action definition PDDL.
+    Args:
+        action_def: A dict action definition.
+    Returns:
+        A list of ASP encoding rule strings.
+    """
+    action_asp_rules = list()
+    # parse and process action definition PDDL:
+    parsed_action_pddl = action_def_parser.parse(action_def['pddl'])
+    processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
 
-sample_pddl = "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)"
+    # PARAMETERS AND PRECONDITION
+    params = processed_action_pddl['parameters']
+    # filter out always-present default parameters:
+    important_params = list()
+    for param in params['type_list']:
+        if param['type_list_element'] not in ['player', 'room']:
+            important_params.append(param)
+    # important parameters are mutability trait predicates/facts
+    mutability_asp_strings = [f"{mutability['type_list_element']}(THING)" for mutability in important_params]
 
+    # TODO: make mutability type facts in base ASP solver script
 
+    # catch at condition to put on ASP RHS:
+    # check for default at facts (player at same as argument)
+    precon = processed_action_pddl['precondition']
+    precon_and = precon[0]['and']
+    important_precon_facts = list()
+    for precon_fact in precon_and:
+        if precon_fact['predicate'] == "at":
+            # assume that there are no interactions with other locations and the at conditions are always the same
+            continue
+        else:
+            important_precon_facts.append(precon_fact)
+    important_precon_mutables = [precon['predicate'] for precon in important_precon_facts]
 
-with open("new_word_generation/new_actions_test.json", 'r', encoding='utf-8') as new_word_actions_file:
-    new_word_actions = json.load(new_word_actions_file)
-# print(new_word_actions)
+    # TODO: handle more complex preconditions with OR etc
 
-example_pddl_action3 = new_word_actions[0]
+    # insert into ASP encoding rule template:
+    asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+    asp_potential_action = asp_potential_action.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+    mutable_asp_strings = [f"{mutable}_t(TURN,THING)" for mutable in important_precon_mutables]
+    asp_potential_action = asp_potential_action.replace("PRECON_FACTS",
+                                                        ",".join(mutability_asp_strings + mutable_asp_strings))
+    # collect:
+    action_asp_rules.append(asp_potential_action)
 
-"""
-(:action OPEN\n
-    :parameters (?e - openable ?r - room ?p - player)\n
-    :precondition (and\n
-            (at ?p ?r)\n
-            (at ?e ?r)\n
-            (closed ?e)\n
-            )\n
-    :effect (and\n
-        (open ?e)\n
-        (not (closed ?e))\n
-        (forall (?c - takeable)\n
-            (when\n
-                (in ?c ?e)\n
-                (and\n
-                    (accessible ?c)\n
-                )\n
-            )\n
-        )\n
-    )\n
-)
+    # EFFECT
+    effect = processed_action_pddl['effect'][0]['and']
+    # differentiate between facts added by action (ie existing next turn) and subtracted by action (ie existing next turn unless removed by action)
+    effect_add_predicates = list()
+    effect_sub_predicates = list()
+    # iterate over effect predicates:
+    for effect_pred in effect:
+        if 'not' in effect_pred:
+            effect_sub_predicates.append(effect_pred['not'])
+        else:
+            effect_add_predicates.append(effect_pred)
 
+    # TODO: handle more complex effects with WHEN etc
 
-(:action MATOR\n
-    :parameters (?e - dented-able ?r - room ?p - player)\n
-    :precondition (and\n
-        (at ?p ?r)\n
-        (at ?e ?r)\n
-    )\n
-    :effect (and\n
-        (dented ?e))\n
-    )\n
-)
-"""
+    # facts added:
+    # insert into ASP encoding rule template:
+    asp_next_turn_add = "MUTABLE_FACTS :- action_t(TURN,ACTION_TYPE,THING)."
+    asp_next_turn_add = asp_next_turn_add.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+    effect_add_asp_strings = [f"{pred}_t(TURN+1,THING)" for pred in
+                              [effect_pred['predicate'] for effect_pred in effect_add_predicates]]
+    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", ",".join(effect_add_asp_strings))
+    # collect:
+    action_asp_rules.append(asp_next_turn_add)
+    # facts removed:
+    for sub_pred in effect_sub_predicates:
+        # insert into ASP encoding rule template:
+        asp_next_turn_sub = "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
+        asp_next_turn_sub = asp_next_turn_sub.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+        effect_sub_asp_string = f"{sub_pred['predicate']}"
+        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT", effect_sub_asp_string)
+        # collect:
+        action_asp_rules.append(asp_next_turn_sub)
 
-"""
-{ action_t(TURN,open,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\n
-open_t(TURN+1,THING) :- action_t(TURN,open,THING).\n  # if the last turn action was OPEN, thing is open next turn
-open_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING).  # if a thing is open and the current-turn action is not CLOSE, it is still open next turn
-"""
-
-"""
-Potential action at turn:
-{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\n
--> precondition
-"""
-
-# print(example_pddl_action3['pddl'])
-
-action_asp_rules = list()
-
-# PARAMETERS AND PRECONDITION
-
-# parsed_action_pddl = action_def_parser.parse(sample_pddl)
-# parsed_action_pddl = action_def_parser.parse(example_pddl_action['pddl'])
-parsed_action_pddl = action_def_parser.parse(example_pddl_action3['pddl'])
-processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
-
-# print(processed_action_pddl)
-# print(processed_action_pddl['precondition'])
-
-params = processed_action_pddl['parameters']
-# print(params)
-important_params = list()
-for param in params['type_list']:
-    if param['type_list_element'] not in ['player', 'room']:
-        important_params.append(param)
-# print(important_params)
-
-param_asp_template = "MUTABILITY(THING)"
-mutability_asp_strings = [f"{mutability['type_list_element']}(THING)" for mutability in important_params]
-# print(mutability_asp_strings)
-
-# TODO: make mutability type facts in base ASP solver script
-
-# catch at condition to put on ASP RHS:
-# check for default at facts (player at same as argument)
-precon = processed_action_pddl['precondition']
-# print(precon[0])
-precon_and = precon[0]['and']
-# print(precon_and)
-important_precon_facts = list()
-for precon_fact in precon_and:
-    if precon_fact['predicate'] == "at":
-        # assume that there are no interactions with other locations and the at conditions are always the same
-        continue
-    else:
-        important_precon_facts.append(precon_fact)
-# print(important_precon_facts)
-important_precon_mutables = [precon['predicate'] for precon in important_precon_facts]
-# print(important_precon_mutables)
-
-# TODO: handle more complex preconditions with OR etc
-
-asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
-asp_potential_action = asp_potential_action.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+    return action_asp_rules
 
 
-"_t(TURN,THING)"
+def actions_file_to_asp(action_defs_file_path: str = "new_word_generation/new_actions_test.json"):
+    """Get ASP encoding rules from action definitions file."""
+    with open(action_defs_file_path, 'r', encoding='utf-8') as action_defs_file:
+        action_defs = json.load(action_defs_file)
 
-mutable_asp_strings = [f"{mutable}_t(TURN,THING)" for mutable in important_precon_mutables]
+    all_action_asp_rules = list()
 
-asp_potential_action = asp_potential_action.replace("PRECON_FACTS", ",".join(mutability_asp_strings+mutable_asp_strings))
+    for action_def in action_defs:
+        action_asp_rules = action_to_asp(action_def)
+        all_action_asp_rules += action_asp_rules
 
-# print(asp_potential_action)
-
-action_asp_rules.append(asp_potential_action)
-
-# EFFECT
-
-effect = processed_action_pddl['effect'][0]['and']
-
-# print("effect:", effect)
-
-effect_add_predicates = list()
-effect_sub_predicates = list()
-
-for effect_pred in effect:
-    # print("effect_pred:", effect_pred)
-
-    if 'not' in effect_pred:
-        # effect_sub_predicates.append(effect_pred['not']['predicate'])
-        effect_sub_predicates.append(effect_pred['not'])
-    else:
-        # effect_add_predicates.append(effect_pred['predicate'])
-        effect_add_predicates.append(effect_pred)
-
-# print("effect_add_predicates:", effect_add_predicates)
-
-# TODO: handle more complex effects with WHEN etc
-
-asp_next_turn_add = "MUTABLE_FACTS :- action_t(TURN,ACTION_TYPE,THING)."
-asp_next_turn_add = asp_next_turn_add.replace("ACTION_TYPE", processed_action_pddl['action_name'])
-
-effect_add_asp_strings = [f"{pred}_t(TURN+1,THING)" for pred in [effect_pred['predicate'] for effect_pred in effect_add_predicates]]
-
-asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", ",".join(effect_add_asp_strings))
-# print(asp_next_turn_add)
-
-action_asp_rules.append(asp_next_turn_add)
+    return all_action_asp_rules
 
 
-"open_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING)."
-# print("effect_sub_predicates:", effect_sub_predicates)
+def augment_action_defs_with_asp(action_defs: list):
+    """Create ASP encoding rules for action definitions and add them to existing definitions."""
+    for action_def_idx, action_def in enumerate(action_defs):
+        action_asp_rules = action_to_asp(action_def)
+        action_defs[action_def_idx]['asp'] = "\n".join(action_asp_rules)
 
-for sub_pred in effect_sub_predicates:
-    # asp_next_turn_sub = "MUTABLE_FACT :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
-    asp_next_turn_sub = "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
-    asp_next_turn_sub = asp_next_turn_sub.replace("ACTION_TYPE", processed_action_pddl['action_name'])
+    return action_defs
 
-    effect_sub_asp_string = f"{sub_pred['predicate']}"
 
-    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT", effect_sub_asp_string)
-    print(asp_next_turn_sub)
-    action_asp_rules.append(asp_next_turn_sub)
+def augment_actions_file_with_asp(action_defs_file_path: str):
+    """Create ASP encoding rules for action definitions and add them to an existing action definitions file."""
+    with open(action_defs_file_path, 'r', encoding='utf-8') as action_defs_file_in:
+        action_defs = json.load(action_defs_file_in)
 
-print(action_asp_rules)
+    action_defs = augment_action_defs_with_asp(action_defs)
+
+    with open(action_defs_file_path, 'w', encoding='utf-8') as action_defs_file_out:
+        json.dump(action_defs, action_defs_file_out, indent=2)
+
+
+
+
+if __name__ == "__main__":
+    augment_actions_file_with_asp("new_word_generation/new_actions_test.json")

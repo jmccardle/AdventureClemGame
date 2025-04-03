@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import re
 
-from new_word_util import read_new_words_file
+from adventuregame.resources.new_word_generation.new_word_util import read_new_words_file
 
 # ROOMS
 """
@@ -70,7 +70,8 @@ def new_word_rooms_create(num_rooms_created: int = 4,
         # init RNG:
         rng = np.random.default_rng(seed)
         # load new words from file:
-        new_words_source = read_new_words_file("new_words.tsv")
+        # new_words_source = read_new_words_file("new_words.tsv")
+        new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
         new_word_idx = last_new_words_idx
 
         new_room_definitions = list()
@@ -107,7 +108,7 @@ New-word entity types:
 - new, arbitrary types
 
 Mutable states:
-Binary: Get two new-words, use first to make entity trait (suffixing with -able), link to action to switch between new-words states.
+Binary: Get two new-words, use first to make entity trait (suffixing with _able), link to action to switch between new-words states.
 Trinary?
 """
 
@@ -189,7 +190,7 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # traits pool:
@@ -197,7 +198,7 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
     if add_traits and not premade_traits and limited_trait_pool:
         for new_word in range(limited_trait_pool):
             # trait_pool.append(new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ'])
-            trait_pool.append(f"{new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ']}-able")
+            trait_pool.append(f"{new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ']}_able")
             new_word_idx += 1
 
     # adjectives pool:
@@ -221,7 +222,7 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
             new_entity_type_dict['traits'] = list()
             if limited_trait_pool == 0 and not premade_traits:
                 for add_trait_idx in range(min_traits, rng.integers(min_traits, max_traits)):
-                    taken_new_word = f"{new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ']}-able"
+                    taken_new_word = f"{new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ']}_able"
                     new_word_idx += 1
                     new_entity_type_dict['traits'].append(taken_new_word)
                     trait_pool.append(taken_new_word)
@@ -253,6 +254,12 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
 
         new_entity_definitions.append(new_entity_type_dict)
         new_entity_type_names.append(new_entity_type_name)
+
+    # TODO?: add option for default floor and inventory entity defs?
+
+    # default player entity type:
+    player_def = {"type_name": "player", "repr_str": "you", "traits": [], "hidden": True}
+    new_entity_definitions.append(player_def)
 
     return new_entity_definitions, new_word_idx, trait_pool, adjective_pool
 
@@ -366,7 +373,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # print("entities:", entity_definitions)
@@ -376,9 +383,10 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
     if not trait_pool:
         traits = list()
         for entity_def in entity_definitions:
-            for trait in entity_def['traits']:
-                if trait not in traits:
-                    traits.append(trait)
+            if 'traits' in entity_def:
+                for trait in entity_def['traits']:
+                    if trait not in traits:
+                        traits.append(trait)
     else:
         traits = trait_pool
     # print(traits)
@@ -390,7 +398,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
         if allowed_mutable_state_interactions[mutable_state_interaction_idx] == "irreversible":
             mutable_set_type = rng.choice(["singular", "paired"])
             # always use mutability trait word as mutable state:
-            cur_trait_list.append(trait.replace("-able", ""))
+            cur_trait_list.append(trait.replace("_able", ""))
             if mutable_set_type == "paired":
                 cur_trait_list.append(new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ'])
                 new_word_idx += 1
@@ -400,14 +408,14 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             cur_trait_dict['mutable_states'] = cur_trait_list
             cur_trait_dict['mutable_set_type'] = str(mutable_set_type)
         elif allowed_mutable_state_interactions[mutable_state_interaction_idx] == "binary":
-            cur_trait_list.append(trait.replace("-able", ""))
+            cur_trait_list.append(trait.replace("_able", ""))
             cur_trait_list.append(new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ'])
             new_word_idx += 1
             cur_trait_dict['interaction'] = "binary"
             cur_trait_dict['mutable_states'] = cur_trait_list
             cur_trait_dict['mutable_set_type'] = "paired"
         elif allowed_mutable_state_interactions[mutable_state_interaction_idx] == "trinary":
-            cur_trait_list.append(trait.replace("-able", ""))
+            cur_trait_list.append(trait.replace("_able", ""))
             cur_trait_list.append(new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ'])
             new_word_idx += 1
             cur_trait_list.append(new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['JJ'])
@@ -425,7 +433,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
 
         trait_dict[trait] = cur_trait_dict
 
-    print(trait_dict)
+    # print(trait_dict)
 
     # TODO?: single-action pair/chain progression?
 
@@ -954,22 +962,25 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             new_word_actions_definitions.append(new_action)
             created_actions_count += 1
 
+        # TODO: add default DONE action
+
         # break
 
-    return new_word_actions_definitions, new_word_idx
+    return new_word_actions_definitions, trait_dict, new_word_idx
 
 
 # DOMAINS
 # best after other def types, as it relies on their contents existing in adventure/domain
 # not covering functions, basic facts are enough for planned experiments
 
-def process_to_pddl_domain(domain_name: str, room_definitions: list, entity_definitions: list):
+def process_to_pddl_domain(domain_name: str, room_definitions: list, entity_definitions: list, trait_dict: dict):
     """Get domain definition from room and entity definitions.
     Covers only type definition for now, functions not required for v2.2 experiments.
     Args:
         domain_name: Name of the resulting domain. (For PDDL conformation, but might get used for experiments/instances)
         room_definitions: List of room type definitions.
         entity_definitions: List of entity type definitions.
+        trait_dict: Dict of mutability traits and their associated mutable predicates.
     """
     # ROOMS
     room_types = list()
@@ -987,9 +998,10 @@ def process_to_pddl_domain(domain_name: str, room_definitions: list, entity_defi
     # get all traits:
     traits = list()
     for entity_def in entity_definitions:
-        for trait in entity_def['traits']:
-            if trait not in traits:
-                traits.append(trait)
+        if 'traits' in entity_def:
+            for trait in entity_def['traits']:
+                if trait not in traits:
+                    traits.append(trait)
 
     trait_lines = list()
     for trait in traits:
@@ -1000,29 +1012,55 @@ def process_to_pddl_domain(domain_name: str, room_definitions: list, entity_defi
         trait_line = f"        {' '.join(entities_with_trait)} - {trait}\n"
         trait_lines.append(trait_line)
 
+    # PREDICATES
+    # print(trait_dict)
+    predicate_lines = list()
+    for mutability_name, mutability_values in trait_dict.items():
+        for mutable in mutability_values['mutable_states']:
+            predicate_line = f"        ({mutable} ?e - {mutability_name})\n"
+            predicate_lines.append(predicate_line)
+
     # COMBINED DOMAIN DEFINITION
-    full_domain = f"(define\n    (domain {domain_name})\n    (:types\n{room_line}{entity_line}{''.join(trait_lines)}        )\n    )"
+    full_domain = (f"(define\n"
+                   f"    (domain {domain_name})\n"
+                   f"    (:types\n{room_line}{entity_line}{''.join(trait_lines)}        )\n"
+                   f"    (:predicates\n{''.join(predicate_lines)}        )\n"
+                   f"    )")
 
     return full_domain
 
 
 # COMBINED CREATION FUNCTIONS
 
-def create_new_words_definitions_set():
+def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 42, verbose: bool = False):
     """Create an entire set of new-word definitions.
     Returns:
         Tuple of: New room definitions, entity definitions, action definitions and domain definition.
     """
-    new_room_definitions, last_new_word_idx = new_word_rooms_create()
+    new_room_definitions, last_new_word_idx = new_word_rooms_create(last_new_words_idx=initial_new_word_idx, seed=seed)
     new_entity_definitions, last_new_word_idx, trait_pool, adjective_pool = new_word_entities_create(new_room_definitions,
                                                                                                      add_traits=True, limited_trait_pool=3, min_traits=1,
-                                                                                   last_new_words_idx=last_new_word_idx)
-    new_action_definitions, last_new_word_idx = new_word_actions_create(new_entity_definitions,
-                                                                        last_new_words_idx=last_new_word_idx)
+                                                                                   last_new_words_idx=last_new_word_idx, seed=seed)
+    new_action_definitions, trait_dict, last_new_word_idx = new_word_actions_create(new_entity_definitions,
+                                                                        last_new_words_idx=last_new_word_idx, seed=seed)
 
-    new_domain_definition = process_to_pddl_domain("new_words", new_room_definitions, new_entity_definitions)
+    if verbose:
+        num_defs_created = len(new_room_definitions) + len(new_entity_definitions) + len(new_action_definitions)
+        mutabilities_created = [mutability_name for mutability_name in trait_dict]
+        mutables_created = list()
+        for mutability_values in trait_dict.values():
+            for mutable in mutability_values['mutable_states']:
+                mutables_created.append(mutable)
 
-    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition
+        print(f"{last_new_word_idx+1} new-words used to create {num_defs_created} definitions "
+              f"({len(new_room_definitions)} room types, {len(new_entity_definitions)} entity types, "
+              f"{len(new_action_definitions)} action types) with {len(mutables_created)} mutable predicates under "
+              f"{len(mutabilities_created)} mutability traits.")
+        print(f"Mutable predicates: {mutables_created}; mutability traits: {mutabilities_created}")
+
+    new_domain_definition = process_to_pddl_domain("new_words", new_room_definitions, new_entity_definitions, trait_dict)
+
+    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, last_new_word_idx
 
 if __name__ == "__main__":
     """
@@ -1034,7 +1072,7 @@ if __name__ == "__main__":
     # new_word_actions, new_word_idx, replacement_dict = new_word_actions_replace("../definitions/basic_actions_v2-2.json")
 
     # create set of new word rooms, entities and actions:
-    new_rooms, new_entities, new_actions, new_domain = create_new_words_definitions_set()
+    new_rooms, new_entities, new_actions, new_domain, last_new_word_idx = create_new_words_definitions_set(verbose=True)
     print(new_domain)
 
     # save created definitions to JSON:
