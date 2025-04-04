@@ -1044,6 +1044,8 @@ def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 
     new_action_definitions, trait_dict, last_new_word_idx = new_word_actions_create(new_entity_definitions,
                                                                         last_new_words_idx=last_new_word_idx, seed=seed)
 
+    print("trait_dict:", trait_dict)
+
     if verbose:
         num_defs_created = len(new_room_definitions) + len(new_entity_definitions) + len(new_action_definitions)
         mutabilities_created = [mutability_name for mutability_name in trait_dict]
@@ -1060,7 +1062,7 @@ def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 
 
     new_domain_definition = process_to_pddl_domain("new_words", new_room_definitions, new_entity_definitions, trait_dict)
 
-    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, last_new_word_idx
+    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, trait_dict, last_new_word_idx
 
 if __name__ == "__main__":
     """
@@ -1074,7 +1076,7 @@ if __name__ == "__main__":
     # create set of new word rooms, entities and actions:
     new_rooms, new_entities, new_actions, new_domain, last_new_word_idx = create_new_words_definitions_set(verbose=True)
     print(new_domain)
-
+    """
     # save created definitions to JSON:
     with open("new_rooms_test.json", 'w', encoding='utf-8') as rooms_out_file:
         json.dump(new_rooms, rooms_out_file, indent=2)
@@ -1084,3 +1086,4 @@ if __name__ == "__main__":
         json.dump(new_actions, actions_out_file, indent=2)
     with open("new_domain_test.json", 'w', encoding='utf-8') as domain_out_file:
         json.dump({'pddl_domain': new_domain}, domain_out_file, indent=2)
+    """

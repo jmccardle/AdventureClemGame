@@ -142,7 +142,7 @@ class ClingoAdventureGenerator(object):
 
     def _create_assign_new_word_definitions(self):
         # create new-words definitions:
-        new_rooms, new_entities, new_actions, new_domain, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+        new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
         # keep track of new-words database iteration:
         self.new_word_iterate_idx = last_new_word_idx
         # assign room definitions:
@@ -175,6 +175,8 @@ class ClingoAdventureGenerator(object):
         # print(new_domain)
         parsed_domain_definition_pddl = self.domain_def_parser.parse(new_domain)
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
+        # assign mutabilities and traits:
+        self.interaction_traits = trait_dict
 
     def _generate_room_layouts_asp(self):
         """
@@ -300,6 +302,9 @@ class ClingoAdventureGenerator(object):
                                 mutability_mutables = [predicate['predicate_id'] for predicate in self.domain_def['predicates'] if predicate['mutability'] == trait]
                                 # print(mutability_mutables)
                                 # print()
+                                # don't add single mutable fact of irreversible-singular mutability, entity has no initial fact tied to this type of mutability
+                                if self.interaction_traits[trait]['mutable_set_type'] == 'singular':
+                                    continue
                                 possible_mutable_lists.append(mutability_mutables)
                             # assign mutable states from mutability set:
                             for possible_mutable_list in possible_mutable_lists:
@@ -307,6 +312,8 @@ class ClingoAdventureGenerator(object):
                                 possible_mutable_asp = "1 { POSSIBLE_MUTABLES } 1."
                                 possible_mutable_asp = possible_mutable_asp.replace("POSSIBLE_MUTABLES", ";".join(possible_mutable_asp_facts))
                                 clingo_str += "\n" + possible_mutable_asp
+
+                # TODO: handle irreversible mutabilities properly; specially with zero initial state
 
                 # no adjectives were used in v1/v2.1/v2.2 adventures
                 if not self.adv_type_def['initial_state_config']["entity_adjectives"] == "none":
@@ -434,10 +441,13 @@ class ClingoAdventureGenerator(object):
 
             mutables = [predicate['predicate_id'] for predicate in self.domain_def['predicates']]
             # print(mutables)
-            mutabilities = list()
+            mutabilities = dict()
             for predicate in self.domain_def['predicates']:
+                # print("predicate:", predicate)
                 if predicate['mutability'] not in mutabilities:
-                    mutabilities.append(predicate['mutability'])
+                    mutabilities[predicate['mutability']] = [predicate['predicate_id']]
+                else:
+                    mutabilities[predicate['mutability']].append(predicate['predicate_id'])
             # print(mutabilities)
 
 
@@ -455,24 +465,63 @@ class ClingoAdventureGenerator(object):
                         mutable_state_entities[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
                         mutable_state_entities[fact[1]]['mutabilities'].append(fact[0])
 
-                    for fact1 in initial_facts:
-                        if fact1[1] == fact[1]:
-                            print(fact1)
+            for fact in initial_facts:
+                if fact[1] in mutable_state_entities:
+                    # print("fact:", fact)
+                    mutable_fact_dict = dict()
+                    for mutability in mutable_state_entities[fact[1]]['mutabilities']:
+                        # print(f"checked mutability of {fact[1]}:", mutability)
+                        if fact[0] in mutabilities[mutability]:
+                            # print(f"checked {mutability}:", mutabilities[mutability])
+                            mutable_fact_dict[mutability] = fact[0]
+                    # print(mutable_fact_dict)
+                    if 'mutable_facts' not in mutable_state_entities[fact[1]]:
+                        mutable_state_entities[fact[1]]['mutable_facts'] = mutable_fact_dict
+                    else:
+                        mutable_state_entities[fact[1]]['mutable_facts'] = mutable_state_entities[fact[1]]['mutable_facts'] | mutable_fact_dict
 
-                            # TODO: get mutable states for each of the mutability sets this entity instance has
-
-                            pass
-                    print()
-
-            # print(mutable_state_entities)
-
+            all_possible_goals = list()
             for mutable_state_entity_id, mutable_state_entity_values in mutable_state_entities.items():
-                print(mutable_state_entity_id, mutable_state_entity_values)
-                for fact in initial_facts:
-                    pass
+                # print("mutable entity:", mutable_state_entity_id, mutable_state_entity_values)
+                possible_target_states = list()
+                cur_mut_facts = mutable_state_entity_values['mutable_facts']
+                for mutability, cur_mut_fact in cur_mut_facts.items():
+                    # get set of mutable states this entity does not have initially:
+                    possible_target_states += [mutable for mutable in mutabilities[mutability] if not mutable == cur_mut_fact]
+                    # print(f"possible target states for {mutability}:", [mutable for mutable in mutabilities[mutability] if not mutable == cur_mut_fact])
+                # handle irreversible-singular mutability:
+                for mutability in mutable_state_entity_values['mutabilities']:
+                    if self.interaction_traits[mutability]['mutable_set_type'] == 'singular':
+                        possible_target_states += self.interaction_traits[mutability]['mutable_states']  # must be single
+                        # print(f"possible target states for {mutability}:", self.interaction_traits[mutability]['mutable_states'])
+                # print(f"all possible target states for {mutable_state_entity_id}:", possible_target_states)
+                for possible_target_state in possible_target_states:
+                    goal_tuple: tuple = (possible_target_state, mutable_state_entity_id)
+                    all_possible_goals.append(goal_tuple)
+            # print("all_possible_goals:", all_possible_goals)
 
+            goal_permutations = list(permutations(all_possible_goals, goal_count))
+            # prevent goal combos with same object and same mutability:
+            goal_combos = list()
+            for goal_combo in goal_permutations:
+                # print("goal combo:", goal_combo)
+                duplicate = False
+                goal_mutabilities = list()
+                goal_strs = list()
+                for goal in goal_combo:
+                    goal_object_mutabilities = mutable_state_entities[goal[1]]['mutabilities']
+                    for mutability in goal_object_mutabilities:
+                        mutable_states = self.interaction_traits[mutability]['mutable_states']
+                        if goal[0] in mutable_states:
+                            goal_mutability = (mutability, goal[1])
 
-            pass
+                    if goal_mutability not in goal_mutabilities:
+                        goal_mutabilities.append(goal_mutability)
+                        goal_strs.append(f"{goal[0]}({goal[1]})")
+                    else:
+                        duplicate = True
+                if not duplicate:
+                    goal_combos.append(goal_strs)
 
         return goal_combos
 
@@ -670,6 +719,8 @@ class ClingoAdventureGenerator(object):
             room_layout_fact_list = [fact for fact in room_layout_fact_list if "reachable" not in fact]
             result_layouts.append(room_layout_fact_list)
 
+        print("Room layouts generated.")
+
         # INITIAL STATES
         initial_states = list()
         # iterate over room layouts:
@@ -693,6 +744,8 @@ class ClingoAdventureGenerator(object):
                     else:
                         break
 
+        print("Initial states generated.")
+
         # print(initial_states)
         # print(len(initial_states))
         # print(list(range(initial_state_limit)))
@@ -709,6 +762,8 @@ class ClingoAdventureGenerator(object):
             initial_state_indices = self.rng.choice(len(initial_states), size=initial_state_limit, replace=False, shuffle=False)
             initial_states_used = [initial_states[idx] for idx in initial_state_indices]
 
+        print("Initial states used:", initial_states_used)
+
         generated_adventures: list = list()
 
         # iterate over initial states used:
@@ -721,12 +776,16 @@ class ClingoAdventureGenerator(object):
                 # generate goals for current initial state:
                 cur_all_goals = self._generate_goal_facts(initial_state)
 
+                print("Goals generated.")
+
                 if goal_set_picking == "iterative":
                     goal_set = cur_all_goals[goal_set_idx]
                     goal_set_idx += 1
 
                 elif goal_set_picking == "random":
                     goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
+
+                print("Current goal set:", goal_set)
 
                 # solve current adventure:
                 solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
@@ -736,6 +795,8 @@ class ClingoAdventureGenerator(object):
                 cur_adv_solve_control.add(solve_asp)
                 # ground clingo controller:
                 cur_adv_solve_control.ground()
+
+                print("Adventure solving grounded.")
 
                 cur_adv_solutions = list()
                 solvable: bool = False
@@ -747,9 +808,16 @@ class ClingoAdventureGenerator(object):
                         solvable = True
                     elif satisfiable == "UNSAT":
                         solvable = False
+
+                print("Adventure solving performed.")
+
                 # skip this raw adventure if it is not solvable under the defined constraints:
                 if not solvable:
+                    print("Adventure is NOT solvable.")
                     continue
+
+                print("Adventure is solvable.")
+
                 # last yielded model is optimal solution:
                 cur_optimal_solution = cur_adv_solutions[-1]
                 # convert optimal solution:
