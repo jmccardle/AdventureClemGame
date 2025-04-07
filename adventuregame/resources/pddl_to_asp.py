@@ -26,7 +26,7 @@ domain_def_parser = Lark(domain_def_grammar, start="define")
 domain_def_transformer = PDDLDomainTransformer()
 
 
-def action_to_asp(action_def: dict):
+def action_to_asp(action_def: dict, trait_dict: dict):
     """Create ASP encoding rules from action definition PDDL.
     Args:
         action_def: A dict action definition.
@@ -46,7 +46,13 @@ def action_to_asp(action_def: dict):
         if param['type_list_element'] not in ['player', 'room']:
             important_params.append(param)
     # important parameters are mutability trait predicates/facts
+
+    action_mutabilities = [mutability['type_list_element'] for mutability in important_params]
+    # print(f"action mutabilities for {action_def['type_name']}:", action_mutabilities)
+
     mutability_asp_strings = [f"{mutability['type_list_element']}(THING)" for mutability in important_params]
+
+    # print(f"action to ASP mutabilities for {action_def['type_name']}:", mutability_asp_strings)
 
     # TODO: make mutability type facts in base ASP solver script
 
@@ -67,6 +73,9 @@ def action_to_asp(action_def: dict):
 
     # insert into ASP encoding rule template:
     asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+    # asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), at_t(TURN,THING,ROOM), not turn_limit(TURN)."
+    # asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM);PRECON_FACTS } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+    # asp_potential_action = "{ action_t(TURN,ACTION_TYPE,THING):at_t(TURN,THING,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), PRECON_FACTS, not turn_limit(TURN)."
     asp_potential_action = asp_potential_action.replace("ACTION_TYPE", processed_action_pddl['action_name'])
     mutable_asp_strings = [f"{mutable}_t(TURN,THING)" for mutable in important_precon_mutables]
     asp_potential_action = asp_potential_action.replace("PRECON_FACTS",
@@ -97,13 +106,25 @@ def action_to_asp(action_def: dict):
     asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", ",".join(effect_add_asp_strings))
     # collect:
     action_asp_rules.append(asp_next_turn_add)
+
+    # persist irreversible end mutable state:
+    if trait_dict[action_mutabilities[0]]['interaction'] == "irreversible":
+        # print(trait_dict[action_mutabilities[0]]) # template for irreversible mutables:
+        asp_next_turn_irreversible = "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING)."
+        asp_next_turn_irreversible = asp_next_turn_irreversible.replace(
+            "MUTABLE_FACT",
+            f"{trait_dict[action_mutabilities[0]]['mutable_states'][-1]}")
+        action_asp_rules.append(asp_next_turn_irreversible)
+
     # facts removed:
     for sub_pred in effect_sub_predicates:
-        # insert into ASP encoding rule template:
+        # template for reversible mutables:
         asp_next_turn_sub = "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING), not action_t(TURN,ACTION_TYPE,THING)."
+        # insert into ASP encoding rule template:
         asp_next_turn_sub = asp_next_turn_sub.replace("ACTION_TYPE", processed_action_pddl['action_name'])
         effect_sub_asp_string = f"{sub_pred['predicate']}"
         asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT", effect_sub_asp_string)
+
         # collect:
         action_asp_rules.append(asp_next_turn_sub)
 
@@ -124,10 +145,10 @@ def actions_file_to_asp(action_defs_file_path: str = "new_word_generation/new_ac
     return all_action_asp_rules
 
 
-def augment_action_defs_with_asp(action_defs: list):
+def augment_action_defs_with_asp(action_defs: list, trait_dict: dict):
     """Create ASP encoding rules for action definitions and add them to existing definitions."""
     for action_def_idx, action_def in enumerate(action_defs):
-        action_asp_rules = action_to_asp(action_def)
+        action_asp_rules = action_to_asp(action_def, trait_dict)
         action_defs[action_def_idx]['asp'] = "\n".join(action_asp_rules)
 
     return action_defs

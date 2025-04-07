@@ -64,8 +64,13 @@ class ClingoAdventureGenerator(object):
                 self.new_word_iterate_idx = 0
                 self._create_assign_new_word_definitions()
 
+
+        clingo_template_file = "clingo_templates.json"
+        if 'clingo_templates' in self.adv_type_def:
+            clingo_template_file = self.adv_type_def['clingo_templates']
+
         # load clingo ASP templates:
-        with open("clingo_templates.json", 'r', encoding='utf-8') as templates_file:
+        with open(clingo_template_file, 'r', encoding='utf-8') as templates_file:
             self.clingo_templates = json.load(templates_file)
 
     def _initialize_pddl_definition_parsing(self):
@@ -116,7 +121,12 @@ class ClingoAdventureGenerator(object):
             with open(f"definitions/{action_def_source}", 'r', encoding='utf-8') as actions_file:
                 action_definitions += json.load(actions_file)
 
-        self.action_definitions = dict()
+        # testing asp generation:
+        # action_definitions = augment_action_defs_with_asp(action_definitions)
+        # -> needs more sophisticated PDDL to ASP to work on v2 home delivery...
+
+        if not hasattr(self, 'action_definitions'):
+            self.action_definitions = dict()
         for type_def in action_definitions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
@@ -143,6 +153,16 @@ class ClingoAdventureGenerator(object):
     def _create_assign_new_word_definitions(self):
         # create new-words definitions:
         new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+
+        print("self.new_word_iterate_idx before new assigned:", self.new_word_iterate_idx)
+
+        self.new_word_iterate_idx = last_new_word_idx
+
+        print("self.new_word_iterate_idx after new assigned:", self.new_word_iterate_idx)
+
+        # assign mutabilities and traits:
+        self.interaction_traits = trait_dict
+
         # keep track of new-words database iteration:
         self.new_word_iterate_idx = last_new_word_idx
         # assign room definitions:
@@ -162,7 +182,7 @@ class ClingoAdventureGenerator(object):
                     type_def_dict[type_key] = type_value
             self.entity_definitions[type_def['type_name']] = type_def_dict
         # add ASP from PDDL to created action definitions:
-        new_actions = augment_action_defs_with_asp(new_actions)
+        new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
         # assign action definitions:
         self.action_definitions = dict()
         for type_def in new_actions:
@@ -171,12 +191,14 @@ class ClingoAdventureGenerator(object):
                 if not type_key == 'type_name':
                     type_def_dict[type_key] = type_value
             self.action_definitions[type_def['type_name']] = type_def_dict
+
+        if 'add_basic_actions' in self.adv_type_def:
+            if self.adv_type_def['add_basic_actions']:
+                self._load_premade_action_definitions()
+
         # parse and assign domain definition:
-        # print(new_domain)
         parsed_domain_definition_pddl = self.domain_def_parser.parse(new_domain)
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
-        # assign mutabilities and traits:
-        self.interaction_traits = trait_dict
 
     def _generate_room_layouts_asp(self):
         """
@@ -666,38 +688,7 @@ class ClingoAdventureGenerator(object):
 
         return actions_abstract, len(action_tuples), action_commands
 
-    def generate_adventures(self, initial_states_per_layout: int = 2, initial_state_picking: str = "iterative",
-                            initial_state_limit: int = 30,
-                            adventures_per_initial_state: int = 1,
-                            goal_set_picking: str = "iterative",
-                            save_to_file: bool = True, indent_output_json: bool = True):
-        """
-        Generate raw adventures based on various parameters. Main purpose of the parameters is to limit the runtime of
-        adventure generation - even for simple v1 deliver-three without adjectives the number of possible adventures is
-        highly exponential, and exhaustive generation would take a very long time.
-        The number of possible room layouts is limited based on the basic/home room definitions, so it is not
-        additionally limited here.
-        This method uses all ASP encoding strings created by other methods of this class.
-        :param initial_states_per_layout: How many initial world states are generated per room layout.
-        :param initial_state_limit: The maximum number of initial states to generate. This number should be kept low, as
-            it is the main limiter preventing excessive computational resource use.
-        :param initial_state_picking: Method to pick from all possible goal states:
-            "iterate" - Picks initial states from the first available iteratively until initial_state_limit is reached.
-            "random" - Picks random initial states from all available until initial_state_limit is reached.
-        :param adventures_per_initial_state: How many adventures to generate for each initial state.
-        :param goal_set_picking: Method to pick from all possible goal states:
-            "iterate" - Picks goal sets from the first permutation iteratively until goals_per_adventure is met.
-            "random" - Picks random goal sets from all permutations until goals_per_adventure is met.
-        :param save_to_file: File name for saving generated adventures. If empty string, generated adventures will not
-            be saved.
-        :param indent_output_json: If True, raw adventures JSON saved will be indented for readability.
-        """
-        task_config: dict = self.adv_type_def["task_config"]
-        min_optimal_turns: int = self.adv_type_def["min_optimal_turns"]
-        max_optimal_turns: int = self.adv_type_def["max_optimal_turns"]
-
-        # ROOM LAYOUTS
-        # NOTE: As the number of room layouts is relatively small, generating all to iterate over is viable.
+    def _generate_room_layouts(self):
         # init room layout clingo controller:
         room_layout_clingo: Control = Control(["0"])  # ["0"] argument to return all models
         # generate room layout ASP encoding:
@@ -719,9 +710,9 @@ class ClingoAdventureGenerator(object):
             room_layout_fact_list = [fact for fact in room_layout_fact_list if "reachable" not in fact]
             result_layouts.append(room_layout_fact_list)
 
-        print("Room layouts generated.")
+        return result_layouts
 
-        # INITIAL STATES
+    def _generate_initial_states(self, result_layouts, initial_states_per_layout):
         initial_states = list()
         # iterate over room layouts:
         for room_layout in result_layouts:
@@ -744,155 +735,278 @@ class ClingoAdventureGenerator(object):
                     else:
                         break
 
-        print("Initial states generated.")
+        return initial_states
 
-        # print(initial_states)
-        # print(len(initial_states))
-        # print(list(range(initial_state_limit)))
+    def generate_adventures(self, initial_states_per_layout: int = 2, initial_state_picking: str = "iterative",
+                            initial_state_limit: int = 30,
+                            adventures_per_initial_state: int = 1,
+                            goal_set_picking: str = "iterative",
+                            target_adventure_count: int = 16,
+                            save_to_file: bool = True, indent_output_json: bool = True):
+        """
+        Generate raw adventures based on various parameters. Main purpose of the parameters is to limit the runtime of
+        adventure generation - even for simple v1 deliver-three without adjectives the number of possible adventures is
+        highly exponential, and exhaustive generation would take a very long time.
+        The number of possible room layouts is limited based on the basic/home room definitions, so it is not
+        additionally limited here.
+        This method uses all ASP encoding strings created by other methods of this class.
+        :param initial_states_per_layout: How many initial world states are generated per room layout.
+        :param initial_state_limit: The maximum number of initial states to generate. This number should be kept low, as
+            it is the main limiter preventing excessive computational resource use.
+        :param initial_state_picking: Method to pick from all possible goal states:
+            "iterate" - Picks initial states from the first available iteratively until initial_state_limit is reached.
+            "random" - Picks random initial states from all available until initial_state_limit is reached.
+        :param adventures_per_initial_state: How many adventures to generate for each initial state.
+        :param goal_set_picking: Method to pick from all possible goal states:
+            "iterate" - Picks goal sets from the first permutation iteratively until goals_per_adventure is met.
+            "random" - Picks random goal sets from all permutations until goals_per_adventure is met.
+        :param save_to_file: File name for saving generated adventures. If empty string, generated adventures will not
+            be saved.
+        :param indent_output_json: If True, raw adventures JSON saved will be indented for readability.
+        """
+        print(self.adv_type)
+        print(self.adv_type_def)
 
-        # get initial states to generate adventures with:
-        if initial_state_picking == "iterative":
-            if initial_state_limit:
-                initial_states_used = [initial_states[idx] for idx in range(initial_state_limit)]
-            else:
-                initial_states_used = initial_states
-        elif initial_state_picking == "random":
-            assert initial_state_limit > 0, ("Random initial state picking without a limit is equivalent to getting all"
-                                             " iteratively.")
-            initial_state_indices = self.rng.choice(len(initial_states), size=initial_state_limit, replace=False, shuffle=False)
-            initial_states_used = [initial_states[idx] for idx in initial_state_indices]
-
-        print("Initial states used:", initial_states_used)
+        task_config: dict = self.adv_type_def["task_config"]
+        min_optimal_turns: int = self.adv_type_def["min_optimal_turns"]
+        max_optimal_turns: int = self.adv_type_def["max_optimal_turns"]
 
         generated_adventures: list = list()
+        total_generated_adventure_count = 0
+        # TODO: generate/assign new-words for each adventure
 
-        # iterate over initial states used:
-        for initial_state in initial_states_used:
-            cur_adventure_count = 0
-            keep_generating_adventures = True
-            goal_set_idx = 0
+        while total_generated_adventure_count < target_adventure_count:
+            # generate new new-word definitions and assign them for each adventure for the new-words_created adv type:
+            if self.adv_type == "new-words_created" and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
+                print("Assigning new new-words...")
+                self._create_assign_new_word_definitions()
 
-            while keep_generating_adventures:
-                # generate goals for current initial state:
-                cur_all_goals = self._generate_goal_facts(initial_state)
+            # ROOM LAYOUTS
+            # NOTE: As the number of room layouts is relatively small, generating all to iterate over is viable.
+            result_layouts = self._generate_room_layouts()
+            print("Room layouts generated.")
 
-                print("Goals generated.")
+            # INITIAL STATES
+            initial_states = self._generate_initial_states(result_layouts, initial_states_per_layout)
+            print("Initial states generated.")
 
-                if goal_set_picking == "iterative":
-                    goal_set = cur_all_goals[goal_set_idx]
-                    goal_set_idx += 1
+            # print(initial_states)
+            # print(len(initial_states))
+            # print(list(range(initial_state_limit)))
 
-                elif goal_set_picking == "random":
-                    goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
+            # get initial states to generate adventures with:
+            if initial_state_picking == "iterative":
+                if initial_state_limit:
+                    initial_states_used = [initial_states[idx] for idx in range(initial_state_limit)]
+                else:
+                    initial_states_used = initial_states
+            elif initial_state_picking == "random":
+                assert initial_state_limit > 0, (
+                    "Random initial state picking without a limit is equivalent to getting all"
+                    " iteratively.")
+                initial_state_indices = self.rng.choice(len(initial_states), size=initial_state_limit, replace=False,
+                                                        shuffle=False)
+                initial_states_used = [initial_states[idx] for idx in initial_state_indices]
 
-                print("Current goal set:", goal_set)
+            # iterate over initial states used:
+            for initial_state in initial_states_used:
+                print("initial state:", initial_state)
 
-                # solve current adventure:
-                solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
-                # init fresh clingo controller:
-                cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
-                # add adventure solving asp encoding:
-                cur_adv_solve_control.add(solve_asp)
-                # ground clingo controller:
-                cur_adv_solve_control.ground()
+                cur_adventure_count = 0
+                keep_generating_adventures = True
+                goal_set_idx = 0
 
-                print("Adventure solving grounded.")
+                while keep_generating_adventures:
+                    # generate goals for current initial state:
+                    cur_all_goals = self._generate_goal_facts(initial_state)
 
-                cur_adv_solutions = list()
-                solvable: bool = False
-                with cur_adv_solve_control.solve(yield_=True) as solve:
-                    for model in solve:
-                        cur_adv_solutions.append(model.__str__())
-                    satisfiable = str(solve.get())
-                    if satisfiable == "SAT":
-                        solvable = True
-                    elif satisfiable == "UNSAT":
-                        solvable = False
+                    print("Goals generated.")
 
-                print("Adventure solving performed.")
+                    if goal_set_picking == "iterative":
+                        goal_set = cur_all_goals[goal_set_idx]
+                        goal_set_idx += 1
 
-                # skip this raw adventure if it is not solvable under the defined constraints:
-                if not solvable:
-                    print("Adventure is NOT solvable.")
-                    continue
+                    elif goal_set_picking == "random":
+                        goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
 
-                print("Adventure is solvable.")
+                    print("Current goal set:", goal_set)
 
-                # last yielded model is optimal solution:
-                cur_optimal_solution = cur_adv_solutions[-1]
-                # convert optimal solution:
-                cur_sol_abstract, optimal_turns, cur_sol_cmds = self._convert_adventure_solution(cur_optimal_solution)
-                # check if optimal turns within bounds:
-                if min_optimal_turns <= optimal_turns <= max_optimal_turns:
-                    # get tuple world state:
-                    world_state: set = set()
-                    for fact in initial_state:
-                        world_state.add(fact_str_to_tuple(fact))
+                    # TODO: make goal sets not just apply the same mutable state so that models have to use different new-word actions
 
-                    # get tuple goals:
-                    goal_tuples: list = list()
-                    for goal in goal_set:
-                        goal_tuples.append(fact_str_to_tuple(goal))
+                    # solve current adventure:
+                    solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
+                    # print("solve ASP:\n", solve_asp)
+                    # init fresh clingo controller:
+                    cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                    # add adventure solving asp encoding:
+                    cur_adv_solve_control.add(solve_asp)
+                    # ground clingo controller:
+                    cur_adv_solve_control.ground()
 
-                    if task_config['task'] == 'deliver':
-                        goal_strings: list = list()
-                        for goal_tuple in goal_tuples:
-                            # get string representations of delivery item and target:
-                            item_type: str = str()
-                            item_adjs: list = list()
-                            target_type: str = str()
-                            target_adjs: list = list()
-                            for fact in world_state:
-                                if fact[0] == "type":
-                                    if goal_tuple[1] == fact[1]:
-                                        item_type = self.entity_definitions[fact[2]]['repr_str']
-                                    if goal_tuple[2] == fact[1]:
-                                        target_type = self.entity_definitions[fact[2]]['repr_str']
-                                if fact[0] == "adj":
-                                    if goal_tuple[1] == fact[1]:
-                                        item_adjs.append(fact[2])
-                                    if goal_tuple[2] == fact[1]:
-                                        target_adjs.append(fact[2])
-                            item_adjs_str: str = " ".join(item_adjs)
-                            if item_adjs:
-                                item_str: str = f"{item_adjs_str} {item_type}"
-                            else:
-                                item_str: str = f"{item_type}"
-                            target_adjs_str: str = " ".join(target_adjs)
-                            if target_adjs:
-                                target_str: str = f"{target_adjs_str} {target_type}"
-                            else:
-                                target_str: str = f"{target_type}"
-                            goal_str: str = f"the {item_str} {goal_tuple[0]} the {target_str}"
-                            goal_strings.append(goal_str)
+                    print("Adventure solving grounded.")
 
-                        if len(goal_strings) == 1:
-                            goal_desc: str = f"Put {goal_strings[0]}."
-                        if len(goal_strings) == 2:
-                            goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
-                        if len(goal_strings) >= 3:
-                            goal_listing_str: str = ", ".join(goal_strings[:-1])
-                            goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+                    cur_adv_solutions = list()
+                    solvable: bool = False
+                    with cur_adv_solve_control.solve(yield_=True) as solve:
+                        for model in solve:
+                            cur_adv_solutions.append(model.__str__())
+                            # print(model)
+                        satisfiable = str(solve.get())
+                        # print("satisfiable:", satisfiable)
+                        if satisfiable == "SAT":
+                            solvable = True
+                        elif satisfiable == "UNSAT":
+                            solvable = False
 
-                    # full raw adventure data:
-                    viable_adventure = {
-                        'adventure_type': self.adv_type,
-                        'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
-                        'optimal_turns': optimal_turns,
-                        'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
-                        'action_definitions': self.adv_type_def['action_definitions'],
-                        'room_definitions': self.adv_type_def['room_definitions'],
-                        'entity_definitions': self.adv_type_def['entity_definitions'],
-                        'bench_turn_limit': self.adv_type_def['bench_turn_limit']
-                    }
+                    print("Adventure solving performed.")
 
-                    generated_adventures.append(viable_adventure)
-                    cur_adventure_count += 1
+                    # skip this raw adventure if it is not solvable under the defined constraints:
+                    if not solvable:
+                        print("Adventure is NOT solvable.")
+                        continue
 
-                    if adventures_per_initial_state and cur_adventure_count == adventures_per_initial_state:
-                        keep_generating_adventures = False
-                else:  # optimal turns not within bounds, discard this raw adventure
-                    continue
+                    print("Adventure is solvable.")
+                    print()
+
+                    # last yielded model is optimal solution:
+                    cur_optimal_solution = cur_adv_solutions[-1]
+                    # convert optimal solution:
+                    cur_sol_abstract, optimal_turns, cur_sol_cmds = self._convert_adventure_solution(
+                        cur_optimal_solution)
+                    # check if optimal turns within bounds:
+                    if min_optimal_turns <= optimal_turns <= max_optimal_turns:
+                        # get tuple world state:
+                        world_state: set = set()
+                        for fact in initial_state:
+                            world_state.add(fact_str_to_tuple(fact))
+
+                        # get tuple goals:
+                        goal_tuples: list = list()
+                        for goal in goal_set:
+                            goal_tuples.append(fact_str_to_tuple(goal))
+
+                        if task_config['task'] == 'deliver':
+                            goal_strings: list = list()
+                            for goal_tuple in goal_tuples:
+                                # get string representations of delivery item and target:
+                                item_type: str = str()
+                                item_adjs: list = list()
+                                target_type: str = str()
+                                target_adjs: list = list()
+                                for fact in world_state:
+                                    if fact[0] == "type":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_type = self.entity_definitions[fact[2]]['repr_str']
+                                        if goal_tuple[2] == fact[1]:
+                                            target_type = self.entity_definitions[fact[2]]['repr_str']
+                                    if fact[0] == "adj":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_adjs.append(fact[2])
+                                        if goal_tuple[2] == fact[1]:
+                                            target_adjs.append(fact[2])
+                                item_adjs_str: str = " ".join(item_adjs)
+                                if item_adjs:
+                                    item_str: str = f"{item_adjs_str} {item_type}"
+                                else:
+                                    item_str: str = f"{item_type}"
+                                target_adjs_str: str = " ".join(target_adjs)
+                                if target_adjs:
+                                    target_str: str = f"{target_adjs_str} {target_type}"
+                                else:
+                                    target_str: str = f"{target_type}"
+                                goal_str: str = f"the {item_str} {goal_tuple[0]} the {target_str}"
+                                goal_strings.append(goal_str)
+
+                            if len(goal_strings) == 1:
+                                goal_desc: str = f"Put {goal_strings[0]}."
+                            if len(goal_strings) == 2:
+                                goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
+                            if len(goal_strings) >= 3:
+                                goal_listing_str: str = ", ".join(goal_strings[:-1])
+                                goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+
+                            # full raw adventure data:
+                            viable_adventure = {
+                                'adventure_type': self.adv_type,
+                                'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
+                                'optimal_turns': optimal_turns,
+                                'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'action_definitions': self.adv_type_def['action_definitions'],
+                                'room_definitions': self.adv_type_def['room_definitions'],
+                                'entity_definitions': self.adv_type_def['entity_definitions'],
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
+                            }
+
+                        if task_config['task'] == 'new-word_states':
+                            goal_strings: list = list()
+                            for goal_tuple in goal_tuples:
+                                # get string representations of delivery item and target:
+                                item_type: str = str()
+                                item_adjs: list = list()
+                                for fact in world_state:
+                                    if fact[0] == "type":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_type = self.entity_definitions[fact[2]]['repr_str']
+                                    if fact[0] == "adj":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_adjs.append(fact[2])
+                                item_adjs_str: str = " ".join(item_adjs)
+                                if item_adjs:
+                                    item_str: str = f"{item_adjs_str} {item_type}"
+                                else:
+                                    item_str: str = f"{item_type}"
+                                goal_str: str = f"the {item_str} {goal_tuple[0]}"
+                                goal_strings.append(goal_str)
+
+                            # print("goal strings:", goal_strings)
+
+                            if len(goal_strings) == 1:
+                                goal_desc: str = f"Make {goal_strings[0]}."
+                            if len(goal_strings) == 2:
+                                goal_desc: str = f"Make {goal_strings[0]} and {goal_strings[1]}."
+                            if len(goal_strings) >= 3:
+                                goal_listing_str: str = ", ".join(goal_strings[:-1])
+                                goal_desc: str = f"Make {goal_listing_str} and {goal_strings[-1]}."
+
+                            # convert new-word definitions to default format and store in adventure:
+                            final_action_definitions = list()
+                            for action_def_type, action_def_content in self.action_definitions.items():
+                                # print(action_def_type, action_def_content)
+                                final_action_def = action_def_content
+                                action_def_content['type_name'] = action_def_type
+                                final_action_definitions.append(final_action_def)
+                            final_room_definitions = list()
+                            for room_def_type, room_def_content in self.room_definitions.items():
+                                final_room_def = room_def_content
+                                room_def_content['type_name'] = room_def_type
+                                final_room_definitions.append(final_room_def)
+                            final_entity_definitions = list()
+                            for entity_def_type, entity_def_content in self.entity_definitions.items():
+                                final_entity_def = entity_def_content
+                                entity_def_content['type_name'] = entity_def_type
+                                final_entity_definitions.append(final_entity_def)
+
+                            viable_adventure = {
+                                'adventure_type': self.adv_type,
+                                'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
+                                'optimal_turns': optimal_turns,
+                                'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'action_definitions': final_action_definitions,
+                                'room_definitions': final_room_definitions,
+                                'entity_definitions': final_entity_definitions,
+                                'domain_definiton': self.domain_def,
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
+                            }
+
+                        generated_adventures.append(viable_adventure)
+                        cur_adventure_count += 1
+                        total_generated_adventure_count += 1
+
+                        if adventures_per_initial_state and cur_adventure_count == adventures_per_initial_state:
+                            keep_generating_adventures = False
+                    else:  # optimal turns not within bounds, discard this raw adventure
+                        continue
+
 
         # adventures generated with this version have undefined difficulty
         # hence the resulting list of adventures is stored under the 'undefined' difficulty key:
@@ -1046,4 +1160,4 @@ if __name__ == "__main__":
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
 
-    adventure_generator.generate_adventures(initial_state_limit=24)
+    adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1)

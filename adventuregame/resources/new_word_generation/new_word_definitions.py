@@ -1044,7 +1044,7 @@ def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 
     new_action_definitions, trait_dict, last_new_word_idx = new_word_actions_create(new_entity_definitions,
                                                                         last_new_words_idx=last_new_word_idx, seed=seed)
 
-    print("trait_dict:", trait_dict)
+    # print("trait_dict:", trait_dict)
 
     if verbose:
         num_defs_created = len(new_room_definitions) + len(new_entity_definitions) + len(new_action_definitions)

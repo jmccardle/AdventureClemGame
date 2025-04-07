@@ -41,6 +41,9 @@
   "new-words_created": {
     "use_premade_definitions": false,
     "definition_method": "create",
+    "add_basic_actions": true,
+    "action_definitions": ["simple_core_actions_v2-2.json"],
+    "clingo_templates": "clingo_templates_simple_actions.json",
     "initial_state_config": {
       "entity_adjectives": "none",
       "add_floors_to_rooms": false,
