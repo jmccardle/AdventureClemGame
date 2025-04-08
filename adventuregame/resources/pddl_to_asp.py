@@ -116,6 +116,8 @@ def action_to_asp(action_def: dict, trait_dict: dict):
             f"{trait_dict[action_mutabilities[0]]['mutable_states'][-1]}")
         action_asp_rules.append(asp_next_turn_irreversible)
 
+    # TODO: figure out what goes wrong with the action ASP that prevents adventures from being solvable if there are different mutabilities for goals
+
     # facts removed:
     for sub_pred in effect_sub_predicates:
         # template for reversible mutables:

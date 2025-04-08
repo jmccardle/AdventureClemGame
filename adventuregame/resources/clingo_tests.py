@@ -3,7 +3,7 @@ from clingo.control import Control
 # init clingo controller in 'all model output' mode:
 ctl = Control(["0"])
 
-tested_asp_file = "test_adv_solve_asp4.txt"
+tested_asp_file = "test_adv_solve_asp5.txt"
 
 # load ASP encoding:
 with open(tested_asp_file, 'r', encoding='utf-8') as lp_file:

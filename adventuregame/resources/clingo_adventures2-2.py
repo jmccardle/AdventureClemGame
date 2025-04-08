@@ -531,19 +531,35 @@ class ClingoAdventureGenerator(object):
                 goal_mutabilities = list()
                 goal_strs = list()
                 for goal in goal_combo:
+                    # print("goal in goal_combo:", goal)
                     goal_object_mutabilities = mutable_state_entities[goal[1]]['mutabilities']
                     for mutability in goal_object_mutabilities:
                         mutable_states = self.interaction_traits[mutability]['mutable_states']
                         if goal[0] in mutable_states:
                             goal_mutability = (mutability, goal[1])
+                            """
+                            print("mutability:", self.interaction_traits[mutability])
+                            mutability_irreversible = self.interaction_traits[mutability][
+                                                          'interaction'] == 'irreversible'
+                            print("mutability is irreversible:", mutability_irreversible)
+                            """
 
                     if goal_mutability not in goal_mutabilities:
-                        goal_mutabilities.append(goal_mutability)
-                        goal_strs.append(f"{goal[0]}({goal[1]})")
+
+                        for goal_mut2 in goal_mutabilities:
+                            if goal_mutability[0] == goal_mut2[0]:
+                                duplicate = True
+
+                        if not duplicate:
+                            goal_mutabilities.append(goal_mutability)
+                            goal_strs.append(f"{goal[0]}({goal[1]})")
                     else:
                         duplicate = True
                 if not duplicate:
+                    # print("added goal combo strs:", goal_strs)
                     goal_combos.append(goal_strs)
+                # print("goal_mutabilities:", goal_mutabilities)
+                # print()
 
         return goal_combos
 
@@ -553,7 +569,15 @@ class ClingoAdventureGenerator(object):
         Turn facts have _t in the fact/atom type, and their first value is the turn at which they are true.
         Mutable facts are defined in the adventure type definition.
         """
-        mutable_fact_types: list = self.adv_type_def["mutable_fact_types"]
+        if 'mutable_fact_types' in self.adv_type_def:
+            mutable_fact_types: list = self.adv_type_def["mutable_fact_types"]
+        elif self.adv_type_def['initial_state_config']['assign_mutable_states_from_set']:
+            mutable_fact_types = ["at"]
+            for mutability in self.interaction_traits.values():
+                # print("mutability:", mutability)
+                mutable_fact_types += mutability['mutable_states']
+        else:
+            raise ValueError("Mutable states are not defined in adventure type definition, can't create solving ASP!")
 
         clingo_str = str()
 
@@ -773,7 +797,6 @@ class ClingoAdventureGenerator(object):
 
         generated_adventures: list = list()
         total_generated_adventure_count = 0
-        # TODO: generate/assign new-words for each adventure
 
         while total_generated_adventure_count < target_adventure_count:
             # generate new new-word definitions and assign them for each adventure for the new-words_created adv type:
@@ -830,8 +853,6 @@ class ClingoAdventureGenerator(object):
                         goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
 
                     print("Current goal set:", goal_set)
-
-                    # TODO: make goal sets not just apply the same mutable state so that models have to use different new-word actions
 
                     # solve current adventure:
                     solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
@@ -994,8 +1015,9 @@ class ClingoAdventureGenerator(object):
                                 'action_definitions': final_action_definitions,
                                 'room_definitions': final_room_definitions,
                                 'entity_definitions': final_entity_definitions,
-                                'domain_definiton': self.domain_def,
-                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
+                                'domain_definition': self.domain_def,
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit'],
+                                'prompt_template_set': self.adv_type_def['prompt_template_set']
                             }
 
                         generated_adventures.append(viable_adventure)
@@ -1160,4 +1182,5 @@ if __name__ == "__main__":
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
 
+    # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, goal_set_picking="random")
     adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1)

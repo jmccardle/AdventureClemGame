@@ -36,7 +36,8 @@
     "optimal_solver_turn_limit": 50,
     "min_optimal_turns": 5,
     "max_optimal_turns": 30,
-    "bench_turn_limit": 50
+    "bench_turn_limit": 50,
+    "prompt_template_set": "home_delivery"
   },
   "new-words_created": {
     "use_premade_definitions": false,
@@ -53,8 +54,8 @@
       "task": "new-word_states",
       "deliver_to_floor": false
     },
+    "prompt_template_set": "new-words_created",
     "goal_count": 3,
-    "mutable_fact_types": ["at", "in", "on", "closed", "open"],
     "optimal_solver_turn_limit": 50,
     "min_optimal_turns": 5,
     "max_optimal_turns": 30,
