@@ -35,6 +35,7 @@ class AdventureGameMaster(DialogueGameMaster):
     """
     def __init__(self, game_name: str, game_path: str, experiment: Dict, player_models: List[Model]):
         super().__init__(game_name, game_path, experiment, player_models)
+        self.game_path = game_path
         self.turns = []
         self.success = True
         self.invalid_format: str = ""  # to track responses with invalid format
@@ -137,7 +138,9 @@ class AdventureGameMaster(DialogueGameMaster):
         After turn increment, before prompting.
         Logs current turn index for convenient comparison of runtime logs and transcripts.
         """
-        self.log_message_to_self(f"Turn {self.current_round}")
+        # TODO: change log_message_to_self to clemcore 2.0.0 version
+        # self.log_message_to_self(f"Turn {self.current_round}")
+        self.log_event("GM", "GM", {'type': "metadata", 'content': f"Turn {self.current_round}"})
 
     def _does_game_proceed(self) -> bool:
         """
@@ -165,7 +168,7 @@ class AdventureGameMaster(DialogueGameMaster):
         # otherwise keep playing:
         return True
 
-    def _on_valid_player_response(self, player: Player, parsed_response: str):
+    def _on_valid_player_response(self, player: Player, parsed_response: Tuple[str, bool]):
         """
         Play loop hook: Called after all players have been prompted and their responses have been parsed+validated.
         """
@@ -176,7 +179,7 @@ class AdventureGameMaster(DialogueGameMaster):
             # last_action: str = self.messages_by_names[self.player.descriptor][-1]['content']
             # logger.info(f"Raw last message:\n{last_action}")
 
-            last_action: str = parsed_response
+            last_action: str = parsed_response[0]
 
             # strip player action to IF input; only first line action command is used:
             if_input: str = last_action[1:].split("\n")[0].strip()

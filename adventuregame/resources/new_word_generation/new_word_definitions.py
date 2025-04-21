@@ -261,6 +261,14 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
     player_def = {"type_name": "player", "repr_str": "you", "traits": [], "hidden": True}
     new_entity_definitions.append(player_def)
 
+    # default inventory entity type:
+    inventory_def = {"type_name": "inventory", "repr_str": "", "traits": [], "hidden": True}
+    new_entity_definitions.append(inventory_def)
+
+    # default floor entity type:
+    floor_def = {"type_name": "floor", "repr_str": "", "traits": [], "hidden": True}
+    new_entity_definitions.append(floor_def)
+
     return new_entity_definitions, new_word_idx, trait_pool, adjective_pool
 
 

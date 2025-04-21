@@ -752,9 +752,15 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         # load entity type definitions in game instance:
         entity_definitions: list = list()
-        for entity_def_source in self.game_instance["entity_definitions"]:
-            entities_file = self.load_json(f"resources{os.sep}definitions{os.sep}{entity_def_source[:-5]}")
-            entity_definitions += entities_file
+
+        for entity_def in self.game_instance["entity_definitions"]:
+            # check if entity definition is file name string:
+            if type(entity_def) == str:
+                entities_file = self.load_json(f"resources{os.sep}definitions{os.sep}{entity_def[:-5]}")
+                entity_definitions += entities_file
+            # check if entity definition is direct dict:
+            elif type(entity_def) == dict:
+                entity_definitions.append(entity_def)
 
         for entity_definition in entity_definitions:
             self.entity_types[entity_definition['type_name']] = dict()
@@ -774,9 +780,15 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         # load room type definitions in game instance:
         room_definitions: list = list()
-        for room_def_source in self.game_instance["room_definitions"]:
-            rooms_file = self.load_json(f"resources{os.sep}definitions{os.sep}{room_def_source[:-5]}")
-            room_definitions += rooms_file
+
+        for room_def in self.game_instance["room_definitions"]:
+            # check if room definition is file name string:
+            if type(room_def) == str:
+                rooms_file = self.load_json(f"resources{os.sep}definitions{os.sep}{room_def[:-5]}")
+                room_definitions += rooms_file
+            # check if room definition is direct dict:
+            elif type(room_def) == dict:
+                room_definitions.append(room_def)
 
         for room_definition in room_definitions:
             self.room_types[room_definition['type_name']] = dict()
@@ -802,9 +814,15 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         # load action type definitions in game instance:
         action_definitions: list = list()
-        for action_def_source in self.game_instance["action_definitions"]:
-            actions_file = self.load_json(f"resources{os.sep}definitions{os.sep}{action_def_source[:-5]}")
-            action_definitions += actions_file
+
+        for action_def in self.game_instance["action_definitions"]:
+            # check if action definition is file name string:
+            if type(action_def) == str:
+                actions_file = self.load_json(f"resources{os.sep}definitions{os.sep}{action_def[:-5]}")
+                action_definitions += actions_file
+            # check if room definition is direct dict:
+            elif type(action_def) == dict:
+                action_definitions.append(action_def)
 
         for action_definition in action_definitions:
             self.action_types[action_definition['type_name']] = dict()
@@ -831,19 +849,30 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         # load domain definitions in game instance:
         domain_definitions: list = list()
-        for domain_def_source in self.game_instance["domain_definitions"]:
-            domain_def_raw = self.load_json(f"resources{os.sep}definitions{os.sep}{domain_def_source[:-5]}")
-            # print("domain_def_raw:", domain_def_raw)
-            # print("domain_def_raw pddl_domain:", domain_def_raw['pddl_domain'])
-            domain_definitions.append(domain_def_raw['pddl_domain'])
+
+        domain_def = self.game_instance["domain_definition"]
+        domain_preparsed = False
+
+        # check if action definition is file name string:
+        if type(domain_def) == str:
+            domain_file = self.load_json(f"resources{os.sep}definitions{os.sep}{domain_def[:-5]}")
+            domain_definitions += domain_file
+        # check if room definition is direct dict:
+        elif type(domain_def) == dict:
+            domain_definitions.append(domain_def)
+            domain_preparsed = True
+            # TODO: make this more robust
 
         # print("domain_definitions", domain_definitions)
 
-        for domain_definition in domain_definitions:
-            # print("domain_definition:", domain_definition)
-            parsed_domain_pddl = self.domain_def_parser.parse(domain_definition)
-            processed_domain_pddl = self.domain_def_transformer.transform(parsed_domain_pddl)
-            # print("processed_domain_pddl:", processed_domain_pddl)
+        if not domain_preparsed:
+            for domain_definition in domain_definitions:
+                # print("domain_definition:", domain_definition)
+                parsed_domain_pddl = self.domain_def_parser.parse(domain_definition)
+                processed_domain_pddl = self.domain_def_transformer.transform(parsed_domain_pddl)
+                # print("processed_domain_pddl:", processed_domain_pddl)
+        else:
+            processed_domain_pddl = domain_definitions[-1]
 
         # for now assume only one domain definition:
         self.domain = processed_domain_pddl
@@ -860,6 +889,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print(self.domain['types']['entity'])
         trait_type_dict = dict()
         for entity_type in self.domain['types']['entity']:
+
             # print("domain entity type:", entity_type, "; type defined:", self.entity_types[entity_type])
             if 'traits' in self.entity_types[entity_type]:
                 # print("defined type traits:", self.entity_types[entity_type]['traits'])
@@ -2690,6 +2720,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # get goal entitiy set:
         goal_entities = set()
+        # TODO: expand to handle new-words goal tuples/any goal tuples
         for goal_fact in self.goal_state:
             goal_entities.add(goal_fact[1])
             goal_entities.add(goal_fact[2])
