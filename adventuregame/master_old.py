@@ -17,16 +17,6 @@ from if_wrapper import AdventureIFInterpreter
 logger = logging.getLogger(__name__)
 
 
-class AdventurePlayer(Player):
-
-    def __init__(self, model: Model):
-        super().__init__(model)
-
-    def _custom_response(self, context: Dict) -> str:
-        return "Go"
-
-
-
 class AdventureGameMaster(DialogueGameMaster):
     """
     DialogueGameMaster subclass for AdventureGame.
@@ -48,7 +38,7 @@ class AdventureGameMaster(DialogueGameMaster):
         # initialize IF interpreter:
         self.if_interpreter = AdventureIFInterpreter(self.game_path, self.game_instance)
         # create clem player:
-        self.player = AdventurePlayer(self.player_models[0])
+        self.player = Player(self.player_models[0])
         # Add the players: these will be logged to the records interactions.json
         # Note: During game play the players will be called in the order added here
         self.add_player(self.player)
@@ -73,11 +63,10 @@ class AdventureGameMaster(DialogueGameMaster):
         # combine prompt with initial room description as first message:
         first_message = self.game_instance["prompt"] + initial_room_desc
         # add the initial prompts to the message history:
-        self.set_context_for(self.player, first_message)
+        self.add_user_message(self.player, first_message)
 
     def _validate_player_response(self, player: Player, utterance: str) -> bool:
         # logger.info(f"Player response:\n{utterance}")
-        self.log_to_self("metadata", f"Round: {self.current_round}")
         # check player response:
         if player == self.player:
             # check rule: response must start with IF >
@@ -100,7 +89,7 @@ class AdventureGameMaster(DialogueGameMaster):
                     return False
         return True
 
-    def _parse_response(self, player: Player, utterance: str) -> Tuple[str, bool]:
+    def _on_parse_response(self, player: Player, utterance: str) -> Tuple[str, bool]:
         """
         Decide if a response utterance should be modified. If not simply return the utterance.
         When a modified utterance and a true value is returned, then a 'parse' event is logged.
@@ -132,12 +121,12 @@ class AdventureGameMaster(DialogueGameMaster):
 
         return utterance, True
 
-    def _on_before_round(self):
+    def _on_before_turn(self, turn_idx: int):
         """
         After turn increment, before prompting.
         Logs current turn index for convenient comparison of runtime logs and transcripts.
         """
-        self.log_message_to_self(f"Turn {self.current_round}")
+        self.log_message_to_self(f"Turn {turn_idx}")
 
     def _does_game_proceed(self) -> bool:
         """
@@ -155,29 +144,25 @@ class AdventureGameMaster(DialogueGameMaster):
             self.log_to_self("adventure_finished", list(self.goals_achieved))  # can be JSON'd; for easier eval
             # return False  # do not stop game when all goal states have been achieved
         # stop game when turn limit is reached:
-        if self.current_round >= self.game_instance['max_turns']:
+        if len(self.turns) >= self.game_instance['max_turns']:
             self.log_to_self("turn_limit_reached", f"Turn limit {self.game_instance['max_turns']} reached, end episode.")
             return False
         # stop game when model used DONE action:
         if self.model_done:
-            self.log_to_self("model_done", f"Model produced DONE action at turn {self.current_round}, end episode.")
+            self.log_to_self("model_done", f"Model produced DONE action at turn {len(self.turns)}, end episode.")
             return False
         # otherwise keep playing:
         return True
 
-    def _on_valid_player_response(self, player: Player, parsed_response: str):
+    def _on_after_turn(self, turn_idx: int):
         """
         Play loop hook: Called after all players have been prompted and their responses have been parsed+validated.
         """
         if self._does_game_proceed():  # only pass last message to IF if the game is still going
             # IF INTERACTION
-
             # get the last player action from message history:
-            # last_action: str = self.messages_by_names[self.player.descriptor][-1]['content']
+            last_action: str = self.messages_by_names[self.player.descriptor][-1]['content']
             # logger.info(f"Raw last message:\n{last_action}")
-
-            last_action: str = parsed_response
-
             # strip player action to IF input; only first line action command is used:
             if_input: str = last_action[1:].split("\n")[0].strip()
             logger.info(f"Stripped IF input: {if_input}")
@@ -352,8 +337,7 @@ class AdventureGameScorer(GameScorer):
                         turn_exploration['pragmatic_action'] = 1
                     else:
                         turn_exploration['pragmatic_action'] = 0
-                    turn_exploration['effective_epistemic_gain_amount'] = exploration_info[
-                        'effective_epistemic_gain_amount']
+                    turn_exploration['effective_epistemic_gain_amount'] = exploration_info['effective_epistemic_gain_amount']
                     turn_exploration['known_entities_ratio'] = exploration_info['known_entities_ratio']
                     turn_exploration['visited_rooms_ratio'] = exploration_info['visited_rooms_ratio']
                     turn_exploration['known_goal_entities_ratio'] = exploration_info['known_goal_entities_ratio']
@@ -410,14 +394,10 @@ class AdventureGameScorer(GameScorer):
             if turn_exploration:
                 self.log_turn_score(turn_idx, 'epistemic_action', turn_exploration['epistemic_action'])
                 self.log_turn_score(turn_idx, 'pragmatic_action', turn_exploration['pragmatic_action'])
-                self.log_turn_score(turn_idx,
-                                    'effective_epistemic_gain_amount',
-                                    turn_exploration['effective_epistemic_gain_amount'])
+                self.log_turn_score(turn_idx, 'effective_epistemic_gain_amount', turn_exploration['effective_epistemic_gain_amount'])
                 self.log_turn_score(turn_idx, 'known_entities_ratio', turn_exploration['known_entities_ratio'])
                 self.log_turn_score(turn_idx, 'visited_rooms_ratio', turn_exploration['visited_rooms_ratio'])
-                self.log_turn_score(turn_idx,
-                                    'known_goal_entities_ratio',
-                                    turn_exploration['known_goal_entities_ratio'])
+                self.log_turn_score(turn_idx, 'known_goal_entities_ratio', turn_exploration['known_goal_entities_ratio'])
 
             # append turn values to episode-level lists:
             turn_scores.append(turn_score)
