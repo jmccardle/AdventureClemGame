@@ -2723,7 +2723,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         # TODO: expand to handle new-words goal tuples/any goal tuples
         for goal_fact in self.goal_state:
             goal_entities.add(goal_fact[1])
-            goal_entities.add(goal_fact[2])
+            if len(goal_fact) >= 3:
+                goal_entities.add(goal_fact[2])
         logger.info(f"Goal entities: {goal_entities}")
 
         # check which goal-relevant entities are known:

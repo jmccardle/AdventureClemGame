@@ -260,7 +260,8 @@ class AdventureGameMaster(DialogueGameMaster):
                     # elaborate and recursive than this
                     self.log_to_self("plan_followed", plan_followed)  # can be JSON'd; for easier eval
             # add IF response to dialog:
-            self.add_user_message(self.player, if_response)
+            # self.add_user_message(self.player, if_response)
+            self.set_context_for(self.player, if_response)
             # record successful turn:
             self.turns.append(self.success)
 
