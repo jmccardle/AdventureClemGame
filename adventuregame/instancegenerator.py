@@ -6,6 +6,7 @@ Creates files in ./in
 import os
 
 from tqdm import tqdm
+import numpy as np
 
 import clemcore
 from clemcore.clemgame import GameInstanceGenerator
@@ -14,10 +15,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+SEED = 42
 
 class AdventureGameInstanceGenerator(GameInstanceGenerator):
     def __init__(self):
         super().__init__(os.path.dirname(os.path.abspath(__file__)))
+        self.rng = np.random.default_rng(seed=SEED)
 
     def on_generate(self, raw_adventures_files: list, variants: list = ["basic"]):
         """Generate both basic and planning variant instances from raw adventures.
@@ -70,6 +73,12 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             for action_def in adventures[difficulty][adventure_id]['action_definitions']:
                                 if action_def['type_name'] not in ["go", "done", "examine", "look"]:
                                     new_word_actions.append(action_def['type_name'])
+                            # shuffle available new-word actions to mitigate first action with first new-word object
+                            # matching one of the generated goals:
+                            new_word_actions_remap = np.arange(len(new_word_actions))
+                            self.rng.shuffle(new_word_actions_remap)
+                            new_word_actions = [new_word_actions[remap_idx] for remap_idx in new_word_actions_remap]
+                            # fill in new-words actions template placeholder:
                             explanation_str = f"In addition to common actions, you can {', '.join(new_word_actions[:-1])} and {new_word_actions[-1]}."
                             instance_prompt = instance_prompt.replace("$NEW_WORDS_EXPLANATIONS$", explanation_str)
 

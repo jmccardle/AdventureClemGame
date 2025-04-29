@@ -501,7 +501,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
@@ -598,7 +598,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
@@ -679,7 +679,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
@@ -765,7 +765,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
@@ -849,7 +849,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
@@ -933,7 +933,7 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FAILURE FEEDBACK
             # parameters failures:
             trait_dashed = trait.replace("_", "-")
-            fail_parameters_trait_type = "{{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
+            fail_parameters_trait_type = "The {{ e }} is not MUTABILITY_TRAIT.".replace("MUTABILITY_TRAIT", trait_dashed)
             fail_parameters = [
                 [fail_parameters_trait_type, "domain_trait_type_mismatch"],
                 ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],

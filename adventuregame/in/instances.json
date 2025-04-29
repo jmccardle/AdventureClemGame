@@ -6,7 +6,7 @@
         {
           "game_id": 0,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can mator, unbal, gatic, ratic, remic and proar.\n\nYour goal for this game is: Make the subst dented, the diale unsust and the inat mateny.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ratic, gatic, proar, remic, unbal and mator.\n\nYour goal for this game is: Make the inat mateny, the diale unsust and the subst dented.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(decte1,unree1)",
             "at(enticed1,iness1)",
@@ -124,7 +124,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not dented-able.",
+                    "The {{ e }} is not dented-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -171,7 +171,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not unsust-able.",
+                    "The {{ e }} is not unsust-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -222,7 +222,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not unsust-able.",
+                    "The {{ e }} is not unsust-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -273,7 +273,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mateny-able.",
+                    "The {{ e }} is not mateny-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -324,7 +324,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mateny-able.",
+                    "The {{ e }} is not mateny-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -375,7 +375,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mateny-able.",
+                    "The {{ e }} is not mateny-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -842,7 +842,7 @@
         {
           "game_id": 1,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ousne, heted, delly, unalin, thoty and ceous.\n\nYour goal for this game is: Make the secti unpish, the imped atory and the rably nolog.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can delly, thoty, ousne, heted, unalin and ceous.\n\nYour goal for this game is: Make the secti unpish, the rably nolog and the imped atory.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(nogia1,uner1)",
             "at(trionee1,natin1)",
@@ -960,7 +960,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not unpish-able.",
+                    "The {{ e }} is not unpish-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1007,7 +1007,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not atory-able.",
+                    "The {{ e }} is not atory-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1058,7 +1058,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not atory-able.",
+                    "The {{ e }} is not atory-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1109,7 +1109,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nolog-able.",
+                    "The {{ e }} is not nolog-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1160,7 +1160,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nolog-able.",
+                    "The {{ e }} is not nolog-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1211,7 +1211,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nolog-able.",
+                    "The {{ e }} is not nolog-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1678,7 +1678,7 @@
         {
           "game_id": 2,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can sulphy, derman, tedne, tuate, chross and latory.\n\nYour goal for this game is: Make the ortid alism, the tulacy enerk and the menny soriced.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can latory, chross, tedne, tuate, sulphy and derman.\n\nYour goal for this game is: Make the tulacy enerk, the menny soriced and the ortid alism.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(reele1,penol1)",
             "at(inging1,micon1)",
@@ -1796,7 +1796,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not alism-able.",
+                    "The {{ e }} is not alism-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1843,7 +1843,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not enerk-able.",
+                    "The {{ e }} is not enerk-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1894,7 +1894,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not enerk-able.",
+                    "The {{ e }} is not enerk-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1945,7 +1945,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not soriced-able.",
+                    "The {{ e }} is not soriced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -1996,7 +1996,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not soriced-able.",
+                    "The {{ e }} is not soriced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2047,7 +2047,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not soriced-able.",
+                    "The {{ e }} is not soriced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2514,7 +2514,7 @@
         {
           "game_id": 3,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can deint, seash, irear, belity, andect and lotis.\n\nYour goal for this game is: Make the proark incry, the acion arliced and the prolly lingly.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can andect, deint, irear, belity, lotis and seash.\n\nYour goal for this game is: Make the prolly lingly, the proark incry and the acion arliced.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(dermin1,comper1)",
             "at(intler1,comess1)",
@@ -2632,7 +2632,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not incry-able.",
+                    "The {{ e }} is not incry-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2679,7 +2679,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not arliced-able.",
+                    "The {{ e }} is not arliced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2730,7 +2730,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not arliced-able.",
+                    "The {{ e }} is not arliced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2781,7 +2781,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not lingly-able.",
+                    "The {{ e }} is not lingly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2832,7 +2832,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not lingly-able.",
+                    "The {{ e }} is not lingly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -2883,7 +2883,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not lingly-able.",
+                    "The {{ e }} is not lingly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3350,7 +3350,7 @@
         {
           "game_id": 4,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can eriat, ovesis, mingne, lepht, iscad and setral.\n\nYour goal for this game is: Make the aciong dolam, the swaiced ailly and the strood aphistic.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can setral, eriat, iscad, mingne, lepht and ovesis.\n\nYour goal for this game is: Make the strood aphistic, the aciong dolam and the swaiced ailly.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(ostion1,stful1)",
             "at(pyelly1,emoust1)",
@@ -3468,7 +3468,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not dolam-able.",
+                    "The {{ e }} is not dolam-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3515,7 +3515,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ailly-able.",
+                    "The {{ e }} is not ailly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3566,7 +3566,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ailly-able.",
+                    "The {{ e }} is not ailly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3617,7 +3617,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aphistic-able.",
+                    "The {{ e }} is not aphistic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3668,7 +3668,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aphistic-able.",
+                    "The {{ e }} is not aphistic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -3719,7 +3719,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aphistic-able.",
+                    "The {{ e }} is not aphistic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4186,7 +4186,7 @@
         {
           "game_id": 5,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can cretia, crury, icalit, lowal, plecon and erack.\n\nYour goal for this game is: Make the eprour reging, the piesm ricke and the siaticed degra.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can crury, cretia, erack, plecon, lowal and icalit.\n\nYour goal for this game is: Make the eprour reging, the siaticed degra and the piesm ricke.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(taillag1,lablent1)",
             "at(dergal1,tworia1)",
@@ -4304,7 +4304,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not reging-able.",
+                    "The {{ e }} is not reging-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4351,7 +4351,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ricke-able.",
+                    "The {{ e }} is not ricke-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4402,7 +4402,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ricke-able.",
+                    "The {{ e }} is not ricke-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4453,7 +4453,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not degra-able.",
+                    "The {{ e }} is not degra-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4504,7 +4504,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not degra-able.",
+                    "The {{ e }} is not degra-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -4555,7 +4555,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not degra-able.",
+                    "The {{ e }} is not degra-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5022,7 +5022,7 @@
         {
           "game_id": 6,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can bioch, erson, snemic, intess, oustion and emood.\n\nYour goal for this game is: Make the astable preciny, the rot lotta and the torhy padery.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can emood, intess, snemic, erson, bioch and oustion.\n\nYour goal for this game is: Make the torhy padery, the rot lotta and the astable preciny.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(rialiced1,ram1)",
             "at(ilitid1,stingly1)",
@@ -5140,7 +5140,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not preciny-able.",
+                    "The {{ e }} is not preciny-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5187,7 +5187,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not lotta-able.",
+                    "The {{ e }} is not lotta-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5238,7 +5238,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not lotta-able.",
+                    "The {{ e }} is not lotta-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5289,7 +5289,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not padery-able.",
+                    "The {{ e }} is not padery-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5340,7 +5340,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not padery-able.",
+                    "The {{ e }} is not padery-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5391,7 +5391,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not padery-able.",
+                    "The {{ e }} is not padery-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -5858,7 +5858,7 @@
         {
           "game_id": 7,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can mellum, upbes, ially, onser, ellous and clogery.\n\nYour goal for this game is: Make the ioness opige, the hetle anird and the rotont reforian.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ially, upbes, mellum, onser, ellous and clogery.\n\nYour goal for this game is: Make the hetle anird, the ioness opige and the rotont reforian.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(venism1,routiced1)",
             "at(toxist1,guaced1)",
@@ -5976,7 +5976,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not opige-able.",
+                    "The {{ e }} is not opige-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6023,7 +6023,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not anird-able.",
+                    "The {{ e }} is not anird-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6074,7 +6074,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not anird-able.",
+                    "The {{ e }} is not anird-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6125,7 +6125,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not reforian-able.",
+                    "The {{ e }} is not reforian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6176,7 +6176,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not reforian-able.",
+                    "The {{ e }} is not reforian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6227,7 +6227,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not reforian-able.",
+                    "The {{ e }} is not reforian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6694,7 +6694,7 @@
         {
           "game_id": 8,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can athemb, abluty, altric, uningne, polotit and arimic.\n\nYour goal for this game is: Make the chophal permity, the nousion nophyle and the hooiced nionian.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can arimic, altric, abluty, uningne, polotit and athemb.\n\nYour goal for this game is: Make the chophal permity, the hooiced nionian and the nousion nophyle.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(ditain1,itink1)",
             "at(ridism1,ambint1)",
@@ -6812,7 +6812,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not permity-able.",
+                    "The {{ e }} is not permity-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6859,7 +6859,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nophyle-able.",
+                    "The {{ e }} is not nophyle-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6910,7 +6910,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nophyle-able.",
+                    "The {{ e }} is not nophyle-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -6961,7 +6961,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nionian-able.",
+                    "The {{ e }} is not nionian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7012,7 +7012,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nionian-able.",
+                    "The {{ e }} is not nionian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7063,7 +7063,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not nionian-able.",
+                    "The {{ e }} is not nionian-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7530,7 +7530,7 @@
         {
           "game_id": 9,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can spidene, adcry, atifory, alful, propress and pnestay.\n\nYour goal for this game is: Make the prachon dedulag, the oubiced ecastic and the mindly ropile.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can adcry, propress, pnestay, alful, atifory and spidene.\n\nYour goal for this game is: Make the oubiced ecastic, the prachon dedulag and the mindly ropile.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(eriant1,conader1)",
             "at(tationsh1,onable1)",
@@ -7648,7 +7648,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not dedulag-able.",
+                    "The {{ e }} is not dedulag-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7695,7 +7695,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ecastic-able.",
+                    "The {{ e }} is not ecastic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7746,7 +7746,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ecastic-able.",
+                    "The {{ e }} is not ecastic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7797,7 +7797,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ropile-able.",
+                    "The {{ e }} is not ropile-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7848,7 +7848,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ropile-able.",
+                    "The {{ e }} is not ropile-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -7899,7 +7899,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ropile-able.",
+                    "The {{ e }} is not ropile-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8366,7 +8366,7 @@
         {
           "game_id": 10,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can udial, ivess, unmastic, ceorid, ingnus and aterous.\n\nYour goal for this game is: Make the aeval proggiced, the rheably exsem and the pholoiced connone.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ingnus, udial, ivess, unmastic, aterous and ceorid.\n\nYour goal for this game is: Make the pholoiced connone, the aeval proggiced and the rheably exsem.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(ousles1,erove1)",
             "at(roofid1,omenan1)",
@@ -8484,7 +8484,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not proggiced-able.",
+                    "The {{ e }} is not proggiced-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8531,7 +8531,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not exsem-able.",
+                    "The {{ e }} is not exsem-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8582,7 +8582,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not exsem-able.",
+                    "The {{ e }} is not exsem-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8633,7 +8633,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not connone-able.",
+                    "The {{ e }} is not connone-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8684,7 +8684,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not connone-able.",
+                    "The {{ e }} is not connone-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -8735,7 +8735,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not connone-able.",
+                    "The {{ e }} is not connone-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9202,7 +9202,7 @@
         {
           "game_id": 11,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can oryter, atheris, tritioush, jolene, amyoid and urseum.\n\nYour goal for this game is: Make the utist hetioner, the anonaticed ippet and the icess tubilly.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can urseum, amyoid, jolene, tritioush, oryter and atheris.\n\nYour goal for this game is: Make the utist hetioner, the icess tubilly and the anonaticed ippet.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(obilard1,oidemat1)",
             "at(robve1,chlove1)",
@@ -9320,7 +9320,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not hetioner-able.",
+                    "The {{ e }} is not hetioner-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9367,7 +9367,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ippet-able.",
+                    "The {{ e }} is not ippet-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9418,7 +9418,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ippet-able.",
+                    "The {{ e }} is not ippet-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9469,7 +9469,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tubilly-able.",
+                    "The {{ e }} is not tubilly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9520,7 +9520,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tubilly-able.",
+                    "The {{ e }} is not tubilly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -9571,7 +9571,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tubilly-able.",
+                    "The {{ e }} is not tubilly-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10038,7 +10038,7 @@
         {
           "game_id": 12,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can eredle, unsibion, phophous, isecin, horehet and indiable.\n\nYour goal for this game is: Make the urermat ytoust, the rimess horpler and the loscred tibing.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can eredle, phophous, isecin, indiable, horehet and unsibion.\n\nYour goal for this game is: Make the rimess horpler, the urermat ytoust and the loscred tibing.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(ragmat1,gligiced1)",
             "at(entabul1,urgily1)",
@@ -10156,7 +10156,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not ytoust-able.",
+                    "The {{ e }} is not ytoust-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10203,7 +10203,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not horpler-able.",
+                    "The {{ e }} is not horpler-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10254,7 +10254,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not horpler-able.",
+                    "The {{ e }} is not horpler-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10305,7 +10305,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tibing-able.",
+                    "The {{ e }} is not tibing-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10356,7 +10356,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tibing-able.",
+                    "The {{ e }} is not tibing-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10407,7 +10407,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tibing-able.",
+                    "The {{ e }} is not tibing-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -10874,7 +10874,7 @@
         {
           "game_id": 13,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can lophante, alitst, hoadve, ompous, ophabor and rhypnon.\n\nYour goal for this game is: Make the asceles tinhal, the rakeer skenic and the mituark mationymb.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ompous, lophante, rhypnon, ophabor, hoadve and alitst.\n\nYour goal for this game is: Make the rakeer skenic, the asceles tinhal and the mituark mationymb.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(mementiced1,trapseng1)",
             "at(untastion1,ammidiced1)",
@@ -10992,7 +10992,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not tinhal-able.",
+                    "The {{ e }} is not tinhal-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11039,7 +11039,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not skenic-able.",
+                    "The {{ e }} is not skenic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11090,7 +11090,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not skenic-able.",
+                    "The {{ e }} is not skenic-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11141,7 +11141,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mationymb-able.",
+                    "The {{ e }} is not mationymb-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11192,7 +11192,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mationymb-able.",
+                    "The {{ e }} is not mationymb-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11243,7 +11243,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not mationymb-able.",
+                    "The {{ e }} is not mationymb-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11710,7 +11710,7 @@
         {
           "game_id": 14,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ntion, anumman, eoster, llatic, cumative and phinding.\n\nYour goal for this game is: Make the forotoly serhing, the bintioust atilioned and the retritt aurpher.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can anumman, llatic, ntion, eoster, cumative and phinding.\n\nYour goal for this game is: Make the bintioust atilioned, the forotoly serhing and the retritt aurpher.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(torifism1,rofflum1)",
             "at(sancyter1,iciante1)",
@@ -11828,7 +11828,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not serhing-able.",
+                    "The {{ e }} is not serhing-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11875,7 +11875,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not atilioned-able.",
+                    "The {{ e }} is not atilioned-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11926,7 +11926,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not atilioned-able.",
+                    "The {{ e }} is not atilioned-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -11977,7 +11977,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aurpher-able.",
+                    "The {{ e }} is not aurpher-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12028,7 +12028,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aurpher-able.",
+                    "The {{ e }} is not aurpher-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12079,7 +12079,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not aurpher-able.",
+                    "The {{ e }} is not aurpher-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12546,7 +12546,7 @@
         {
           "game_id": 15,
           "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can lystly, sifoat, prophedly, curatily, uncomagol and tationnis.\n\nYour goal for this game is: Make the pienthor exabarb, the telyphy vatmene and the rogisart pineger.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can uncomagol, prophedly, curatily, sifoat, lystly and tationnis.\n\nYour goal for this game is: Make the telyphy vatmene, the rogisart pineger and the pienthor exabarb.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(ansubder1,gurlite1)",
             "at(hocyard1,puranity1)",
@@ -12664,7 +12664,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not exabarb-able.",
+                    "The {{ e }} is not exabarb-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12711,7 +12711,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not vatmene-able.",
+                    "The {{ e }} is not vatmene-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12762,7 +12762,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not vatmene-able.",
+                    "The {{ e }} is not vatmene-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12813,7 +12813,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not pineger-able.",
+                    "The {{ e }} is not pineger-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12864,7 +12864,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not pineger-able.",
+                    "The {{ e }} is not pineger-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [
@@ -12915,7 +12915,7 @@
               "failure_feedback": {
                 "parameters": [
                   [
-                    "{{ e }} is not pineger-able.",
+                    "The {{ e }} is not pineger-able.",
                     "domain_trait_type_mismatch"
                   ],
                   [

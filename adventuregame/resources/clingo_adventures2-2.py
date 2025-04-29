@@ -979,7 +979,12 @@ class ClingoAdventureGenerator(object):
                                 goal_str: str = f"the {item_str} {goal_tuple[0]}"
                                 goal_strings.append(goal_str)
 
-                            # print("goal strings:", goal_strings)
+                            # shuffle goal strings to mitigate first goal and new-word verb matching:
+                            # print("goal strings before shuffling:", goal_strings)
+                            goal_strings_remap = np.arange(len(goal_strings))
+                            self.rng.shuffle(goal_strings_remap)
+                            goal_strings = [goal_strings[remap_idx] for remap_idx in goal_strings_remap]
+                            # print("goal strings after shuffling:", goal_strings)
 
                             if len(goal_strings) == 1:
                                 goal_desc: str = f"Make {goal_strings[0]}."
