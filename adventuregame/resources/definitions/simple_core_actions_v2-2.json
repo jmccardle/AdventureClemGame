@@ -16,8 +16,8 @@
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
-        ["You are already in the {{ d }}.", "going_to_current_room"],
-        ["You can't go to a {{ d }} from here.", "no_exit_to"]
+        ["You can't go to a {{ d }} from here.", "no_exit_to"],
+        ["You are already in the {{ d }}.", "going_to_current_room"]
       ]
     },
     "success_feedback": "{{ room_desc }}",

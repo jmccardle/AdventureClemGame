@@ -444,12 +444,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -1280,12 +1280,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -2116,12 +2116,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -2952,12 +2952,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -3788,12 +3788,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -4624,12 +4624,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -5460,12 +5460,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -6296,12 +6296,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -7132,12 +7132,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -7968,12 +7968,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -8804,12 +8804,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -9640,12 +9640,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -10476,12 +10476,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -11312,12 +11312,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -12148,12 +12148,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },
@@ -12984,12 +12984,12 @@
                     "world_state_discrepancy"
                   ],
                   [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
                     "You can't go to a {{ d }} from here.",
                     "no_exit_to"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
                   ]
                 ]
               },

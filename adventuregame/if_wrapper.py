@@ -919,6 +919,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         self.domain['supertypes'] = supertype_dict
         # print("domain:", self.domain)
 
+        self.domain['mutable_states']: list = list()
+        if domain_preparsed:
+            # mutable states/predicates set from domain:
+            mutable_states: list = list()
+            for predicate in self.game_instance['domain_definition']['predicates']:
+                mutable_states.append(predicate['predicate_id'])
+            self.domain['mutable_states'] = mutable_states
+
     def initialize_action_parsing(self, print_lark_grammar: bool = False):
         """
         Initialize the lark action input parser and transformer.
@@ -1350,7 +1358,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             return self.get_inventory_desc()
 
         # get entity ID:
-        # NOTE: This assumes only one instance of any entity type is in the adventure!
+        # NOTE: This assumes only one instance of any entity type is in any adventure!
         entity_id = str()
         for fact in self.world_state:
             if fact[0] == 'type' and fact[2] == entity:
@@ -1358,6 +1366,14 @@ class AdventureIFInterpreter(GameResourceLocator):
                 break
         # print("entity ID found:", entity_id)
         entity_desc_list = list()
+
+        # basic type description:
+        stripped_entity_id = deepcopy(entity_id)
+        while stripped_entity_id.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+            stripped_entity_id = stripped_entity_id[:-1]
+        base_entity_desc = f"This is a {stripped_entity_id}."
+        entity_desc_list.append(base_entity_desc)
+
         # get all entity states to describe:
         for fact in self.world_state:
             if fact[1] == entity_id:
@@ -1478,7 +1494,15 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     entity_desc_list.append(support_content_desc)
 
-                # TODO?: room description?
+                # TODO: new-word entity descriptions
+                if self.domain['mutable_states'] and fact[0] in self.domain['mutable_states']:
+                    mutable_state_entity: str = fact[1]
+                    while mutable_state_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                        mutable_state_entity = mutable_state_entity[:-1]
+                    mutable_state_desc = f"The {mutable_state_entity} is {fact[0]}."
+                    entity_desc_list.append(mutable_state_desc)
+
+                # TODO?: room description? -> LOOK action
 
         return " ".join(entity_desc_list)
 
