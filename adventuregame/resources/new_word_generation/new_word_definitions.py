@@ -30,7 +30,8 @@ def new_word_rooms_replace(source_definition_file_path: str, num_replace: int = 
     rng = np.random.default_rng(seed)
 
     # load new words from file:
-    new_words_source = read_new_words_file("new_words.tsv")
+    # new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # load source room definitions:
@@ -51,9 +52,12 @@ def new_word_rooms_replace(source_definition_file_path: str, num_replace: int = 
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
         # TODO?: replace type_name as well?
+        old_type_name = cur_def['type_name']
+        cur_def['type_name'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
         new_word_idx += 1
-        replacement_dict[old_repr_str] = cur_def['repr_str']
+        # replacement_dict[old_repr_str] = cur_def['repr_str']
+        replacement_dict[old_type_name] = cur_def['type_name']
 
     return new_room_definitions, new_word_idx, replacement_dict
 
@@ -131,7 +135,8 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
     rng = np.random.default_rng(seed)
 
     # load new words from file:
-    new_words_source = read_new_words_file("new_words.tsv")
+    # new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # load source room definitions:
@@ -153,9 +158,12 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
         # TODO?: replace type_name as well?
+        old_type_name = cur_def['type_name']
+        cur_def['type_name'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
         new_word_idx += 1
-        replacement_dict[old_repr_str] = cur_def['repr_str']
+        replacement_dict[old_type_name] = cur_def['type_name']
+        # replacement_dict[old_repr_str] = cur_def['repr_str']
 
     # TODO?: new-word mutability traits and/or mutable states?
 
@@ -197,8 +205,8 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
-    new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    # new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # traits pool:
@@ -311,7 +319,8 @@ def new_word_actions_replace(source_definition_file_path: str, num_replace: int 
     rng = np.random.default_rng(seed)
 
     # load new words from file:
-    new_words_source = read_new_words_file("new_words.tsv")
+    # new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # load source action definitions:
@@ -389,8 +398,8 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
-    new_words_source = read_new_words_file("new_words.tsv")
+    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    # new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # print("entities:", entity_definitions)
@@ -1089,11 +1098,14 @@ def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 
 
 
 def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 42, verbose: bool = False,
-                                      room_definition_source: str = "../definitions/home_rooms.json",
+                                      # room_definition_source: str = "../definitions/home_rooms.json",
+                                      room_definition_source: str = "definitions/home_rooms.json",
                                       room_replace_n: int = 1,
-                                      entity_definition_source: str = "../definitions/home_entities.json",
-                                      entity_replace_n: int = 1,
-                                      action_definition_source: str = "../definitions/basic_actions_v2_2_replace.json",
+                                      # entity_definition_source: str = "../definitions/home_entities.json",
+                                      entity_definition_source: str = "definitions/home_entities.json",
+                                      entity_replace_n: int = 3,
+                                      # action_definition_source: str = "../definitions/basic_actions_v2_2_replace.json",
+                                      action_definition_source: str = "definitions/basic_actions_v2_2_replace.json",
                                       action_replace_n: int = 1,
                                       ):
     """Replace a number of definitions with new-word definitions.
@@ -1112,6 +1124,8 @@ def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int =
         source_definition_file_path=action_definition_source, num_replace=action_replace_n,
         last_new_words_idx=last_new_word_idx, seed=seed)
 
+    # TODO: randomize replaced room/entities/action properly
+
     # preliminary hardcode trait dict for home delivery:
     trait_dict = {'openable': {'interaction': 'binary',
                                'mutable_states': ['open', 'closed'],
@@ -1126,6 +1140,12 @@ def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int =
         for exit_idx, std_exit in enumerate(room_def['exit_targets']):
             if std_exit in rooms_replaced:
                 room_def['exit_targets'][exit_idx] = rooms_replaced[std_exit]
+
+    for entity_def in new_entity_definitions:
+        if 'standard_locations' in entity_def:
+            for room_idx, std_room in enumerate(entity_def['standard_locations']):
+                if std_room in rooms_replaced:
+                    entity_def['standard_locations'][room_idx] = rooms_replaced[std_room]
 
     replacement_dict = {
         "rooms": rooms_replaced,

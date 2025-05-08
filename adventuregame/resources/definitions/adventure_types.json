@@ -47,13 +47,14 @@
     "initial_state_config": {
       "entity_adjectives": "none",
       "add_floors_to_rooms": true,
-      "assign_mutable_states_from_set": true
+      "assign_mutable_states_from_set": false
     },
     "task_config": {
-      "task": "deliver",
+      "task": "new-words_deliver",
       "deliver_to_floor": false
     },
     "prompt_template_set": "new-words_replace",
+    "mutable_fact_types": ["at", "in", "on", "closed", "open"],
     "goal_count": 3,
     "optimal_solver_turn_limit": 50,
     "min_optimal_turns": 5,

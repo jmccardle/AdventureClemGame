@@ -18,9 +18,10 @@ import numpy as np
 from clingo.control import Control
 import lark
 from lark import Lark, Transformer
+from pydantic_core.core_schema import filter_dict_schema
 
 from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
-from adventuregame.resources.new_word_generation.new_word_definitions import create_new_words_definitions_set
+from adventuregame.resources.new_word_generation.new_word_definitions import create_new_words_definitions_set, replace_new_words_definitions_set
 from adventuregame.resources.pddl_util import PDDLDomainTransformer, PDDLActionTransformer
 from adventuregame.resources.pddl_to_asp import augment_action_defs_with_asp
 
@@ -65,7 +66,7 @@ class ClingoAdventureGenerator(object):
                 self._create_assign_new_word_definitions()
             if self.adv_type_def['definition_method'] == "replace":
                 self.new_word_iterate_idx = 0
-                self._create_assign_new_word_definitions()
+                self._replace_assign_new_word_definitions()
 
 
         clingo_template_file = "clingo_templates.json"
@@ -205,7 +206,10 @@ class ClingoAdventureGenerator(object):
 
     def _replace_assign_new_word_definitions(self):
         # create new-words definitions:
-        new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+        new_rooms, new_entities, new_actions, new_domain, trait_dict, replacement_dict, last_new_word_idx = replace_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+
+        print("replacement_dict:", replacement_dict)
+        self.replacement_dict = replacement_dict
 
         print("self.new_word_iterate_idx before new assigned:", self.new_word_iterate_idx)
 
@@ -234,8 +238,12 @@ class ClingoAdventureGenerator(object):
                 if not type_key == 'type_name':
                     type_def_dict[type_key] = type_value
             self.entity_definitions[type_def['type_name']] = type_def_dict
+
+        # print("self.entity_definitions:", self.entity_definitions)
+
         # add ASP from PDDL to created action definitions:
-        new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
+        # new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
+
         # assign action definitions:
         self.action_definitions = dict()
         for type_def in new_actions:
@@ -438,6 +446,7 @@ class ClingoAdventureGenerator(object):
                     id_to_type_dict[fact[1]]['traits'] = self.room_definitions[fact[2]]['traits']
 
         task_config = self.adv_type_def['task_config']
+        # print("task_config:", task_config)
         goal_count = self.adv_type_def['goal_count']
 
         if task_config['task'] == "deliver":
@@ -492,6 +501,94 @@ class ClingoAdventureGenerator(object):
                     goal_tuple: tuple = (pred_type, takeable, destination)
                     all_possible_goals.append(goal_tuple)
             goal_permutations = list(permutations(all_possible_goals, goal_count))
+            # prevent goal combos with same object at different locations:
+            goal_combos = list()
+            for goal_combo in goal_permutations:
+                duplicate = False
+                goal_objects = list()
+                goal_strs = list()
+                for goal in goal_combo:
+                    if goal[1] not in goal_objects:
+                        goal_objects.append(goal[1])
+                        goal_strs.append(f"{goal[0]}({goal[1]},{goal[2]})")
+                    else:
+                        duplicate = True
+                if not duplicate:
+                    goal_combos.append(goal_strs)
+
+        elif task_config['task'] == "new-words_deliver":
+            # print("task is new-words_deliver")
+            # get initial in/on of takeables:
+            takeables: dict = dict()
+            holders: dict = dict()
+            for fact in initial_facts:
+                if fact[0] == "takeable":
+                    if fact[1] not in takeables:
+                        takeables[fact[1]] = {'type': id_to_type_dict[fact[1]]['type']}
+                    else:
+                        takeables[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
+                if fact[0] in ["on", "in"]:
+                    if fact[1] not in takeables:
+                        takeables[fact[1]] = {'state': fact[0], 'holder': fact[2]}
+                    else:
+                        takeables[fact[1]]['state'] = fact[0]
+                        takeables[fact[1]]['holder'] = fact[2]
+                if fact[0] in ["container", "support"]:
+                    if fact[1] not in holders:
+                        holders[fact[1]] = {'type': id_to_type_dict[fact[1]]['type'], 'holder_type': fact[0]}
+                    else:
+                        holders[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
+                        holders[fact[1]]['holder_type'] = fact[0]
+
+            if not task_config['deliver_to_floor']:
+                bad_holders: list = list()
+                for holder, holder_values in holders.items():
+                    if holder_values['type'] == "floor":
+                        bad_holders.append(holder)
+                for bad_holder in bad_holders:
+                    del holders[bad_holder]
+
+            possible_destinations: dict = dict()
+
+            for takeable, takeable_values in takeables.items():
+                for holder, holder_values in holders.items():
+                    if not takeable_values['holder'] == holder:
+                        if takeable not in possible_destinations:
+                            possible_destinations[takeable] = [holder]
+                        else:
+                            possible_destinations[takeable].append(holder)
+
+            # print("possible_destinations:", possible_destinations)
+
+            all_possible_goals: list = list()
+            goal_takeable_count: int = 0
+            goal_in_count: int = 0
+            for takeable, destinations in possible_destinations.items():
+                # print("takeable:", takeable)
+                for destination in destinations:
+                    # print("destination:", destination)
+                    is_replaced: bool = False
+                    if holders[destination]['holder_type'] == "container":
+                        pred_type = "in"
+                        goal_in_count += 1
+                    elif holders[destination]['holder_type'] == "support":
+                        # TODO: make sure there's at least one 'in' goal
+                        pred_type = "on"
+                    if takeable[:-1] in self.replacement_dict['entities'].values():
+                        # print(f"takeable goal item {takeable} is replaced new-word!")
+                        is_replaced = True
+                        goal_takeable_count += 1
+                    if destination[:-1] in self.replacement_dict['entities'].values() and goal_takeable_count > 1:
+                        # print(f"destination goal item {destination} is replaced new-word!")
+                        is_replaced = True
+                    goal_str: str = f"{pred_type}({takeable},{destination})"
+                    goal_tuple: tuple = (pred_type, takeable, destination)
+                    if is_replaced:
+                        all_possible_goals.append(goal_tuple)
+
+            goal_permutations = list(permutations(all_possible_goals, goal_count))
+            # print("goal_permutations:", goal_permutations)
+
             # prevent goal combos with same object at different locations:
             goal_combos = list()
             for goal_combo in goal_permutations:
@@ -856,15 +953,20 @@ class ClingoAdventureGenerator(object):
             if self.adv_type == "new-words_created" and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
                 print("Assigning new new-words...")
                 self._create_assign_new_word_definitions()
+            if self.adv_type == "new-words_home-delivery" and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
+                print("Assigning new new-words...")
+                self._replace_assign_new_word_definitions()
 
             # ROOM LAYOUTS
             # NOTE: As the number of room layouts is relatively small, generating all to iterate over is viable.
             result_layouts = self._generate_room_layouts()
             print("Room layouts generated.")
+            # print("result_layouts:", result_layouts)
 
             # INITIAL STATES
             initial_states = self._generate_initial_states(result_layouts, initial_states_per_layout)
             print("Initial states generated.")
+            # print("initial_states:", initial_states)
 
             # print(initial_states)
             # print(len(initial_states))
@@ -1010,6 +1112,78 @@ class ClingoAdventureGenerator(object):
                                 'entity_definitions': self.adv_type_def['entity_definitions'],
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit']
                             }
+
+                        if task_config['task'] == 'new-words_deliver':
+                            goal_strings: list = list()
+                            for goal_tuple in goal_tuples:
+                                # get string representations of delivery item and target:
+                                item_type: str = str()
+                                item_adjs: list = list()
+                                target_type: str = str()
+                                target_adjs: list = list()
+                                for fact in world_state:
+                                    if fact[0] == "type":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_type = self.entity_definitions[fact[2]]['repr_str']
+                                        if goal_tuple[2] == fact[1]:
+                                            target_type = self.entity_definitions[fact[2]]['repr_str']
+                                    if fact[0] == "adj":
+                                        if goal_tuple[1] == fact[1]:
+                                            item_adjs.append(fact[2])
+                                        if goal_tuple[2] == fact[1]:
+                                            target_adjs.append(fact[2])
+                                item_adjs_str: str = " ".join(item_adjs)
+                                if item_adjs:
+                                    item_str: str = f"{item_adjs_str} {item_type}"
+                                else:
+                                    item_str: str = f"{item_type}"
+                                target_adjs_str: str = " ".join(target_adjs)
+                                if target_adjs:
+                                    target_str: str = f"{target_adjs_str} {target_type}"
+                                else:
+                                    target_str: str = f"{target_type}"
+                                goal_str: str = f"the {item_str} {goal_tuple[0]} the {target_str}"
+                                goal_strings.append(goal_str)
+
+                            if len(goal_strings) == 1:
+                                goal_desc: str = f"Put {goal_strings[0]}."
+                            if len(goal_strings) == 2:
+                                goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
+                            if len(goal_strings) >= 3:
+                                goal_listing_str: str = ", ".join(goal_strings[:-1])
+                                goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+
+                            # convert new-word definitions to default format and store in adventure:
+                            final_action_definitions = list()
+                            for action_def_type, action_def_content in self.action_definitions.items():
+                                # print(action_def_type, action_def_content)
+                                final_action_def = action_def_content
+                                action_def_content['type_name'] = action_def_type
+                                final_action_definitions.append(final_action_def)
+                            final_room_definitions = list()
+                            for room_def_type, room_def_content in self.room_definitions.items():
+                                final_room_def = room_def_content
+                                room_def_content['type_name'] = room_def_type
+                                final_room_definitions.append(final_room_def)
+                            final_entity_definitions = list()
+                            for entity_def_type, entity_def_content in self.entity_definitions.items():
+                                final_entity_def = entity_def_content
+                                entity_def_content['type_name'] = entity_def_type
+                                final_entity_definitions.append(final_entity_def)
+
+
+                            # full raw adventure data:
+                            viable_adventure = {
+                                'adventure_type': self.adv_type,
+                                'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
+                                'optimal_turns': optimal_turns,
+                                'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'action_definitions': final_action_definitions,
+                                'room_definitions': final_room_definitions,
+                                'entity_definitions': final_entity_definitions,
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
+                            }
+
 
                         if task_config['task'] == 'new-word_states':
                             goal_strings: list = list()
