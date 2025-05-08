@@ -39,6 +39,27 @@
     "bench_turn_limit": 50,
     "prompt_template_set": "home_delivery"
   },
+  "new-words_home-delivery": {
+    "use_premade_definitions": false,
+    "definition_method": "replace",
+    "add_basic_actions": true,
+    "action_definitions": ["home_core_actions_v2-2.json"],
+    "initial_state_config": {
+      "entity_adjectives": "none",
+      "add_floors_to_rooms": true,
+      "assign_mutable_states_from_set": true
+    },
+    "task_config": {
+      "task": "deliver",
+      "deliver_to_floor": false
+    },
+    "prompt_template_set": "new-words_replace",
+    "goal_count": 3,
+    "optimal_solver_turn_limit": 50,
+    "min_optimal_turns": 5,
+    "max_optimal_turns": 30,
+    "bench_turn_limit": 50
+  },
   "new-words_created": {
     "use_premade_definitions": false,
     "definition_method": "create",

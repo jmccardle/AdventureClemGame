@@ -1078,6 +1078,50 @@ def create_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 
 
     return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, trait_dict, last_new_word_idx
 
+
+def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int = 42, verbose: bool = False,
+                                      room_definition_source: str = "../definitions/home_rooms.json",
+                                      room_replace_n: int = 1,
+                                      entity_definition_source: str = "../definitions/home_entities.json",
+                                      entity_replace_n: int = 1,
+                                      action_definition_source: str = "../definitions/basic_actions_v2_2_replace.json",
+                                      action_replace_n: int = 1,
+                                      ):
+    """Replace a number of definitions with new-word definitions.
+    Returns:
+        Tuple of: New room definitions, entity definitions, action definitions and domain definition.
+    """
+    new_room_definitions, last_new_word_idx, rooms_replaced = new_word_rooms_replace(
+        source_definition_file_path=room_definition_source, num_replace=room_replace_n,
+        last_new_words_idx=initial_new_word_idx, seed=seed)
+
+    new_entity_definitions, last_new_word_idx, entities_replaced = new_word_entities_replace(
+        source_definition_file_path=entity_definition_source, num_replace=entity_replace_n,
+        last_new_words_idx=last_new_word_idx, seed=seed)
+
+    new_action_definitions, last_new_word_idx, actions_replaced = new_word_actions_replace(
+        source_definition_file_path=action_definition_source, num_replace=action_replace_n,
+        last_new_words_idx=last_new_word_idx, seed=seed)
+
+    # print("trait_dict:", trait_dict)
+    # TODO: trait dict from entities
+
+    # TODO: replace standard room contents with new-words from dicts
+
+
+    if verbose:
+        print(f"{last_new_word_idx+1} new-words used to replace definitions "
+              f"({len(new_room_definitions)} room types, {len(new_entity_definitions)} entity types, "
+              f"{len(new_action_definitions)} action types.")
+        print("Rooms replaced:", rooms_replaced)
+        print("Entities replaced:", entities_replaced)
+        print("Actions replaced:", actions_replaced)
+
+    new_domain_definition = process_to_pddl_domain("partial_new_words", new_room_definitions, new_entity_definitions, trait_dict)
+
+    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, trait_dict, last_new_word_idx
+
+
 if __name__ == "__main__":
     """
     new_word_rooms, replacement_dict = new_word_rooms_replace("../definitions/home_rooms.json", 2)

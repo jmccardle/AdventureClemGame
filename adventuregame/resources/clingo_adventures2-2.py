@@ -63,6 +63,9 @@ class ClingoAdventureGenerator(object):
             if self.adv_type_def['definition_method'] == "create":
                 self.new_word_iterate_idx = 0
                 self._create_assign_new_word_definitions()
+            if self.adv_type_def['definition_method'] == "replace":
+                self.new_word_iterate_idx = 0
+                self._create_assign_new_word_definitions()
 
 
         clingo_template_file = "clingo_templates.json"
@@ -151,6 +154,56 @@ class ClingoAdventureGenerator(object):
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
 
     def _create_assign_new_word_definitions(self):
+        # create new-words definitions:
+        new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+
+        print("self.new_word_iterate_idx before new assigned:", self.new_word_iterate_idx)
+
+        self.new_word_iterate_idx = last_new_word_idx
+
+        print("self.new_word_iterate_idx after new assigned:", self.new_word_iterate_idx)
+
+        # assign mutabilities and traits:
+        self.interaction_traits = trait_dict
+
+        # keep track of new-words database iteration:
+        self.new_word_iterate_idx = last_new_word_idx
+        # assign room definitions:
+        self.room_definitions = dict()
+        for type_def in new_rooms:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.room_definitions[type_def['type_name']] = type_def_dict
+        # assign entity definitions:
+        self.entity_definitions = dict()
+        for type_def in new_entities:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.entity_definitions[type_def['type_name']] = type_def_dict
+        # add ASP from PDDL to created action definitions:
+        new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
+        # assign action definitions:
+        self.action_definitions = dict()
+        for type_def in new_actions:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.action_definitions[type_def['type_name']] = type_def_dict
+
+        if 'add_basic_actions' in self.adv_type_def:
+            if self.adv_type_def['add_basic_actions']:
+                self._load_premade_action_definitions()
+
+        # parse and assign domain definition:
+        parsed_domain_definition_pddl = self.domain_def_parser.parse(new_domain)
+        self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
+
+    def _replace_assign_new_word_definitions(self):
         # create new-words definitions:
         new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
 
@@ -1182,7 +1235,8 @@ class ClingoAdventureGenerator(object):
 if __name__ == "__main__":
     # init generator:
     # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery")
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
