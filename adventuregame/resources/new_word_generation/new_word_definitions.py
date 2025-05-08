@@ -49,6 +49,9 @@ def new_word_rooms_replace(source_definition_file_path: str, num_replace: int = 
         cur_def = new_room_definitions[def_idx]
         old_repr_str = cur_def['repr_str']
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
+
+        # TODO?: replace type_name as well?
+
         new_word_idx += 1
         replacement_dict[old_repr_str] = cur_def['repr_str']
 
@@ -70,8 +73,8 @@ def new_word_rooms_create(num_rooms_created: int = 4,
         # init RNG:
         rng = np.random.default_rng(seed)
         # load new words from file:
-        # new_words_source = read_new_words_file("new_words.tsv")
-        new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+        new_words_source = read_new_words_file("new_words.tsv")
+        # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
         new_word_idx = last_new_words_idx
 
         new_room_definitions = list()
@@ -137,9 +140,10 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
 
     if num_replace > 0:
         # get random list of room def indices to replace:
-        def_idx_to_replace = rng.choice(range(len(source_definitions)), size=num_replace).tolist()
+        # range offset by three to prevent replacement of player, floor and inventory entities
+        def_idx_to_replace = rng.choice(range(3, len(source_definitions)), size=num_replace).tolist()
     else:
-        def_idx_to_replace = list(range(len(source_definitions)))
+        def_idx_to_replace = list(range(3, len(source_definitions)))
 
     replacement_dict = dict()
     new_entity_definitions = deepcopy(source_definitions)
@@ -147,6 +151,9 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
         cur_def = new_entity_definitions[def_idx]
         old_repr_str = cur_def['repr_str']
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
+
+        # TODO?: replace type_name as well?
+
         new_word_idx += 1
         replacement_dict[old_repr_str] = cur_def['repr_str']
 
@@ -190,7 +197,8 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # traits pool:
@@ -381,7 +389,8 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
     # init RNG:
     rng = np.random.default_rng(seed)
     # load new words from file:
-    new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+    new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
     # print("entities:", entity_definitions)
@@ -1103,11 +1112,26 @@ def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int =
         source_definition_file_path=action_definition_source, num_replace=action_replace_n,
         last_new_words_idx=last_new_word_idx, seed=seed)
 
+    # preliminary hardcode trait dict for home delivery:
+    trait_dict = {'openable': {'interaction': 'binary',
+                               'mutable_states': ['open', 'closed'],
+                               'mutable_set_type': 'paired'}}
     # print("trait_dict:", trait_dict)
-    # TODO: trait dict from entities
 
-    # TODO: replace standard room contents with new-words from dicts
+    for room_def in new_room_definitions:
+        # print(room_def['standard_content'])
+        for entity_idx, std_entity in enumerate(room_def['standard_content']):
+            if std_entity in entities_replaced:
+                room_def['standard_content'][entity_idx] = entities_replaced[std_entity]
+        for exit_idx, std_exit in enumerate(room_def['exit_targets']):
+            if std_exit in rooms_replaced:
+                room_def['exit_targets'][exit_idx] = rooms_replaced[std_exit]
 
+    replacement_dict = {
+        "rooms": rooms_replaced,
+        "entities": entities_replaced,
+        "actions": actions_replaced
+    }
 
     if verbose:
         print(f"{last_new_word_idx+1} new-words used to replace definitions "
@@ -1119,7 +1143,7 @@ def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int =
 
     new_domain_definition = process_to_pddl_domain("partial_new_words", new_room_definitions, new_entity_definitions, trait_dict)
 
-    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, trait_dict, last_new_word_idx
+    return new_room_definitions, new_entity_definitions, new_action_definitions, new_domain_definition, trait_dict, replacement_dict, last_new_word_idx
 
 
 if __name__ == "__main__":
@@ -1132,8 +1156,12 @@ if __name__ == "__main__":
     # new_word_actions, new_word_idx, replacement_dict = new_word_actions_replace("../definitions/basic_actions_v2-2.json")
 
     # create set of new word rooms, entities and actions:
-    new_rooms, new_entities, new_actions, new_domain, last_new_word_idx = create_new_words_definitions_set(verbose=True)
+    # new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = create_new_words_definitions_set(verbose=True)
+    # replace home_delivery defs:
+    new_rooms, new_entities, new_actions, new_domain, trait_dict, replacement_dict, last_new_word_idx = replace_new_words_definitions_set(verbose=True)
+    print(new_rooms)
     print(new_domain)
+    print(trait_dict)
     """
     # save created definitions to JSON:
     with open("new_rooms_test.json", 'w', encoding='utf-8') as rooms_out_file:
