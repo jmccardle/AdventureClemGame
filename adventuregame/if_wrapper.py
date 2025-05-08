@@ -2365,6 +2365,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         # check that parameters key correctly contains a PDDL type_list:
         if not 'type_list' in parameters_base:
             raise KeyError
+        # type match fail variable to allow parameter failure feedback after precon failures:
+        type_match_fails: list = list()
         # get parameters list:
         parameters = parameters_base['type_list']
         for param_idx, parameter in enumerate(parameters):
@@ -2483,7 +2485,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                                           'failed_parameter': variable_map[var_id]}
 
                     fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
-                    return False, feedback_str, fail_dict
+
+                    type_match_fails.append((False, feedback_str, fail_dict))
+
+                    # return False, feedback_str, fail_dict
 
         # variable map is filled during parameter checking
         # print("variable_map pre-preconditions:", variable_map)
@@ -2581,6 +2586,10 @@ class AdventureIFInterpreter(GameResourceLocator):
             fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
 
             return False, feedback_str, fail_dict
+
+        # if there were type match fails, return the first including feedback:
+        if type_match_fails:
+            return type_match_fails[0]
 
         # print("variable_map post-preconditions:", variable_map)
 
