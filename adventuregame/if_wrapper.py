@@ -850,13 +850,21 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load domain definitions in game instance:
         domain_definitions: list = list()
 
-        domain_def = self.game_instance["domain_definition"]
+        # domain_def = self.game_instance["domain_definition"]
+        domain_def = self.game_instance["domain_definitions"][0]
+
+        # print("domain_def:", domain_def)
+
         domain_preparsed = False
 
         # check if action definition is file name string:
         if type(domain_def) == str:
+            # print("domain_def is str")
             domain_file = self.load_json(f"resources{os.sep}definitions{os.sep}{domain_def[:-5]}")
-            domain_definitions += domain_file
+            # print("domain_file:", domain_file)
+            # domain_definitions += domain_file
+            domain_definitions.append(domain_file)
+            # print("domain_definitions:", domain_definitions)
         # check if room definition is direct dict:
         elif type(domain_def) == dict:
             domain_definitions.append(domain_def)
@@ -868,7 +876,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         if not domain_preparsed:
             for domain_definition in domain_definitions:
                 # print("domain_definition:", domain_definition)
-                parsed_domain_pddl = self.domain_def_parser.parse(domain_definition)
+                # parsed_domain_pddl = self.domain_def_parser.parse(domain_definition)
+                parsed_domain_pddl = self.domain_def_parser.parse(domain_definition['pddl_domain'])
                 processed_domain_pddl = self.domain_def_transformer.transform(parsed_domain_pddl)
                 # print("processed_domain_pddl:", processed_domain_pddl)
         else:
@@ -923,7 +932,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         if domain_preparsed:
             # mutable states/predicates set from domain:
             mutable_states: list = list()
-            for predicate in self.game_instance['domain_definition']['predicates']:
+            for predicate in self.game_instance['domain_definitions'][0]['predicates']:
                 mutable_states.append(predicate['predicate_id'])
             self.domain['mutable_states'] = mutable_states
 

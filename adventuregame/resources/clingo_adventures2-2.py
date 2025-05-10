@@ -264,6 +264,8 @@ class ClingoAdventureGenerator(object):
             if self.adv_type_def['add_basic_actions']:
                 self._load_premade_action_definitions()
 
+        # TODO: inventory limit issues; either use no-limit base or adapt; no-limit will probably be quicker...
+
         # parse and assign domain definition:
         parsed_domain_definition_pddl = self.domain_def_parser.parse(new_domain)
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
@@ -1244,6 +1246,8 @@ class ClingoAdventureGenerator(object):
                                 'action_definitions': final_action_definitions,
                                 'room_definitions': final_room_definitions,
                                 'entity_definitions': final_entity_definitions,
+                                'domain_definitions': [self.domain_def],
+                                'prompt_template_set': self.adv_type_def['prompt_template_set'],
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit']
                             }
 
@@ -1310,7 +1314,7 @@ class ClingoAdventureGenerator(object):
                                 'action_definitions': final_action_definitions,
                                 'room_definitions': final_room_definitions,
                                 'entity_definitions': final_entity_definitions,
-                                'domain_definition': self.domain_def,
+                                'domain_definitions': [self.domain_def],
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit'],
                                 'prompt_template_set': self.adv_type_def['prompt_template_set']
                             }
@@ -1473,8 +1477,8 @@ if __name__ == "__main__":
     # init generator:
     # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
-    # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")

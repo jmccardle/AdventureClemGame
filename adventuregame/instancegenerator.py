@@ -59,10 +59,11 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                         # load the prepared initial prompt:
                         if adventures[difficulty][adventure_id]['prompt_template_set'] == 'home_delivery':
                             basic_prompt = self.load_template("resources/initial_prompts/basic_prompt_done")
-                        elif adventures[difficulty][adventure_id]['prompt_template_set'] == 'new-words_created':
+                        elif 'new-words' in adventures[difficulty][adventure_id]['prompt_template_set']:
                             basic_prompt = self.load_template("resources/initial_prompts/new-words_prompt_done")
                         # Replace the goal in the templated initial prompt
                         instance_prompt = basic_prompt.replace("$GOAL$", goal_str)
+                        # fill in new-words explanations:
                         if adventures[difficulty][adventure_id]['prompt_template_set'] == 'new-words_created':
                             # TODO: handle full-explanation variant
                             #   - in clingo-adv?
@@ -79,7 +80,32 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             self.rng.shuffle(new_word_actions_remap)
                             new_word_actions = [new_word_actions[remap_idx] for remap_idx in new_word_actions_remap]
                             # fill in new-words actions template placeholder:
-                            explanation_str = f"In addition to common actions, you can {', '.join(new_word_actions[:-1])} and {new_word_actions[-1]}."
+                            explanation_str = (f"In addition to common actions, you can "
+                                               f"{', '.join(new_word_actions[:-1])} and {new_word_actions[-1]}.")
+                            instance_prompt = instance_prompt.replace("$NEW_WORDS_EXPLANATIONS$", explanation_str)
+
+                        if adventures[difficulty][adventure_id]['prompt_template_set'] == 'new-words_replace_explanation':
+                            # list the available new-word action and add its explanation
+                            new_word_actions = adventures[difficulty][adventure_id]['replacement_dict']['actions']
+                            new_word_action = [action for action
+                                               in adventures[difficulty][adventure_id]['action_definitions']
+                                               if action['type_name'] == list(new_word_actions.keys())[0]][0]
+                            # fill in new-words actions template placeholder:
+                            explanation_str = (f"In addition to common actions, you can {list(new_word_actions.keys())[0]}.\n"
+                                               f"{new_word_action['explanation']}")
+
+                            instance_prompt = instance_prompt.replace("$NEW_WORDS_EXPLANATIONS$", explanation_str)
+
+                        if adventures[difficulty][adventure_id]['prompt_template_set'] == 'new-words_replace_no_explanation':
+                            new_word_actions = list(adventures[difficulty][adventure_id]['replacement_dict']['actions'].values())
+                            # shuffle available new-word actions to mitigate first action with first new-word object
+                            # matching one of the generated goals:
+                            new_word_actions_remap = np.arange(len(new_word_actions))
+                            self.rng.shuffle(new_word_actions_remap)
+                            new_word_actions = [new_word_actions[remap_idx] for remap_idx in new_word_actions_remap]
+                            # fill in new-words actions template placeholder:
+                            explanation_str = (f"In addition to common actions, you can "
+                                               f"{', '.join(new_word_actions[:-1])} and {new_word_actions[-1]}.")
                             instance_prompt = instance_prompt.replace("$NEW_WORDS_EXPLANATIONS$", explanation_str)
 
                         # Create a game instance
@@ -107,15 +133,18 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                         if adventure_type == "home_deliver_three":
                             game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
                                 'domain_definitions']  # game parameters
-                        elif adventure_type == "new-words_created":
-                            game_instance["domain_definition"] = adventures[difficulty][adventure_id][
-                                'domain_definition']  # game parameters
+                        # elif adventure_type == "new-words_created":
+                        elif "new-words" in adventure_type:
+                            game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
+                                'domain_definitions']  # game parameters
                             # TODO: de-hardcode the domain difference; just add full domain to home delivery too
 
 
                 # PLANNING
 
                 if "planning" in variants:
+                    if "new-words" in adventure_type:
+                        continue
                     # create an experiment:
                     planning_experiment = self.add_experiment(f"{adventure_type}_planning_{difficulty}")
 
@@ -164,6 +193,8 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                 # BASIC INVENTORY LIMIT
 
                 if "basic_invlimit" in variants:
+                    if "new-words" in adventure_type:
+                        continue
                     # create an experiment:
                     basic_invlimit_experiment = self.add_experiment(f"{adventure_type}_basic_{difficulty}_invlimittwo")
 
@@ -210,7 +241,9 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 
 
                 # PLANNING INVENTORY LIMIT
-                if "basic_invlimit" in variants:
+                if "planning_invlimit" in variants:
+                    if "new-words" in adventure_type:
+                        continue
                     # create an experiment:
                     planning_invlimit_experiment = self.add_experiment(
                         f"{adventure_type}_planning_{difficulty}_invlimittwo")
@@ -261,7 +294,11 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 
 if __name__ == '__main__':
     # The resulting instances.json is automatically saved to the "in" directory of the game folder
-    # AdventureGameInstanceGenerator().generate(raw_adventures_file="curated_home_deliver_three_adventures_v2")
-    AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures"])
-    # AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures",
-    #                                                                "curated_home_deliver_three_adventures_v2"])
+    # AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures"])
+    AdventureGameInstanceGenerator().generate(raw_adventures_files=[
+        "curated_home_deliver_three_adventures_v2_2",
+        "generated_new-words_home-delivery_easy_adventures",
+        "generated_new-words_home-delivery_medium_adventures",
+        "generated_new-words_created_adventures"],
+        variants=["basic", "planning", "basic_invlimit", "planning_invlimit"]
+    )

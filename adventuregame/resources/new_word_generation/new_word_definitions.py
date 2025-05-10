@@ -77,8 +77,8 @@ def new_word_rooms_create(num_rooms_created: int = 4,
         # init RNG:
         rng = np.random.default_rng(seed)
         # load new words from file:
-        new_words_source = read_new_words_file("new_words.tsv")
-        # new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
+        # new_words_source = read_new_words_file("new_words.tsv")
+        new_words_source = read_new_words_file("new_word_generation/new_words.tsv")
         new_word_idx = last_new_words_idx
 
         new_room_definitions = list()

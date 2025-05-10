@@ -58,7 +58,7 @@
       "task": "new-words_deliver",
       "deliver_to_floor": false
     },
-    "prompt_template_set": "new-words_replace",
+    "prompt_template_set": "new-words_replace_explanation",
     "mutable_fact_types": ["at", "in", "on", "closed", "open"],
     "difficulty": "easy",
     "goal_count": 3,
@@ -86,7 +86,7 @@
       "task": "new-words_deliver",
       "deliver_to_floor": false
     },
-    "prompt_template_set": "new-words_replace",
+    "prompt_template_set": "new-words_replace_no_explanation",
     "mutable_fact_types": ["at", "in", "on", "closed", "open"],
     "difficulty": "medium",
     "goal_count": 3,
