@@ -9,7 +9,7 @@ from adventuregame.resources.new_word_generation.new_word_util import read_new_w
 # ROOMS
 """
 New-word room types:
-- replace existing room surface form
+- replace existing room type name and surface form (repr_str)
 - new, arbitrary types
 
 Possible entities in room is part of entity def.
@@ -40,7 +40,8 @@ def new_word_rooms_replace(source_definition_file_path: str, num_replace: int = 
 
     if num_replace > 0:
         # get random list of room def indices to replace:
-        def_idx_to_replace = rng.choice(range(len(source_definitions)), size=num_replace).tolist()
+        def_idx_to_replace = rng.choice(range(len(source_definitions)), size=num_replace, replace=False).tolist()
+        # print("room def_idx_to_replace:", def_idx_to_replace)
     else:
         def_idx_to_replace = list(range(len(source_definitions)))
 
@@ -51,7 +52,6 @@ def new_word_rooms_replace(source_definition_file_path: str, num_replace: int = 
         old_repr_str = cur_def['repr_str']
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
-        # TODO?: replace type_name as well?
         old_type_name = cur_def['type_name']
         cur_def['type_name'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
@@ -111,7 +111,7 @@ def new_word_rooms_create(num_rooms_created: int = 4,
 # ENTITIES
 """
 New-word entity types:
-- replace existing entity surface form
+- replace existing entity type name and surface form (repr_str)
 - new, arbitrary types
 
 Mutable states:
@@ -144,11 +144,67 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
         source_definitions = json.load(source_definition_file)
 
     if num_replace > 0:
-        # get random list of room def indices to replace:
+        # print(f"entity num_replace: {num_replace}")
+        # print(source_definitions[2:])
+        takeables: list = [entity_idx for entity_idx, entity_def in enumerate(source_definitions)
+                           if "takeable" in entity_def['traits']]
+        # print("takeables:", takeables)
+        # print(source_definitions[takeables[0]])
+
+        supports: list = [entity_idx for entity_idx, entity_def in enumerate(source_definitions)
+                             if "support" in entity_def['traits']
+                             and entity_def['type_name'] not in ['floor']]
+        # print("supports:", supports)
+        containers: list = [entity_idx for entity_idx, entity_def in enumerate(source_definitions)
+                             if "container" in entity_def['traits']
+                             and entity_def['type_name'] not in ['inventory']]
+        # print("containers:", containers)
+        receptacles: list = supports + containers
+
+        # print("receptacles:", receptacles)
+        # print(source_definitions[receptacles[0]])
+        if num_replace == 1:
+            # replace one takeable:
+            def_idx_to_replace: list = rng.choice(takeables, 1).tolist()
+            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
+        if num_replace == 2:
+            # replace one takeable and one receptacle:
+            def_idx_to_replace: list = rng.choice(takeables, 1).tolist()
+            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
+            def_idx_to_replace.append(rng.choice(receptacles))
+            # print("def_idx_to_replace with receptacles:", def_idx_to_replace)
+        elif num_replace == 3:
+            # replace two takeables and one receptacle:
+            def_idx_to_replace: list = rng.choice(takeables, 2, replace=False).tolist()
+            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
+            def_idx_to_replace.append(rng.choice(receptacles))
+            # print("def_idx_to_replace with receptacles:", def_idx_to_replace)
+        elif num_replace > 3:
+            # replace at least one container and one support receptacle, and at least two takeables:
+            def_idx_to_replace: list = rng.choice(takeables, 2, replace=False).tolist()
+            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
+            def_idx_to_replace.append(rng.choice(containers))
+            # print("def_idx_to_replace with container:", def_idx_to_replace)
+            def_idx_to_replace.append(rng.choice(supports))
+            # print("def_idx_to_replace with support:", def_idx_to_replace)
+            if num_replace > 4:
+                # replace random remaining entities up to target new-word entity number:
+                used_idx_set = set(def_idx_to_replace)
+                # print("used_idx_set:", used_idx_set)
+                all_idx_set = set(range(3, len(source_definitions)))
+                # print("all_idx_set:", all_idx_set)
+                remaining_idx_set = all_idx_set - used_idx_set
+                remaining_idx = list(remaining_idx_set)
+                # print("remaining_idx:", remaining_idx)
+                def_idx_to_replace += rng.choice(remaining_idx, num_replace-4, replace=False).tolist()
+                # print("def_idx_to_replace with remaining:", def_idx_to_replace)
+
+        # get random list of entity def indices to replace:
         # range offset by three to prevent replacement of player, floor and inventory entities
-        def_idx_to_replace = rng.choice(range(3, len(source_definitions)), size=num_replace).tolist()
+        # def_idx_to_replace = rng.choice(range(2, len(source_definitions)), size=num_replace).tolist()
+        # print("entity def_idx_to_replace:", def_idx_to_replace)
     else:
-        def_idx_to_replace = list(range(3, len(source_definitions)))
+        def_idx_to_replace = list(range(2, len(source_definitions)))
 
     replacement_dict = dict()
     new_entity_definitions = deepcopy(source_definitions)
@@ -157,7 +213,6 @@ def new_word_entities_replace(source_definition_file_path: str, num_replace: int
         old_repr_str = cur_def['repr_str']
         cur_def['repr_str'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
-        # TODO?: replace type_name as well?
         old_type_name = cur_def['type_name']
         cur_def['type_name'] = new_words_source[list(new_words_source.keys())[new_word_idx]]['pos']['NN']
 
@@ -176,6 +231,7 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
                              min_traits: int = 0, max_traits: int = 3,
                              add_adjectives: bool = False, premade_adjectives: list = [], limited_adjective_pool: int = 0,
                              min_adjectives: int = 0, max_adjectives: int = 3,
+                             add_core_entities: bool = True,
                              last_new_words_idx: int = 0, seed: int = 42):
     """Create entity definitions with new words.
     Args:
@@ -193,6 +249,7 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
             definitions. 0 will assign different new-word traits to each created entity definition.
         min_adjectives: Minimum number of possible adjectives for all created entities.
         max_adjectives: Maximum number of possible adjectives for all created entities.
+        add_core_entities: If True (default), core 'player', 'inventory' and 'floor' entity definitions are added.
         last_new_words_idx: New-word source index of next new word to use when iterating.
         seed: Seed number for the RNG.
     Returns:
@@ -271,19 +328,19 @@ def new_word_entities_create(room_definitions: list, num_entities_created: int =
         new_entity_definitions.append(new_entity_type_dict)
         new_entity_type_names.append(new_entity_type_name)
 
-    # TODO?: add option for default floor and inventory entity defs?
+    if add_core_entities:
+        # default player entity type:
+        player_def = {"type_name": "player", "repr_str": "you", "traits": [], "hidden": True}
+        new_entity_definitions.append(player_def)
 
-    # default player entity type:
-    player_def = {"type_name": "player", "repr_str": "you", "traits": [], "hidden": True}
-    new_entity_definitions.append(player_def)
+        # default inventory entity type:
+        inventory_def = {"type_name": "inventory", "repr_str": "", "traits": [], "hidden": True}
+        new_entity_definitions.append(inventory_def)
 
-    # default inventory entity type:
-    inventory_def = {"type_name": "inventory", "repr_str": "", "traits": [], "hidden": True}
-    new_entity_definitions.append(inventory_def)
+        # default floor entity type:
+        floor_def = {"type_name": "floor", "repr_str": "", "traits": [], "hidden": True}
+        new_entity_definitions.append(floor_def)
 
-    # default floor entity type:
-    floor_def = {"type_name": "floor", "repr_str": "", "traits": [], "hidden": True}
-    new_entity_definitions.append(floor_def)
 
     return new_entity_definitions, new_word_idx, trait_pool, adjective_pool
 
@@ -329,7 +386,7 @@ def new_word_actions_replace(source_definition_file_path: str, num_replace: int 
 
     if num_replace > 0:
         # get random list of action def indices to replace:
-        def_idx_to_replace = rng.choice(range(len(source_definitions)), size=num_replace).tolist()
+        def_idx_to_replace = rng.choice(range(len(source_definitions)), size=num_replace, replace=False).tolist()
     else:
         def_idx_to_replace = list(range(len(source_definitions)))
 
@@ -993,10 +1050,6 @@ def new_word_actions_create(entity_definitions: list, num_actions_created: int =
             # FINISH ACTION
             new_word_actions_definitions.append(new_action)
             created_actions_count += 1
-
-        # TODO: add default DONE action
-
-        # break
 
     return new_word_actions_definitions, trait_dict, new_word_idx
 

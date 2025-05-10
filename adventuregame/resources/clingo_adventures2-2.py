@@ -47,8 +47,7 @@ class ClingoAdventureGenerator(object):
 
         # TODO: overhaul adventure type definitions and usage
         #   - mutable fact types from domain
-        #   - new-word experiment parameters; new-word generation
-        #   - definitions in individual instances for new-words
+        #   - new-word experiment parameters
 
         self.rng_seed = rng_seed
         self.rng = np.random.default_rng(seed=self.rng_seed)
@@ -205,8 +204,16 @@ class ClingoAdventureGenerator(object):
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
 
     def _replace_assign_new_word_definitions(self):
+        # sample seed value for new-word replacement to not replace same definitions every time:
+        replace_seed: int = self.rng.integers(9223372036854775808)
         # create new-words definitions:
-        new_rooms, new_entities, new_actions, new_domain, trait_dict, replacement_dict, last_new_word_idx = replace_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
+        new_rooms, new_entities, new_actions, new_domain, \
+        trait_dict, replacement_dict, last_new_word_idx = replace_new_words_definitions_set(
+            self.new_word_iterate_idx,
+            room_replace_n=self.adv_type_def['replace_counts']['rooms'],
+            entity_replace_n=self.adv_type_def['replace_counts']['entities'],
+            action_replace_n=self.adv_type_def['replace_counts']['actions'],
+            seed=replace_seed)
 
         print("replacement_dict:", replacement_dict)
         self.replacement_dict = replacement_dict
@@ -563,35 +570,86 @@ class ClingoAdventureGenerator(object):
             all_possible_goals: list = list()
             goal_takeable_count: int = 0
             goal_in_count: int = 0
+            goal_on_count: int = 0
             for takeable, destinations in possible_destinations.items():
                 # print("takeable:", takeable)
                 for destination in destinations:
                     # print("destination:", destination)
-                    is_replaced: bool = False
-                    if holders[destination]['holder_type'] == "container":
-                        pred_type = "in"
-                        goal_in_count += 1
-                    elif holders[destination]['holder_type'] == "support":
-                        # TODO: make sure there's at least one 'in' goal
-                        pred_type = "on"
+                    takeable_replaced: bool = False
+
                     if takeable[:-1] in self.replacement_dict['entities'].values():
                         # print(f"takeable goal item {takeable} is replaced new-word!")
-                        is_replaced = True
+                        takeable_replaced = True
                         goal_takeable_count += 1
+
+                    if holders[destination]['holder_type'] == "container":
+                        pred_type = "in"
+                    elif holders[destination]['holder_type'] == "support":
+                        pred_type = "on"
+
+                    receptacle_replaced = False
                     if destination[:-1] in self.replacement_dict['entities'].values() and goal_takeable_count > 1:
                         # print(f"destination goal item {destination} is replaced new-word!")
-                        is_replaced = True
+
+                        # make sure there's at least one 'in' and 'on' goal each if fitting receptacles are assured:
+                        # replacing sufficient amount of receptacles is assured by new-word definition creation
+                        if self.adv_type_def['replace_counts']['entities'] > 4:
+                            # print("more than four entity replacement, splitting targets")
+                            if goal_in_count == 0 and pred_type == "in":
+                                # print("goal_in_count == 0 and pred_type == 'in'")
+                                receptacle_replaced = True
+                                goal_in_count += 1
+                            if goal_on_count == 0 and pred_type == "on":
+                                # print("goal_on_count == 0 and pred_type == 'on'")
+                                receptacle_replaced = True
+                                goal_on_count += 1
+                            if goal_in_count >= 1 and goal_on_count >= 1:
+                                # print(f"more than one new-word destination each assigned case: {goal_in_count} 'in', {goal_on_count} 'on'")
+                                receptacle_replaced = True
+                        else:
+                            receptacle_replaced = True
+
                     goal_str: str = f"{pred_type}({takeable},{destination})"
                     goal_tuple: tuple = (pred_type, takeable, destination)
-                    if is_replaced:
-                        all_possible_goals.append(goal_tuple)
+                    if takeable_replaced or receptacle_replaced:
+                        if self.adv_type_def['replace_counts']['entities'] > 4:
+                            if goal_in_count >= 1 and goal_on_count >= 1:
+                                all_possible_goals.append(goal_tuple)
+                                # print(f"added goal tuple: {goal_tuple}")
+                        else:
+                            all_possible_goals.append(goal_tuple)
+                            # print(f"added goal tuple: {goal_tuple}")
+                    # all_possible_goals.append(goal_tuple)
+
+                    # print()
+
+            # print("all_possible_goals:", all_possible_goals)
 
             goal_permutations = list(permutations(all_possible_goals, goal_count))
             # print("goal_permutations:", goal_permutations)
 
+            good_goal_permutations: list = list()
+            # make sure there's at least one 'in' and 'on' goal with new-word destination in goal set:
+            if self.adv_type_def['replace_counts']['entities'] > 4:
+                for goal_combo in goal_permutations:
+                    in_new_word = False
+                    on_new_word = False
+                    for goal in goal_combo:
+                        if goal[2][:-1] in self.replacement_dict['entities'].values():
+                            if goal[0] == 'in':
+                                in_new_word = True
+                            if goal[0] == 'on':
+                                on_new_word = True
+                    if in_new_word and on_new_word:
+                        good_goal_permutations.append(goal_combo)
+            else:
+                good_goal_permutations = goal_permutations
+
+            # print("good_goal_permutations:", good_goal_permutations)
+
             # prevent goal combos with same object at different locations:
             goal_combos = list()
-            for goal_combo in goal_permutations:
+            for goal_combo in good_goal_permutations:
                 duplicate = False
                 goal_objects = list()
                 goal_strs = list()
@@ -953,7 +1011,7 @@ class ClingoAdventureGenerator(object):
             if self.adv_type == "new-words_created" and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
                 print("Assigning new new-words...")
                 self._create_assign_new_word_definitions()
-            if self.adv_type == "new-words_home-delivery" and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
+            if "new-words_home-delivery" in self.adv_type and total_generated_adventure_count > 0:  # start replacing initial new-words once first init set was used
                 print("Assigning new new-words...")
                 self._replace_assign_new_word_definitions()
 
@@ -997,6 +1055,10 @@ class ClingoAdventureGenerator(object):
                 while keep_generating_adventures:
                     # generate goals for current initial state:
                     cur_all_goals = self._generate_goal_facts(initial_state)
+
+                    if not cur_all_goals:
+                        print("No goals generated for current initial state.")
+                        continue
 
                     print("Goals generated.")
 
@@ -1178,6 +1240,7 @@ class ClingoAdventureGenerator(object):
                                 'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
                                 'optimal_turns': optimal_turns,
                                 'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'replacement_dict': self.replacement_dict,
                                 'action_definitions': final_action_definitions,
                                 'room_definitions': final_room_definitions,
                                 'entity_definitions': final_entity_definitions,
@@ -1262,11 +1325,11 @@ class ClingoAdventureGenerator(object):
                         continue
 
 
-        # adventures generated with this version have undefined difficulty
-        # hence the resulting list of adventures is stored under the 'undefined' difficulty key:
-        dict_by_difficulty = {"undefined": generated_adventures}
-        # adventures of defined difficulty need to be created manually
-        # using the generate_from_initial_goals* methods for this requires only editing initial state and goals
+        # adventures difficulty from adventure type definition:
+        if 'difficulty' in self.adv_type_def:
+            dict_by_difficulty = {self.adv_type_def['difficulty']: generated_adventures}
+        else:
+            dict_by_difficulty = {"undefined": generated_adventures}
 
         if save_to_file:
             with open(f"generated_{self.adv_type}_adventures.json", 'w', encoding='utf-8') as out_adv_file:
@@ -1410,7 +1473,8 @@ if __name__ == "__main__":
     # init generator:
     # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")

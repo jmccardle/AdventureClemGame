@@ -39,9 +39,14 @@
     "bench_turn_limit": 50,
     "prompt_template_set": "home_delivery"
   },
-  "new-words_home-delivery": {
+  "new-words_home-delivery_easy": {
     "use_premade_definitions": false,
     "definition_method": "replace",
+    "replace_counts": {
+      "rooms": 1,
+      "entities": 3,
+      "actions": 1
+    },
     "add_basic_actions": true,
     "action_definitions": ["home_core_actions_v2-2.json"],
     "initial_state_config": {
@@ -55,6 +60,35 @@
     },
     "prompt_template_set": "new-words_replace",
     "mutable_fact_types": ["at", "in", "on", "closed", "open"],
+    "difficulty": "easy",
+    "goal_count": 3,
+    "optimal_solver_turn_limit": 50,
+    "min_optimal_turns": 5,
+    "max_optimal_turns": 30,
+    "bench_turn_limit": 50
+  },
+  "new-words_home-delivery_medium": {
+    "use_premade_definitions": false,
+    "definition_method": "replace",
+    "replace_counts": {
+      "rooms": 3,
+      "entities": 9,
+      "actions": 3
+    },
+    "add_basic_actions": true,
+    "action_definitions": ["home_core_actions_v2-2.json"],
+    "initial_state_config": {
+      "entity_adjectives": "none",
+      "add_floors_to_rooms": true,
+      "assign_mutable_states_from_set": false
+    },
+    "task_config": {
+      "task": "new-words_deliver",
+      "deliver_to_floor": false
+    },
+    "prompt_template_set": "new-words_replace",
+    "mutable_fact_types": ["at", "in", "on", "closed", "open"],
+    "difficulty": "medium",
     "goal_count": 3,
     "optimal_solver_turn_limit": 50,
     "min_optimal_turns": 5,
@@ -77,6 +111,7 @@
       "deliver_to_floor": false
     },
     "prompt_template_set": "new-words_created",
+    "difficulty": "hard",
     "goal_count": 3,
     "optimal_solver_turn_limit": 50,
     "min_optimal_turns": 5,
