@@ -32582,6 +32582,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(cally1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -33285,7 +33296,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -33294,7 +33306,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -33302,7 +33315,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33320,7 +33334,8 @@
               "repr_str": "cally",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33337,7 +33352,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33356,7 +33372,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -33374,7 +33391,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33393,7 +33411,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33409,7 +33428,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -33430,7 +33450,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -33466,7 +33487,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -33482,7 +33504,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -33497,7 +33520,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -33739,6 +33763,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "cally",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -33917,6 +33956,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(scont1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -34570,7 +34620,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -34579,7 +34630,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -34587,7 +34639,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34605,7 +34658,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34622,7 +34676,8 @@
               "repr_str": "scont",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34641,7 +34696,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -34659,7 +34715,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34678,7 +34735,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34694,7 +34752,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -34715,7 +34774,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -34751,7 +34811,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -34767,7 +34828,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -34782,7 +34844,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -35024,6 +35087,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "scont",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -35202,6 +35280,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(pante1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -35890,7 +35979,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -35899,7 +35989,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -35907,7 +35998,8 @@
               "repr_str": "pante",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -35925,7 +36017,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -35942,7 +36035,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -35961,7 +36055,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -35979,7 +36074,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -35998,7 +36094,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -36014,7 +36111,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -36035,7 +36133,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -36071,7 +36170,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -36087,7 +36187,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -36102,7 +36203,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -36344,6 +36446,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "pante",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "pante",
@@ -36522,6 +36639,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(enticed1,hallway1)",
             "exit(hallway1,enticed1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(stord1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -37210,7 +37338,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -37219,7 +37348,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -37227,7 +37357,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37245,7 +37376,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37262,7 +37394,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37281,7 +37414,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -37299,7 +37433,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37318,7 +37453,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37334,7 +37470,8 @@
               "repr_str": "stord",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -37355,7 +37492,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -37391,7 +37529,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -37407,7 +37546,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -37422,7 +37562,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -37664,6 +37805,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "stord",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -37842,6 +37998,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(raticed1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(raticed1)",
             "openable(wardrobe1)",
@@ -38540,7 +38707,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -38549,7 +38717,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -38557,7 +38726,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38575,7 +38745,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38592,7 +38763,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38611,7 +38783,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -38629,7 +38802,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38648,7 +38822,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38664,7 +38839,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -38685,7 +38861,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -38721,7 +38898,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -38737,7 +38915,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -38752,7 +38931,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -38994,6 +39174,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "raticed",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -39172,6 +39367,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(trion1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -39875,7 +40081,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -39884,7 +40091,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -39892,7 +40100,8 @@
               "repr_str": "trion",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -39910,7 +40119,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -39927,7 +40137,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -39946,7 +40157,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -39964,7 +40176,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -39983,7 +40196,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -39999,7 +40213,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -40020,7 +40235,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -40056,7 +40272,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -40072,7 +40289,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -40087,7 +40305,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -40329,6 +40548,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "trion",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "trion",
@@ -40507,6 +40741,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(nolog1,hallway1)",
             "exit(hallway1,nolog1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(secti1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -41195,7 +41440,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -41204,7 +41450,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -41212,7 +41459,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41230,7 +41478,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41247,7 +41496,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41266,7 +41516,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -41284,7 +41535,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41303,7 +41555,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41319,7 +41572,8 @@
               "repr_str": "secti",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -41340,7 +41594,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -41376,7 +41631,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -41392,7 +41648,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -41407,7 +41664,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -41649,6 +41907,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "secti",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -41827,6 +42100,17 @@
             "exit(broomcloset1,imped1)",
             "exit(bedroom1,imped1)",
             "exit(imped1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(torish1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(torish1)",
@@ -42530,7 +42814,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -42539,7 +42824,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -42547,7 +42833,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42565,7 +42852,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42582,7 +42870,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42601,7 +42890,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -42619,7 +42909,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42638,7 +42929,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42654,7 +42946,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -42675,7 +42968,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -42711,7 +43005,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -42727,7 +43022,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -42742,7 +43038,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -42984,6 +43281,21 @@
                   "torish",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "torish",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -43162,6 +43474,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(aling1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(aling1)",
             "openable(wardrobe1)",
@@ -43855,7 +44178,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -43864,7 +44188,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -43872,7 +44197,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -43890,7 +44216,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -43907,7 +44234,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -43926,7 +44254,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -43944,7 +44273,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -43963,7 +44293,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -43979,7 +44310,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -44000,7 +44332,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -44036,7 +44369,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -44052,7 +44386,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -44067,7 +44402,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -44309,6 +44645,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "aling",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -44487,6 +44838,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(delly1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -45190,7 +45552,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -45199,7 +45562,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -45207,7 +45571,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45225,7 +45590,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45242,7 +45608,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45261,7 +45628,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -45279,7 +45647,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45298,7 +45667,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45314,7 +45684,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -45335,7 +45706,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -45371,7 +45743,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -45387,7 +45760,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -45402,7 +45776,8 @@
               "repr_str": "delly",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -45644,6 +46019,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "delly"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -45822,6 +46212,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(micon1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -46510,7 +46911,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -46519,7 +46921,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -46527,7 +46930,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46545,7 +46949,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46562,7 +46967,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46581,7 +46987,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -46599,7 +47006,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46618,7 +47026,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46634,7 +47043,8 @@
               "repr_str": "micon",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -46655,7 +47065,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -46691,7 +47102,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -46707,7 +47119,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -46722,7 +47135,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -46964,6 +47378,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "micon",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -47142,6 +47571,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(alism1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -47820,7 +48260,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -47829,7 +48270,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -47837,7 +48279,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47855,7 +48298,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47872,7 +48316,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47891,7 +48336,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -47909,7 +48355,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47928,7 +48375,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47944,7 +48392,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -47965,7 +48414,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -48001,7 +48451,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -48017,7 +48468,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -48032,7 +48484,8 @@
               "repr_str": "alism",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -48274,6 +48727,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "alism"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -48452,6 +48920,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(uncest1,hallway1)",
             "exit(hallway1,uncest1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(pacia1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(pacia1)",
@@ -49150,7 +49629,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -49159,7 +49639,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -49167,7 +49648,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49185,7 +49667,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49202,7 +49685,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49221,7 +49705,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -49239,7 +49724,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49258,7 +49744,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49274,7 +49761,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -49295,7 +49783,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -49331,7 +49820,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -49347,7 +49837,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -49362,7 +49853,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -49604,6 +50096,21 @@
                   "pacia",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "pacia",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -49782,6 +50289,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(reele1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -50460,7 +50978,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -50469,7 +50988,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -50477,7 +50997,8 @@
               "repr_str": "reele",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50495,7 +51016,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50512,7 +51034,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50531,7 +51054,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -50549,7 +51073,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50568,7 +51093,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50584,7 +51110,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -50605,7 +51132,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -50641,7 +51169,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -50657,7 +51186,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -50672,7 +51202,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -50914,6 +51445,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "reele",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "reele",
@@ -51092,6 +51638,17 @@
             "exit(logal1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(derman1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -51770,7 +52327,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -51779,7 +52337,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -51787,7 +52346,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51805,7 +52365,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51822,7 +52383,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51841,7 +52403,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -51859,7 +52422,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51878,7 +52442,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51894,7 +52459,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -51915,7 +52481,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -51951,7 +52518,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -51967,7 +52535,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -51982,7 +52551,8 @@
               "repr_str": "derman",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -52224,6 +52794,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "derman"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -52402,6 +52987,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(tuat1,hallway1)",
             "exit(hallway1,tuat1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(comper1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -53090,7 +53686,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -53099,7 +53696,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -53107,7 +53705,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53125,7 +53724,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53142,7 +53742,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53161,7 +53762,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -53179,7 +53781,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53198,7 +53801,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53214,7 +53818,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -53235,7 +53840,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -53271,7 +53877,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -53287,7 +53894,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -53302,7 +53910,8 @@
               "repr_str": "comper",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -53544,6 +54153,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "comper"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -53727,6 +54351,17 @@
             "exit(broomcloset1,unree1)",
             "exit(bedroom1,unree1)",
             "exit(unree1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(dente1)",
+            "receptacle(counter1)",
+            "receptacle(unsust1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(scont1)",
+            "receptacle(couch1)",
             "openable(unsust1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -54432,7 +55067,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -54441,7 +55077,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -54449,7 +55086,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54467,7 +55105,8 @@
               "repr_str": "dente",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54484,7 +55123,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54503,7 +55143,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -54521,7 +55162,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54540,7 +55182,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54556,7 +55199,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -54577,7 +55221,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -54613,7 +55258,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -54629,7 +55275,8 @@
               "repr_str": "scont",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -54644,7 +55291,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -54886,6 +55534,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "dente",
+                  "counter",
+                  "unsust",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "scont",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -55064,6 +55727,17 @@
             "exit(decte1,hallway1)",
             "exit(enticed1,hallway1)",
             "exit(hallway1,enticed1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(remiced1)",
+            "receptacle(mator1)",
+            "receptacle(uner1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(unbal1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(mator1)",
             "openable(uner1)",
             "openable(wardrobe1)",
@@ -55749,7 +56423,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -55758,7 +56433,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -55766,7 +56442,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55784,7 +56461,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55801,7 +56479,8 @@
               "repr_str": "remiced",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55820,7 +56499,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -55838,7 +56518,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55857,7 +56538,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55873,7 +56555,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -55894,7 +56577,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -55930,7 +56614,8 @@
               "repr_str": "unbal",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -55946,7 +56631,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -55961,7 +56647,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -56203,6 +56890,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "remiced",
+                  "mator",
+                  "uner",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "unbal",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -56381,6 +57083,17 @@
             "exit(ation1,nolog1)",
             "exit(bedroom1,nolog1)",
             "exit(nolog1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(imped1)",
+            "receptacle(stism1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(trionee1)",
+            "receptacle(rably1)",
+            "receptacle(bed1)",
+            "receptacle(nond1)",
             "openable(imped1)",
             "openable(stism1)",
             "openable(wardrobe1)",
@@ -57086,7 +57799,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -57095,7 +57809,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -57103,7 +57818,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57121,7 +57837,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57138,7 +57855,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57157,7 +57875,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -57175,7 +57894,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57194,7 +57914,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57210,7 +57931,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -57231,7 +57953,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -57267,7 +57990,8 @@
               "repr_str": "rably",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -57283,7 +58007,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -57298,7 +58023,8 @@
               "repr_str": "nond",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -57540,6 +58266,21 @@
                   "wardrobe",
                   "trionee"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "imped",
+                  "stism",
+                  "wardrobe",
+                  "shelf",
+                  "trionee",
+                  "rably",
+                  "bed",
+                  "nond"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -57718,6 +58459,17 @@
             "exit(broomcloset1,het1)",
             "exit(ationee1,het1)",
             "exit(het1,ationee1)",
+            "receptacle(table1)",
+            "receptacle(micon1)",
+            "receptacle(ceoust1)",
+            "receptacle(refrigerator1)",
+            "receptacle(thot1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(thot1)",
             "openable(wardrobe1)",
@@ -58403,7 +59155,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -58412,7 +59165,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -58420,7 +59174,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58438,7 +59193,8 @@
               "repr_str": "micon",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58455,7 +59211,8 @@
               "repr_str": "ceoust",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58474,7 +59231,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -58492,7 +59250,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58511,7 +59270,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58527,7 +59287,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -58548,7 +59309,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -58584,7 +59346,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -58600,7 +59363,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -58615,7 +59379,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -58857,6 +59622,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "micon",
+                  "ceoust",
+                  "refrigerator",
+                  "thot",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -59035,6 +59815,17 @@
             "exit(tulacy1,unflued1)",
             "exit(bedroom1,unflued1)",
             "exit(unflued1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(reele1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(rist1)",
+            "receptacle(menny1)",
+            "receptacle(prust1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(reele1)",
             "openable(wardrobe1)",
@@ -59735,7 +60526,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -59744,7 +60536,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -59752,7 +60545,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59770,7 +60564,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59787,7 +60582,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59806,7 +60602,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -59824,7 +60621,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59843,7 +60641,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59859,7 +60658,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -59880,7 +60680,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -59916,7 +60717,8 @@
               "repr_str": "menny",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -59932,7 +60734,8 @@
               "repr_str": "prust",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -59947,7 +60750,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -60189,6 +60993,21 @@
                   "wardrobe",
                   "rist"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "reele",
+                  "wardrobe",
+                  "shelf",
+                  "rist",
+                  "menny",
+                  "prust",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -60367,6 +61186,17 @@
             "exit(tuat1,hallway1)",
             "exit(chross1,hallway1)",
             "exit(hallway1,chross1)",
+            "receptacle(table1)",
+            "receptacle(distral1)",
+            "receptacle(counter1)",
+            "receptacle(atent1)",
+            "receptacle(evism1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(proark1)",
+            "receptacle(incry1)",
+            "receptacle(couch1)",
             "openable(atent1)",
             "openable(evism1)",
             "openable(wardrobe1)",
@@ -61072,7 +61902,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -61081,7 +61912,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -61089,7 +61921,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61107,7 +61940,8 @@
               "repr_str": "distral",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61124,7 +61958,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61143,7 +61978,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -61161,7 +61997,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61180,7 +62017,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61196,7 +62034,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -61217,7 +62056,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -61253,7 +62093,8 @@
               "repr_str": "proark",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -61269,7 +62110,8 @@
               "repr_str": "incry",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -61284,7 +62126,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -61526,6 +62369,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "distral",
+                  "counter",
+                  "atent",
+                  "evism",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "proark",
+                  "incry",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -61704,6 +62562,17 @@
             "exit(broomcloset1,hypner1)",
             "exit(bedroom1,hypner1)",
             "exit(hypner1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(riat1)",
+            "receptacle(deint1)",
+            "receptacle(roplo1)",
+            "receptacle(wardrobe1)",
+            "receptacle(seash1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(ireart1)",
             "openable(deint1)",
             "openable(roplo1)",
             "openable(wardrobe1)",
@@ -62384,7 +63253,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -62393,7 +63263,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -62401,7 +63272,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62419,7 +63291,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62436,7 +63309,8 @@
               "repr_str": "riat",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62455,7 +63329,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -62473,7 +63348,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62492,7 +63368,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62508,7 +63385,8 @@
               "repr_str": "seash",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -62529,7 +63407,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -62565,7 +63444,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -62581,7 +63461,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -62596,7 +63477,8 @@
               "repr_str": "ireart",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -62838,6 +63720,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "riat",
+                  "deint",
+                  "roplo",
+                  "wardrobe",
+                  "seash",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "ireart"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -63016,6 +63913,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(encal1,hallway1)",
             "exit(hallway1,encal1)",
+            "receptacle(table1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(inchan1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(aciong1)",
+            "receptacle(dolam1)",
+            "receptacle(perent1)",
+            "receptacle(bed1)",
+            "receptacle(swaiced1)",
             "openable(inchan1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -63711,7 +64619,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -63720,7 +64629,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -63728,7 +64638,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63746,7 +64657,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63763,7 +64675,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63782,7 +64695,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -63800,7 +64714,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63819,7 +64734,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63835,7 +64751,8 @@
               "repr_str": "aciong",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -63856,7 +64773,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -63892,7 +64810,8 @@
               "repr_str": "perent",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -63908,7 +64827,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -63923,7 +64843,8 @@
               "repr_str": "swaiced",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -64165,6 +65086,21 @@
                   "wardrobe",
                   "dolam"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "sidetable",
+                  "counter",
+                  "inchan",
+                  "cupboard",
+                  "wardrobe",
+                  "aciong",
+                  "dolam",
+                  "perent",
+                  "bed",
+                  "swaiced"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -64343,6 +65279,17 @@
             "exit(broomcloset1,olict1)",
             "exit(bedroom1,olict1)",
             "exit(olict1,bedroom1)",
+            "receptacle(mingnee1)",
+            "receptacle(tworia1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(iscad1)",
+            "receptacle(ovesish1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(lepht1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(iscad1)",
             "openable(ovesish1)",
@@ -65028,7 +65975,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -65037,7 +65985,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -65045,7 +65994,8 @@
               "repr_str": "mingnee",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65063,7 +66013,8 @@
               "repr_str": "tworia",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65080,7 +66031,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65099,7 +66051,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -65117,7 +66070,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65136,7 +66090,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65152,7 +66107,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -65173,7 +66129,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -65209,7 +66166,8 @@
               "repr_str": "lepht",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -65225,7 +66183,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -65240,7 +66199,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -65482,6 +66442,21 @@
                   "ovesish",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "mingnee",
+                  "tworia",
+                  "counter",
+                  "refrigerator",
+                  "iscad",
+                  "ovesish",
+                  "shelf",
+                  "freezer",
+                  "lepht",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "mingnee",
@@ -65660,6 +66635,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(taillag1)",
+            "receptacle(dergal1)",
+            "receptacle(orele1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(teming1)",
+            "receptacle(siaticed1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(teming1)",
@@ -66345,7 +67331,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -66354,7 +67341,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -66362,7 +67350,8 @@
               "repr_str": "taillag",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66380,7 +67369,8 @@
               "repr_str": "dergal",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66397,7 +67387,8 @@
               "repr_str": "orele",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66416,7 +67407,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -66434,7 +67426,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66453,7 +67446,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66469,7 +67463,8 @@
               "repr_str": "siaticed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -66490,7 +67485,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -66526,7 +67522,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -66542,7 +67539,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -66557,7 +67555,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -66799,6 +67798,21 @@
                   "teming",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "taillag",
+                  "dergal",
+                  "orele",
+                  "refrigerator",
+                  "cupboard",
+                  "teming",
+                  "siaticed",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "taillag",
@@ -66977,6 +67991,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(crury1,hallway1)",
             "exit(hallway1,crury1)",
+            "receptacle(stingly1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(erack1)",
+            "receptacle(wardrobe1)",
+            "receptacle(ram1)",
+            "receptacle(freezer1)",
+            "receptacle(iscum1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(erack1)",
             "openable(wardrobe1)",
@@ -67662,7 +68687,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -67671,7 +68697,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -67679,7 +68706,8 @@
               "repr_str": "stingly",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67697,7 +68725,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67714,7 +68743,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67733,7 +68763,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -67751,7 +68782,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67770,7 +68802,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67786,7 +68819,8 @@
               "repr_str": "ram",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -67807,7 +68841,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -67843,7 +68878,8 @@
               "repr_str": "iscum",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -67859,7 +68895,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -67874,7 +68911,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -68116,6 +69154,21 @@
                   "wardrobe",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "stingly",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "erack",
+                  "wardrobe",
+                  "ram",
+                  "freezer",
+                  "iscum",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "stingly",
@@ -68294,6 +69347,17 @@
             "exit(ishing1,hallway1)",
             "exit(rot1,hallway1)",
             "exit(hallway1,rot1)",
+            "receptacle(rialiced1)",
+            "receptacle(sidetable1)",
+            "receptacle(ilitid1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(torhy1)",
+            "receptacle(shelf1)",
+            "receptacle(bioch1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(torhy1)",
@@ -68969,7 +70033,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -68978,7 +70043,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -68986,7 +70052,8 @@
               "repr_str": "rialiced",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69004,7 +70071,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69021,7 +70089,8 @@
               "repr_str": "ilitid",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69040,7 +70109,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -69058,7 +70128,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69077,7 +70148,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69093,7 +70165,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -69114,7 +70187,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -69150,7 +70224,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -69166,7 +70241,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -69181,7 +70257,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -69423,6 +70500,21 @@
                   "torhy",
                   "bioch"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "rialiced",
+                  "sidetable",
+                  "ilitid",
+                  "refrigerator",
+                  "cupboard",
+                  "torhy",
+                  "shelf",
+                  "bioch",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "rialiced",
@@ -69601,6 +70693,17 @@
             "exit(oustion1,routiced1)",
             "exit(bedroom1,routiced1)",
             "exit(routiced1,bedroom1)",
+            "receptacle(reforia1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(atival1)",
+            "receptacle(chair1)",
+            "receptacle(ioness1)",
+            "receptacle(attle1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(wardrobe1)",
@@ -70306,7 +71409,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -70315,7 +71419,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -70323,7 +71428,8 @@
               "repr_str": "reforia",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70341,7 +71447,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70358,7 +71465,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70377,7 +71485,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -70395,7 +71504,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70414,7 +71524,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70430,7 +71541,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -70451,7 +71563,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -70487,7 +71600,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -70503,7 +71617,8 @@
               "repr_str": "ioness",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -70518,7 +71633,8 @@
               "repr_str": "attle",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -70760,6 +71876,21 @@
                   "wardrobe",
                   "atival"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "reforia",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "wardrobe",
+                  "shelf",
+                  "atival",
+                  "chair",
+                  "ioness",
+                  "attle"
+                ],
                 "support": [
                   "floor",
                   "reforia",
@@ -70938,6 +72069,17 @@
             "exit(herper1,toxist1)",
             "exit(bedroom1,toxist1)",
             "exit(toxist1,bedroom1)",
+            "receptacle(table1)",
+            "receptacle(ciot1)",
+            "receptacle(elloust1)",
+            "receptacle(cunad1)",
+            "receptacle(upbes1)",
+            "receptacle(wardrobe1)",
+            "receptacle(ially1)",
+            "receptacle(onser1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
             "openable(cunad1)",
             "openable(upbes1)",
             "openable(wardrobe1)",
@@ -71633,7 +72775,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -71642,7 +72785,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -71650,7 +72794,8 @@
               "repr_str": "table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71668,7 +72813,8 @@
               "repr_str": "ciot",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71685,7 +72831,8 @@
               "repr_str": "elloust",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71704,7 +72851,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -71722,7 +72870,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71741,7 +72890,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71757,7 +72907,8 @@
               "repr_str": "ially",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -71778,7 +72929,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -71814,7 +72966,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -71830,7 +72983,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -71845,7 +72999,8 @@
               "repr_str": "couch",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -72087,6 +73242,21 @@
                   "wardrobe",
                   "onser"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "ciot",
+                  "elloust",
+                  "cunad",
+                  "upbes",
+                  "wardrobe",
+                  "ially",
+                  "onser",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
                 "support": [
                   "floor",
                   "table",
@@ -72265,6 +73435,17 @@
             "exit(broomcloset1,hydroft1)",
             "exit(bedroom1,hydroft1)",
             "exit(hydroft1,bedroom1)",
+            "receptacle(matiorm1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(chophal1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(alloger1)",
+            "receptacle(gicalio1)",
+            "receptacle(nousion1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(chophal1)",
@@ -72940,7 +74121,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -72949,7 +74131,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -72957,7 +74140,8 @@
               "repr_str": "matiorm",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -72975,7 +74159,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -72992,7 +74177,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -73011,7 +74197,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -73029,7 +74216,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -73048,7 +74236,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -73064,7 +74253,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -73085,7 +74275,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -73121,7 +74312,8 @@
               "repr_str": "alloger",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -73137,7 +74329,8 @@
               "repr_str": "gicalio",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -73152,7 +74345,8 @@
               "repr_str": "nousion",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -73394,6 +74588,21 @@
                   "chophal",
                   "freezer"
                 ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "matiorm",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "chophal",
+                  "shelf",
+                  "freezer",
+                  "alloger",
+                  "gicalio",
+                  "nousion"
+                ],
                 "support": [
                   "floor",
                   "matiorm",
@@ -73572,6 +74781,17 @@
             "exit(broomcloset1,hallway1)",
             "exit(bedroom1,hallway1)",
             "exit(hallway1,bedroom1)",
+            "receptacle(conader1)",
+            "receptacle(sidetable1)",
+            "receptacle(counter1)",
+            "receptacle(refrigerator1)",
+            "receptacle(cupboard1)",
+            "receptacle(altriced1)",
+            "receptacle(shelf1)",
+            "receptacle(polotit1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(uningnee1)",
             "openable(refrigerator1)",
             "openable(cupboard1)",
             "openable(altriced1)",
@@ -74257,7 +75477,8 @@
               "hidden": true,
               "container": true,
               "traits": [
-                "container"
+                "container",
+                "receptacle"
               ],
               "type_name": "inventory"
             },
@@ -74266,7 +75487,8 @@
               "hidden": true,
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "type_name": "floor"
             },
@@ -74274,7 +75496,8 @@
               "repr_str": "conader",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74292,7 +75515,8 @@
               "repr_str": "side table",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74309,7 +75533,8 @@
               "repr_str": "counter",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74328,7 +75553,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -74346,7 +75572,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74365,7 +75592,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74381,7 +75609,8 @@
               "repr_str": "shelf",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "wooden",
@@ -74402,7 +75631,8 @@
               "openable": true,
               "traits": [
                 "container",
-                "openable"
+                "openable",
+                "receptacle"
               ],
               "possible_adjs": [
                 "large",
@@ -74438,7 +75668,8 @@
               "repr_str": "chair",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -74454,7 +75685,8 @@
               "repr_str": "bed",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -74469,7 +75701,8 @@
               "repr_str": "uningnee",
               "support": true,
               "traits": [
-                "support"
+                "support",
+                "receptacle"
               ],
               "possible_adjs": [
                 "comfy",
@@ -74710,6 +75943,21 @@
                   "cupboard",
                   "altriced",
                   "polotit"
+                ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "conader",
+                  "sidetable",
+                  "counter",
+                  "refrigerator",
+                  "cupboard",
+                  "altriced",
+                  "shelf",
+                  "polotit",
+                  "chair",
+                  "bed",
+                  "uningnee"
                 ],
                 "support": [
                   "floor",

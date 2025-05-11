@@ -1155,7 +1155,7 @@ def replace_new_words_definitions_set(initial_new_word_idx: int = 0, seed: int =
                                       room_definition_source: str = "definitions/home_rooms.json",
                                       room_replace_n: int = 1,
                                       # entity_definition_source: str = "../definitions/home_entities.json",
-                                      entity_definition_source: str = "definitions/home_entities.json",
+                                      entity_definition_source: str = "definitions/home_entities_v2.json",
                                       entity_replace_n: int = 3,
                                       # action_definition_source: str = "../definitions/basic_actions_v2_2_replace.json",
                                       action_definition_source: str = "definitions/basic_actions_v2_2_replace.json",

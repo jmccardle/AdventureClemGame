@@ -170,7 +170,7 @@ class AdventureGameMaster(DialogueGameMaster):
             return False
         # stop game when last three IF inputs were the same:
         if self.loop_detected:
-            self.log_to_self("loop_detected", f"Model produced IF input {self.if_input_history[-1]} three "
+            self.log_to_self("loop_detected", f"Model produced IF input '{self.if_input_history[-1]}' four "
                                               f"times consecutively, abort episode.")
             return False
         # otherwise keep playing:
@@ -195,10 +195,11 @@ class AdventureGameMaster(DialogueGameMaster):
 
             # loop checking:
             self.if_input_history.append(if_input)
-            # check if last three IF inputs are the same:
-            if len(self.if_input_history) >= 3:
-                if self.if_input_history[-3] == self.if_input_history[-2] == self.if_input_history[-1]:
+            # check if last four IF inputs are the same:
+            if len(self.if_input_history) >= 4:
+                if self.if_input_history[-4] == self.if_input_history[-3] == self.if_input_history[-2] == self.if_input_history[-1]:
                     self.loop_detected = True
+                    logger.info(f"Aborting - IF input loop detected: Last four inputs are '{self.if_input_history[-1]}'")
 
             # count achieved goals:
             prior_goal_count = len(self.goals_achieved)
