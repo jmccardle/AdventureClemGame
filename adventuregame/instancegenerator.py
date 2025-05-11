@@ -91,7 +91,7 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                                                in adventures[difficulty][adventure_id]['action_definitions']
                                                if action['type_name'] == list(new_word_actions.keys())[0]][0]
                             # fill in new-words actions template placeholder:
-                            explanation_str = (f"In addition to common actions, you can {list(new_word_actions.values())[0]}.\n"
+                            explanation_str = (f"In addition to common actions, you can {list(new_word_actions.values())[0]}. "
                                                f"{new_word_action['explanation']}")
 
                             instance_prompt = instance_prompt.replace("$NEW_WORDS_EXPLANATIONS$", explanation_str)

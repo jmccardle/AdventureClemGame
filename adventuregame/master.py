@@ -196,8 +196,9 @@ class AdventureGameMaster(DialogueGameMaster):
             # loop checking:
             self.if_input_history.append(if_input)
             # check if last three IF inputs are the same:
-            if self.if_input_history[-3] == self.if_input_history[-2] == self.if_input_history[-1]:
-                self.loop_detected = True
+            if len(self.if_input_history) >= 3:
+                if self.if_input_history[-3] == self.if_input_history[-2] == self.if_input_history[-1]:
+                    self.loop_detected = True
 
             # count achieved goals:
             prior_goal_count = len(self.goals_achieved)
