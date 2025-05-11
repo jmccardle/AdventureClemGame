@@ -67,6 +67,9 @@ class AdventureGameMaster(DialogueGameMaster):
                                 "optimal_turns": self.game_instance['optimal_turns'],
                                 "goal_count": self.goals_required_cnt}
         self.log_key("adventure_info", adventure_info)
+        # if input history to detect loops:
+        self.if_input_history: list = list()
+        self.loop_detected: bool = False
 
     def _on_before_game(self):
         # get initial room description from IF interpreter:
@@ -165,6 +168,11 @@ class AdventureGameMaster(DialogueGameMaster):
         if self.model_done:
             self.log_to_self("model_done", f"Model produced DONE action at turn {self.current_round}, end episode.")
             return False
+        # stop game when last three IF inputs were the same:
+        if self.loop_detected:
+            self.log_to_self("loop_detected", f"Model produced IF input {self.if_input_history[-1]} three "
+                                              f"times consecutively, abort episode.")
+            return False
         # otherwise keep playing:
         return True
 
@@ -184,6 +192,12 @@ class AdventureGameMaster(DialogueGameMaster):
             # strip player action to IF input; only first line action command is used:
             if_input: str = last_action[1:].split("\n")[0].strip()
             logger.info(f"Stripped IF input: {if_input}")
+
+            # loop checking:
+            self.if_input_history.append(if_input)
+            # check if last three IF inputs are the same:
+            if self.if_input_history[-3] == self.if_input_history[-2] == self.if_input_history[-1]:
+                self.loop_detected = True
 
             # count achieved goals:
             prior_goal_count = len(self.goals_achieved)
@@ -304,6 +318,7 @@ class AdventureGameScorer(GameScorer):
         turn_limit_loss: bool = False
         successfully_finished = False
         final_goals_achieved: list = list()
+        loop_abort = False
         # planning variant:
         plan_types = ["plan_followed", "plan_command_success_ratio", "bad_plan_followed"]
         plan_records = []  # list eventually containing plans for all turns
@@ -328,6 +343,10 @@ class AdventureGameScorer(GameScorer):
                 # check for hallucinated finishes:
                 if action["type"] == "hallucinated_finish":
                     hallucination = 1
+
+                # check for looping:
+                if action["type"] == "loop_detected":
+                    loop_abort = True
 
                 # handle DONE as hallucinated finish if the adventure is not finished:
                 if action["type"] == "action_info" and action['content']['action_type'] == "done":
@@ -525,7 +544,7 @@ class AdventureGameScorer(GameScorer):
         self.log_episode_score(metrics.BENCH_SCORE, total_success_rating)
 
         # invalid format or turn limit aborted:
-        if invalid_format or turn_limit_loss:
+        if invalid_format or turn_limit_loss or loop_abort:
             self.log_episode_score(metrics.METRIC_ABORTED, 1)
             self.log_episode_score(metrics.METRIC_SUCCESS, 0)
             self.log_episode_score(metrics.METRIC_LOSE, 0)

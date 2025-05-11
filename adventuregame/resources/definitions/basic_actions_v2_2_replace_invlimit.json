@@ -56,7 +56,7 @@
   {
     "type_name": "take",
     "lark": "take: TAKE PREP* thing (PREP thing)*\nTAKE.1: (\"take\" | \"grab\" | \"pick\" | \"get\") WS",
-    "pddl": "(:action TAKE\n    :parameters (?e - takeable ?s - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (or \n            (in ?e inventory)\n            (at ?s ?r)\n            )        \n        (accessible ?e)\n        (or\n            (and\n                (on ?e ?s)\n                (support ?s)\n                )\n            (and\n                (open ?s)\n                (container ?s)\n                (in ?e ?s)\n                )\n            )\n        )\n    :effect (and\n        (in ?e ?i)\n        (when\n            (and\n                (support ?s)\n                (on ?e ?s)\n                )\n            (not (on ?e ?s))\n            )\n        (when\n            (and\n                (container ?s)\n                (in ?e ?s)\n                )\n            (not (in ?e ?s))\n            )\n    )\n)",
+    "pddl": "(:action TAKE\n    :parameters (?e - takeable ?s - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (not (in ?e inventory))\n        (at ?s ?r)\n        (accessible ?e)\n        (< (itemcount ?i) 2)\n        (or\n            (and\n                (on ?e ?s)\n                (support ?s)\n                )\n            (and\n                (open ?s)\n                (container ?s)\n                (in ?e ?s)\n                )\n            )\n        )\n    :effect (and\n        (in ?e ?i)\n        (increase (itemcount ?i) 1)\n        (when\n            (and\n                (support ?s)\n                (on ?e ?s)\n                )\n            (not (on ?e ?s))\n            )\n        (when\n            (and\n                (container ?s)\n                (in ?e ?s)\n                )\n            (not (in ?e ?s))\n            )\n    )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?s": ["arg2", "arg1_receptacle"],
@@ -78,6 +78,7 @@
         ["The {{ e }} is already in your inventory.", "entity_already_inventory"],
         ["You can't see a {{ s }} here.", "entity_not_accessible"],
         ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["Your inventory can not hold more than two objects at the same time.", "inventory_limit_exceeded"],
         ["The {{ e }} is not on the {{ s }}.", "entity_state_mismatch"],
         ["The {{ s }} is not a support.", "entity_trait_mismatch"],
         ["The {{ s }} is not open.", "entity_state_mismatch"],
@@ -94,7 +95,7 @@
   {
     "type_name": "put",
     "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\" | \"drop\") WS",
-    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
+    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (when\n            (in ?e ?i)\n            (decrease (itemcount ?i) 1)\n            )\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?t": ["arg2"],
