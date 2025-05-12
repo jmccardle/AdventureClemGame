@@ -1658,36 +1658,40 @@ class AdventureIFInterpreter(GameResourceLocator):
         if action_dict['type'] == "done":
             return True, action_dict, {}
 
-        if action_dict['arg1'] in self.repr_str_to_type_dict:
-            # convert arg1 from repr to internal type:
-            action_dict['arg1'] = self.repr_str_to_type_dict[action_dict['arg1']]
-        else:
-            # in this case, the action is defined, but the first argument isn't, leading to corresponding feedback
-            fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg1']}
-            return False, f"I don't know what '{action_dict['arg1']}' means.", fail_dict
-
-        # TODO?: Remove action-type specific hardcode below?; should be handled by PDDL-based resolution now
-
-        if action_dict['arg1'] not in self.entity_types:
-            logger.info(f"Action arg1 '{action_dict['arg1']}' is not an entity")
-            # handle manipulating rooms, ie "> take from kitchen":
-            if action_dict['arg1'] in self.room_types:
-                if action_dict['type'] in ["take", "put", "open", "close"]:
-                    logger.info(f"Action type is '{action_dict['type']}', manipulating room")
-                    fail_dict: dict = {'phase': "parsing", 'fail_type': "manipulating_room", 'arg': action_dict['arg1']}
-                    if action_dict['type'] == "take":
-                        fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
-                    elif action_dict['type'] == "put":
-                        fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}' anywhere."
-                    elif action_dict['type'] == "open":
-                        fail_response = f"You don't need to {action_dict['type']} the '{action_dict['arg1']}'."
-                    elif action_dict['type'] == "close":
-                        fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
-                    return False, fail_response, fail_dict
+        if 'arg1' in action_dict:
+            if action_dict['arg1'] in self.repr_str_to_type_dict:
+                # convert arg1 from repr to internal type:
+                action_dict['arg1'] = self.repr_str_to_type_dict[action_dict['arg1']]
             else:
-                logger.info(f"Action arg1 {action_dict['arg1']} is not a room either")
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_argument_type", 'arg': action_dict['arg1']}
-                return False, f"I don't know what a '{action_dict['arg1']}' is.", fail_dict
+                # in this case, the action is defined, but the first argument isn't, leading to corresponding feedback
+                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg1']}
+                return False, f"I don't know what '{action_dict['arg1']}' means.", fail_dict
+
+            # TODO?: Remove action-type specific hardcode below?; should be handled by PDDL-based resolution now
+
+            if action_dict['arg1'] not in self.entity_types:
+                logger.info(f"Action arg1 '{action_dict['arg1']}' is not an entity")
+                # handle manipulating rooms, ie "> take from kitchen":
+                if action_dict['arg1'] in self.room_types:
+                    if action_dict['type'] in ["take", "put", "open", "close"]:
+                        logger.info(f"Action type is '{action_dict['type']}', manipulating room")
+                        fail_dict: dict = {'phase': "parsing", 'fail_type': "manipulating_room",
+                                           'arg': action_dict['arg1']}
+                        if action_dict['type'] == "take":
+                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
+                        elif action_dict['type'] == "put":
+                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}' anywhere."
+                        elif action_dict['type'] == "open":
+                            fail_response = f"You don't need to {action_dict['type']} the '{action_dict['arg1']}'."
+                        elif action_dict['type'] == "close":
+                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
+                        return False, fail_response, fail_dict
+                else:
+                    logger.info(f"Action arg1 {action_dict['arg1']} is not a room either")
+                    fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_argument_type",
+                                       'arg': action_dict['arg1']}
+                    return False, f"I don't know what a '{action_dict['arg1']}' is.", fail_dict
+
 
         if 'arg2' in action_dict:
             if action_dict['type'] == "take":
@@ -2936,63 +2940,1364 @@ class AdventureIFInterpreter(GameResourceLocator):
 if __name__ == "__main__":
     PATH = ""
     # example game instance:
-    game_instance_exmpl = {"game_id": 11, "variant": "basic",
-     "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with actions.\nFor example:\n> examine cupboard\n\nYour goal for this game is: Put the book on the table, the plate on the table and the mop on the table.\n\n",
-     "initial_state": ["at(kitchen1floor,kitchen1)", "at(pantry1floor,pantry1)", "at(hallway1floor,hallway1)",
-                       "at(livingroom1floor1,livingroom1)", "at(broomcloset1floor1,broomcloset1)",
-                       "at(bedroom1floor1,bedroom1)", "at(table1,livingroom1)", "at(sidetable1,livingroom1)",
-                       "at(counter1,kitchen1)", "at(refrigerator1,pantry1)", "at(cupboard1,kitchen1)",
-                       "at(wardrobe1,bedroom1)", "at(shelf1,livingroom1)", "at(freezer1,pantry1)",
-                       "at(pottedplant1,hallway1)", "at(chair1,livingroom1)", "at(bed1,bedroom1)",
-                       "at(couch1,livingroom1)", "at(broom1,broomcloset1)", "at(mop1,broomcloset1)",
-                       "at(sandwich1,pantry1)", "at(apple1,pantry1)", "at(banana1,pantry1)", "at(orange1,pantry1)",
-                       "at(peach1,pantry1)", "at(plate1,kitchen1)", "at(book1,livingroom1)", "at(pillow1,bedroom1)",
-                       "at(player1,bedroom1)", "type(kitchen1floor,floor)", "type(pantry1floor,floor)",
-                       "type(hallway1floor1,floor)", "type(livingroom1floor1,floor)", "type(broomcloset1floor1,floor)",
-                       "type(bedroom1floor1,floor)", "type(player1,player)", "type(table1,table)",
-                       "type(sidetable1,sidetable)", "type(counter1,counter)", "type(refrigerator1,refrigerator)",
-                       "type(cupboard1,cupboard)", "type(wardrobe1,wardrobe)", "type(shelf1,shelf)",
-                       "type(freezer1,freezer)", "type(pottedplant1,pottedplant)", "type(chair1,chair)",
-                       "type(bed1,bed)", "type(couch1,couch)", "type(broom1,broom)", "type(mop1,mop)",
-                       "type(sandwich1,sandwich)", "type(apple1,apple)", "type(banana1,banana)", "type(orange1,orange)",
-                       "type(peach1,peach)", "type(plate1,plate)", "type(book1,book)", "type(pillow1,pillow)",
-                       "room(kitchen1,kitchen)", "room(pantry1,pantry)", "room(hallway1,hallway)",
-                       "room(livingroom1,livingroom)", "room(broomcloset1,broomcloset)", "room(bedroom1,bedroom)",
-                       "support(kitchen1floor1)", "support(pantry1floor1)", "support(hallway1floor1)",
-                       "support(livingroom1floor1)", "support(broomcloset1floor1)", "support(bedroom1floor1)",
-                       "support(table1)", "support(sidetable1)", "support(counter1)", "support(shelf1)",
-                       "support(bed1)", "on(book1,sidetable1)", "on(plate1,kitchen1floor)",
-                       "on(mop1,broomcloset1floor1)", "on(broom1,broomcloset1floor1)", "on(pottedplant1,hallway1floor1)",
-                       "container(refrigerator1)", "container(cupboard1)", "container(wardrobe1)",
-                       "container(freezer1)", "in(pillow1,wardrobe1)", "in(peach1,refrigerator1)",
-                       "in(orange1,refrigerator1)", "in(banana1,refrigerator1)", "in(apple1,refrigerator1)",
-                       "in(sandwich1,refrigerator1)", "exit(kitchen1,pantry1)", "exit(kitchen1,livingroom1)",
-                       "exit(kitchen1,hallway1)", "exit(pantry1,kitchen1)", "exit(hallway1,kitchen1)",
-                       "exit(hallway1,livingroom1)", "exit(hallway1,broomcloset1)", "exit(livingroom1,kitchen1)",
-                       "exit(livingroom1,hallway1)", "exit(broomcloset1,hallway1)", "exit(bedroom1,livingroom1)",
-                       "exit(livingroom1,bedroom1)", "openable(refrigerator1)", "openable(cupboard1)",
-                       "openable(wardrobe1)", "openable(freezer1)", "closed(refrigerator1)", "closed(cupboard1)",
-                       "closed(wardrobe1)", "closed(freezer1)", "takeable(pottedplant1)", "takeable(broom1)",
-                       "takeable(mop1)", "takeable(sandwich1)", "takeable(apple1)", "takeable(banana1)",
-                       "takeable(orange1)", "takeable(peach1)", "takeable(plate1)", "takeable(book1)",
-                       "takeable(pillow1)", "movable(pottedplant1)", "movable(broom1)", "movable(mop1)",
-                       "movable(sandwich1)", "movable(apple1)", "movable(banana1)", "movable(orange1)",
-                       "movable(peach1)", "movable(plate1)", "movable(book1)", "movable(pillow1)",
-                       "needs_support(pottedplant1)", "needs_support(broom1)", "needs_support(mop1)",
-                       "needs_support(sandwich1)", "needs_support(apple1)", "needs_support(banana1)",
-                       "needs_support(orange1)", "needs_support(peach1)", "needs_support(plate1)",
-                       "needs_support(book1)", "needs_support(pillow1)"],
-     "goal_state": ["on(book1,table1)", "on(plate1,table1)", "on(mop1,table1)"], "max_turns": 50, "optimal_turns": 12,
-     "optimal_solution": [["go", "livingroom1"], ["put", "book1", "table1"], ["go", "kitchen1"], ["take", "plate1"],
-                          ["go", "livingroom1"], ["put", "plate1", "table1"], ["go", "hallway1"],
-                          ["go", "broomcloset1"], ["take", "mop1"], ["go", "hallway1"], ["go", "livingroom1"],
-                          ["put", "mop1", "table1"]],
-     "optimal_commands": ["go living room", "put book on table", "go kitchen", "take plate", "go living room",
-                          "put plate on table", "go hallway", "go broom closet", "take mop", "go hallway",
-                          "go living room", "put mop on table"], "action_definitions": ["basic_actions_v2.json"],
-     "room_definitions": ["home_rooms.json"], "entity_definitions": ["home_entities.json"],
-                           "domain_definitions":["home_domain.json"]}
+    game_instance_exmpl = {
+          "game_id": 3,
+          "variant": "basic",
+          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ortid, enerk and alism.\n\nYour goal for this game is: Put the delly in the thot, the plate on the micon and the penol on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
+          "initial_state": [
+            "at(kitchen1floor1,kitchen1)",
+            "at(pantry1floor1,pantry1)",
+            "at(het1floor1,het1)",
+            "at(ousnee1floor1,ousnee1)",
+            "at(broomcloset1floor1,broomcloset1)",
+            "at(ationee1floor1,ationee1)",
+            "at(table1,ousnee1)",
+            "at(micon1,ousnee1)",
+            "at(ceoust1,kitchen1)",
+            "at(refrigerator1,pantry1)",
+            "at(thot1,kitchen1)",
+            "at(wardrobe1,ationee1)",
+            "at(shelf1,ousnee1)",
+            "at(freezer1,pantry1)",
+            "at(pottedplant1,het1)",
+            "at(chair1,ousnee1)",
+            "at(bed1,ationee1)",
+            "at(couch1,ousnee1)",
+            "at(catint1,broomcloset1)",
+            "at(penol1,broomcloset1)",
+            "at(soriced1,pantry1)",
+            "at(apple1,pantry1)",
+            "at(banana1,pantry1)",
+            "at(unalin1,pantry1)",
+            "at(fress1,pantry1)",
+            "at(plate1,kitchen1)",
+            "at(delly1,ationee1)",
+            "at(pillow1,ationee1)",
+            "at(player1,ationee1)",
+            "type(kitchen1floor1,floor)",
+            "type(pantry1floor1,floor)",
+            "type(het1floor1,floor)",
+            "type(ousnee1floor1,floor)",
+            "type(broomcloset1floor1,floor)",
+            "type(ationee1floor1,floor)",
+            "type(player1,player)",
+            "type(table1,table)",
+            "type(micon1,micon)",
+            "type(ceoust1,ceoust)",
+            "type(refrigerator1,refrigerator)",
+            "type(thot1,thot)",
+            "type(wardrobe1,wardrobe)",
+            "type(shelf1,shelf)",
+            "type(freezer1,freezer)",
+            "type(pottedplant1,pottedplant)",
+            "type(chair1,chair)",
+            "type(bed1,bed)",
+            "type(couch1,couch)",
+            "type(catint1,catint)",
+            "type(penol1,penol)",
+            "type(soriced1,soriced)",
+            "type(apple1,apple)",
+            "type(banana1,banana)",
+            "type(unalin1,unalin)",
+            "type(fress1,fress)",
+            "type(plate1,plate)",
+            "type(delly1,delly)",
+            "type(pillow1,pillow)",
+            "room(kitchen1,kitchen)",
+            "room(pantry1,pantry)",
+            "room(het1,het)",
+            "room(ousnee1,ousnee)",
+            "room(broomcloset1,broomcloset)",
+            "room(ationee1,ationee)",
+            "support(kitchen1floor1)",
+            "support(pantry1floor1)",
+            "support(het1floor1)",
+            "support(ousnee1floor1)",
+            "support(broomcloset1floor1)",
+            "support(ationee1floor1)",
+            "support(table1)",
+            "support(micon1)",
+            "support(ceoust1)",
+            "support(shelf1)",
+            "support(chair1)",
+            "support(bed1)",
+            "support(couch1)",
+            "on(pillow1,bed1)",
+            "on(delly1,ationee1floor1)",
+            "on(plate1,kitchen1floor1)",
+            "on(penol1,broomcloset1floor1)",
+            "on(catint1,broomcloset1floor1)",
+            "on(pottedplant1,het1floor1)",
+            "container(refrigerator1)",
+            "container(thot1)",
+            "container(wardrobe1)",
+            "container(freezer1)",
+            "in(fress1,refrigerator1)",
+            "in(unalin1,refrigerator1)",
+            "in(banana1,refrigerator1)",
+            "in(apple1,refrigerator1)",
+            "in(soriced1,refrigerator1)",
+            "exit(kitchen1,pantry1)",
+            "exit(kitchen1,ousnee1)",
+            "exit(kitchen1,het1)",
+            "exit(pantry1,kitchen1)",
+            "exit(het1,kitchen1)",
+            "exit(het1,broomcloset1)",
+            "exit(ousnee1,kitchen1)",
+            "exit(broomcloset1,het1)",
+            "exit(ationee1,het1)",
+            "exit(het1,ationee1)",
+            "receptacle(table1)",
+            "receptacle(micon1)",
+            "receptacle(ceoust1)",
+            "receptacle(refrigerator1)",
+            "receptacle(thot1)",
+            "receptacle(wardrobe1)",
+            "receptacle(shelf1)",
+            "receptacle(freezer1)",
+            "receptacle(chair1)",
+            "receptacle(bed1)",
+            "receptacle(couch1)",
+            "openable(refrigerator1)",
+            "openable(thot1)",
+            "openable(wardrobe1)",
+            "openable(freezer1)",
+            "closed(refrigerator1)",
+            "closed(thot1)",
+            "closed(wardrobe1)",
+            "closed(freezer1)",
+            "takeable(pottedplant1)",
+            "takeable(catint1)",
+            "takeable(penol1)",
+            "takeable(soriced1)",
+            "takeable(apple1)",
+            "takeable(banana1)",
+            "takeable(unalin1)",
+            "takeable(fress1)",
+            "takeable(plate1)",
+            "takeable(delly1)",
+            "takeable(pillow1)",
+            "movable(pottedplant1)",
+            "movable(catint1)",
+            "movable(penol1)",
+            "movable(soriced1)",
+            "movable(apple1)",
+            "movable(banana1)",
+            "movable(unalin1)",
+            "movable(fress1)",
+            "movable(plate1)",
+            "movable(delly1)",
+            "movable(pillow1)",
+            "needs_support(pottedplant1)",
+            "needs_support(catint1)",
+            "needs_support(penol1)",
+            "needs_support(soriced1)",
+            "needs_support(apple1)",
+            "needs_support(banana1)",
+            "needs_support(unalin1)",
+            "needs_support(fress1)",
+            "needs_support(plate1)",
+            "needs_support(delly1)",
+            "needs_support(pillow1)"
+          ],
+          "goal_state": [
+            "in(delly1,thot1)",
+            "on(plate1,micon1)",
+            "on(penol1,table1)"
+          ],
+          "max_turns": 50,
+          "optimal_turns": 14,
+          "optimal_solution": [
+            [
+              "take",
+              "delly1"
+            ],
+            [
+              "go",
+              "het1"
+            ],
+            [
+              "go",
+              "broomcloset1"
+            ],
+            [
+              "take",
+              "penol1"
+            ],
+            [
+              "go",
+              "het1"
+            ],
+            [
+              "go",
+              "kitchen1"
+            ],
+            [
+              "take",
+              "plate1"
+            ],
+            [
+              "open",
+              "thot1"
+            ],
+            [
+              "go",
+              "ousnee1"
+            ],
+            [
+              "put",
+              "plate1",
+              "micon1"
+            ],
+            [
+              "go",
+              "kitchen1"
+            ],
+            [
+              "put",
+              "delly1",
+              "thot1"
+            ],
+            [
+              "go",
+              "ousnee1"
+            ],
+            [
+              "put",
+              "penol1",
+              "table1"
+            ]
+          ],
+          "optimal_commands": [
+            "look around",
+            "take delly",
+            "go het",
+            "go broom closet",
+            "take penol",
+            "go het",
+            "go kitchen",
+            "take plate",
+            "open thot",
+            "go ousnee",
+            "put plate on micon",
+            "go kitchen",
+            "put delly in thot",
+            "go ousnee",
+            "put penol on table"
+          ],
+          "action_definitions": [
+            {
+              "lark": "open: OPEN thing\nOPEN.1: \"open\" WS",
+              "pddl": "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?e": [
+                  "arg1"
+                ],
+                "?r": [
+                  "current_player_room"
+                ],
+                "?p": [
+                  "player"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ e }} is not openable.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "The {{ e }} is not closed.",
+                    "entity_state_mismatch"
+                  ]
+                ]
+              },
+              "success_feedback": "The {{ e }} is now open. {{ container_content }}",
+              "asp": "{ action_t(TURN,open,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nopen_t(TURN+1,THING) :- action_t(TURN,open,THING).\nopen_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING).",
+              "epistemic": True,
+              "pragmatic": True,
+              "explanation": "To VERB is to make something physically unobstructed and uncovered, and make its contents available for use or interaction.",
+              "type_name": "open"
+            },
+            {
+              "lark": "close: CLOSE thing\nCLOSE.1: \"alism\" WS",
+              "pddl": "(:action CLOSE\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (open ?e)\n        )\n    :effect (and\n        (closed ?e)\n        (not (open ?e))\n        (forall (?i - takeable)\n            (when\n                (in ?i ?e)\n                (and\n                    (not (accessible ?i))\n                )\n            )\n        )\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?e": [
+                  "arg1"
+                ],
+                "?r": [
+                  "current_player_room"
+                ],
+                "?p": [
+                  "player"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ e }} is not openable.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "The {{ e }} is not open.",
+                    "entity_state_mismatch"
+                  ]
+                ]
+              },
+              "success_feedback": "The {{ e }} is now closed.",
+              "asp": "{ action_t(TURN,close,THING):at_t(TURN,THING,ROOM),open_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nclosed_t(TURN+1,THING) :- action_t(TURN,close,THING).\nclosed_t(TURN+1,THING) :- turn(TURN), closed_t(TURN,THING), not action_t(TURN,open,THING).",
+              "epistemic": False,
+              "pragmatic": False,
+              "explanation": "To alism is to remove or block an opening of something, and make its contents unavailable for use or interaction.",
+              "new_word": "alism",
+              "type_name": "close"
+            },
+            {
+              "lark": "take: TAKE PREP* thing (PREP thing)*\nTAKE.1: \"ortid\" WS",
+              "pddl": "(:action TAKE\n    :parameters (?e - takeable ?s - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (or \n            (in ?e inventory)\n            (at ?s ?r)\n            )        \n        (accessible ?e)\n        (or\n            (and\n                (on ?e ?s)\n                (support ?s)\n                )\n            (and\n                (open ?s)\n                (container ?s)\n                (in ?e ?s)\n                )\n            )\n        )\n    :effect (and\n        (in ?e ?i)\n        (when\n            (and\n                (support ?s)\n                (on ?e ?s)\n                )\n            (not (on ?e ?s))\n            )\n        (when\n            (and\n                (container ?s)\n                (in ?e ?s)\n                )\n            (not (in ?e ?s))\n            )\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?e": [
+                  "arg1"
+                ],
+                "?s": [
+                  "arg2",
+                  "arg1_receptacle"
+                ],
+                "?p": [
+                  "player"
+                ],
+                "?i": [
+                  "inventory"
+                ],
+                "?r": [
+                  "current_player_room"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ e }} is not takeable.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ s }} is not a receptacle.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ i }} is not an inventory. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "The {{ e }} is already in your inventory.",
+                    "entity_already_inventory"
+                  ],
+                  [
+                    "You can't see a {{ s }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "The {{ e }} is not on the {{ s }}.",
+                    "entity_state_mismatch"
+                  ],
+                  [
+                    "The {{ s }} is not a support.",
+                    "entity_trait_mismatch"
+                  ],
+                  [
+                    "The {{ s }} is not open.",
+                    "entity_state_mismatch"
+                  ],
+                  [
+                    "The {{ s }} is not a container.",
+                    "entity_trait_mismatch"
+                  ],
+                  [
+                    "The {{ e }} is not in the {{ s }}.",
+                    "entity_state_mismatch"
+                  ]
+                ]
+              },
+              "success_feedback": "You take the {{ e }}. {{ inventory_desc }}",
+              "asp": "{ action_t(TURN,take,THING):at_t(TURN,THING,ROOM),takeable(THING),in_t(TURN,THING,CONTAINER),open_t(TURN,CONTAINER),at_t(TURN,player1,ROOM);action_t(TURN,take,THING):at_t(TURN,THING,ROOM),takeable(THING),on_t(TURN,THING,SUPPORT),support(SUPPORT),at_t(TURN,player1,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,THING,inventory) :- action_t(TURN,take,THING).\nin_t(TURN+1,THING,TARGET) :- turn(TURN), in_t(TURN,THING,TARGET), not action_t(TURN,take,THING), TARGET != inventory.\non_t(TURN+1,THING,TARGET) :- turn(TURN), on_t(TURN,THING,TARGET), not action_t(TURN,take,THING).",
+              "epistemic": False,
+              "pragmatic": True,
+              "explanation": "To ortid is to get something into one's hands, possession or control.",
+              "new_word": "ortid",
+              "type_name": "take"
+            },
+            {
+              "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: \"enerk\" WS",
+              "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
+              "pddl_parameter_mapping": {
+                "?e": [
+                  "arg1"
+                ],
+                "?t": [
+                  "arg2"
+                ],
+                "?p": [
+                  "player"
+                ],
+                "?i": [
+                  "inventory"
+                ],
+                "?r": [
+                  "current_player_room"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ e }} is not moveable.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ t }} is not a receptacle.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ i }} is not an inventory. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "You can't see a {{ t }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "The {{ t }} is not a container.",
+                    "entity_trait_mismatch"
+                  ],
+                  [
+                    "The {{ t }} is not open.",
+                    "entity_state_mismatch"
+                  ],
+                  [
+                    "The {{ t }} is not a support.",
+                    "entity_trait_mismatch"
+                  ]
+                ]
+              },
+              "success_feedback": "You put the {{ e }} {{ prep }} the {{ t }}.",
+              "asp": "{ action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),support(TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),support(TARGET),movable(THING),on_t(TURN,THING,SOURCE),support(SOURCE);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),support(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), container(TARGET).\non_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), support(TARGET).\nin_t(TURN+1,THING,inventory) :- turn(TURN), in_t(TURN,THING,inventory), not action_t(TURN,put,THING,_).",
+              "epistemic": False,
+              "pragmatic": True,
+              "explanation": "To enerk is to physically place something somewhere.",
+              "new_word": "enerk",
+              "type_name": "put"
+            },
+            {
+              "lark": "go: GO (\"back\" WS)* (\"to\" WS)* thing\nGO.1: (\"go\" | \"enter\" | \"return\" | \"proceed\" | \"move\") WS",
+              "pddl": "(:action GO\n    :parameters (?c ?d - room ?p - player ?i - inventory)\n    :precondition (and\n        (at ?p ?c)\n        (not (at ?p ?d))\n        (exit ?c ?d)\n        )\n    :effect (and\n        (at ?p ?d)\n        (not (at ?p ?c))\n        (forall (?e - takeable)\n            (when\n                (in ?e ?i)\n                (and\n                    (at ?e ?d)\n                    (not (at ?e ?c))\n                )\n            )\n        )\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?c": [
+                  "current_player_room"
+                ],
+                "?d": [
+                  "arg1"
+                ],
+                "?p": [
+                  "player"
+                ],
+                "?i": [
+                  "inventory"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ c }} is not a room.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ d }} is not a room.",
+                    "domain_trait_type_mismatch"
+                  ],
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ i }} is not an inventory. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You are already in the {{ d }}.",
+                    "going_to_current_room"
+                  ],
+                  [
+                    "You can't go to a {{ d }} from here.",
+                    "no_exit_to"
+                  ]
+                ]
+              },
+              "success_feedback": "{{ room_desc }}",
+              "asp": "{ action_t(TURN,go,TARGET):exit(ROOM,TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nat_t(TURN+1,player1,TARGET) :- action_t(TURN,go,TARGET).\nat_t(TURN+1,player1,ROOM) :- turn(TURN), at_t(TURN,player1,ROOM), not action_t(TURN,go,_).\nat_t(TURN+1,THING,TARGET) :- action_t(TURN,go,TARGET), in_t(TURN,THING,inventory).\nat_t(TURN+1,THING,ROOM) :- turn(TURN), at_t(TURN,THING,ROOM), not in_t(TURN,THING,inventory), not turn_limit(TURN), THING != player1.",
+              "epistemic": True,
+              "pragmatic": True,
+              "explanation": "To VERB is to move through space, especially to a place.",
+              "type_name": "go"
+            },
+            {
+              "lark": "done: DONE\nDONE.1: (\"done\" | \"quit\" | \"finish\") WS*",
+              "pddl": "(:action DONE\n    :parameters (?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        )\n    :effect (and\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?p": [
+                  "player"
+                ],
+                "?r": [
+                  "current_player_room"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ]
+                ]
+              },
+              "success_feedback": "You consider yourself done.",
+              "asp": "",
+              "epistemic": False,
+              "pragmatic": True,
+              "explanation": "To VERB is to end the game.",
+              "type_name": "done"
+            },
+            {
+              "lark": "examine: EXAMINE thing\nEXAMINE.1: (\"examine\" | \"check\" | \"inspect\" | \"search\") WS",
+              "pddl": "(:action EXAMINE\n    :parameters (?p - player ?r - room ?e - entity)\n    :precondition (and\n        (at ?p ?r)\n        (or\n            (at ?e ?r)\n            (type ?e inventory)\n            )\n        (accessible ?e)\n            )\n    :effect (and\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?p": [
+                  "player"
+                ],
+                "?r": [
+                  "current_player_room"
+                ],
+                "?e": [
+                  "arg1"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ e }} is not an entity. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ],
+                  [
+                    "Your inventory is not an entity. (This should not occur.)",
+                    "world_state_discrepancy"
+                  ],
+                  [
+                    "You can't see a {{ e }} here.",
+                    "entity_not_accessible"
+                  ]
+                ]
+              },
+              "success_feedback": "{{ arg1_desc }}",
+              "asp": "",
+              "epistemic": True,
+              "pragmatic": False,
+              "explanation": "To VERB is to observe or inspect carefully.",
+              "type_name": "examine"
+            },
+            {
+              "lark": "look: LOOK (\"at\"* ( thing | \"around\" | \"room\" ) )\nLOOK.1: (\"look\" | \"examine\" | \"check\" | \"inspect\" | \"search\") WS",
+              "pddl": "(:action LOOK\n    :parameters (?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n            )\n    :effect (and\n    )\n)",
+              "pddl_parameter_mapping": {
+                "?p": [
+                  "player"
+                ],
+                "?r": [
+                  "current_player_room"
+                ]
+              },
+              "failure_feedback": {
+                "parameters": [
+                  [
+                    "{{ p }} is not a player. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ],
+                  [
+                    "{{ r }} is not a room. (This should not occur.)",
+                    "domain_type_discrepancy"
+                  ]
+                ],
+                "precondition": [
+                  [
+                    "You are not where you are! (This should not occur.)",
+                    "world_state_discrepancy"
+                  ]
+                ]
+              },
+              "success_feedback": "{{ room_desc }}",
+              "asp": "",
+              "epistemic": True,
+              "pragmatic": False,
+              "explanation": "To VERB is to inspect a room.",
+              "type_name": "look"
+            }
+          ],
+          "room_definitions": [
+            {
+              "repr_str": "kitchen",
+              "standard_content": [
+                "refrigerator",
+                "ceoust",
+                "table"
+              ],
+              "exit_targets": [
+                "pantry",
+                "ousnee",
+                "het"
+              ],
+              "max_connections": 3,
+              "type_name": "kitchen"
+            },
+            {
+              "repr_str": "pantry",
+              "standard_content": [
+                "refrigerator",
+                "shelf",
+                "freezer"
+              ],
+              "exit_targets": [
+                "kitchen",
+                "het"
+              ],
+              "max_connections": 1,
+              "type_name": "pantry"
+            },
+            {
+              "repr_str": "het",
+              "standard_content": [
+                "pottedplant"
+              ],
+              "exit_targets": [
+                "kitchen",
+                "pantry",
+                "ousnee",
+                "broomcloset"
+              ],
+              "max_connections": 4,
+              "type_name": "het"
+            },
+            {
+              "repr_str": "ousnee",
+              "standard_content": [
+                "pottedplant",
+                "table",
+                "chair",
+                "couch"
+              ],
+              "exit_targets": [
+                "kitchen",
+                "het"
+              ],
+              "max_connections": 2,
+              "type_name": "ousnee"
+            },
+            {
+              "repr_str": "broom closet",
+              "standard_content": [
+                "catint"
+              ],
+              "exit_targets": [
+                "het"
+              ],
+              "max_connections": 1,
+              "type_name": "broomcloset"
+            },
+            {
+              "repr_str": "ationee",
+              "standard_content": [
+                "bed",
+                "wardrobe"
+              ],
+              "exit_targets": [
+                "ousnee",
+                "het"
+              ],
+              "max_connections": 1,
+              "type_name": "ationee"
+            }
+          ],
+          "entity_definitions": [
+            {
+              "repr_str": "you",
+              "hidden": True,
+              "traits": [],
+              "type_name": "player"
+            },
+            {
+              "repr_str": "inventory",
+              "hidden": True,
+              "container": True,
+              "traits": [
+                "container",
+                "receptacle"
+              ],
+              "type_name": "inventory"
+            },
+            {
+              "repr_str": "floor",
+              "hidden": True,
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "type_name": "floor"
+            },
+            {
+              "repr_str": "table",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "metal",
+                "low",
+                "high"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "ousnee"
+              ],
+              "type_name": "table"
+            },
+            {
+              "repr_str": "micon",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "metal",
+                "small"
+              ],
+              "standard_locations": [
+                "ousnee",
+                "ationee"
+              ],
+              "type_name": "micon"
+            },
+            {
+              "repr_str": "ceoust",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "metal",
+                "low",
+                "high"
+              ],
+              "standard_locations": [
+                "kitchen"
+              ],
+              "type_name": "ceoust"
+            },
+            {
+              "repr_str": "refrigerator",
+              "container": True,
+              "openable": True,
+              "traits": [
+                "container",
+                "openable",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "large",
+                "fancy"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "refrigerator"
+            },
+            {
+              "repr_str": "thot",
+              "container": True,
+              "openable": True,
+              "traits": [
+                "container",
+                "openable",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "metal",
+                "large",
+                "fancy"
+              ],
+              "standard_locations": [
+                "kitchen"
+              ],
+              "type_name": "thot"
+            },
+            {
+              "repr_str": "wardrobe",
+              "container": True,
+              "openable": True,
+              "traits": [
+                "container",
+                "openable",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "large",
+                "fancy"
+              ],
+              "standard_locations": [
+                "ationee"
+              ],
+              "type_name": "wardrobe"
+            },
+            {
+              "repr_str": "shelf",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "wooden",
+                "metal",
+                "low",
+                "high"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry",
+                "ousnee"
+              ],
+              "type_name": "shelf"
+            },
+            {
+              "repr_str": "freezer",
+              "container": True,
+              "openable": True,
+              "traits": [
+                "container",
+                "openable",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "large",
+                "deep"
+              ],
+              "standard_locations": [
+                "pantry"
+              ],
+              "type_name": "freezer"
+            },
+            {
+              "repr_str": "potted plant",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "possible_adjs": [
+                "large",
+                "small"
+              ],
+              "standard_locations": [
+                "ousnee",
+                "het",
+                "ationee"
+              ],
+              "type_name": "pottedplant"
+            },
+            {
+              "repr_str": "chair",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "comfy",
+                "wooden",
+                "padded"
+              ],
+              "standard_locations": [
+                "ousnee"
+              ],
+              "type_name": "chair"
+            },
+            {
+              "repr_str": "bed",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "comfy",
+                "wooden"
+              ],
+              "standard_locations": [
+                "ationee"
+              ],
+              "type_name": "bed"
+            },
+            {
+              "repr_str": "couch",
+              "support": True,
+              "traits": [
+                "support",
+                "receptacle"
+              ],
+              "possible_adjs": [
+                "comfy",
+                "wooden",
+                "padded"
+              ],
+              "standard_locations": [
+                "ousnee"
+              ],
+              "type_name": "couch"
+            },
+            {
+              "repr_str": "catint",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "broomcloset"
+              ],
+              "type_name": "catint"
+            },
+            {
+              "repr_str": "penol",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "broomcloset"
+              ],
+              "type_name": "penol"
+            },
+            {
+              "repr_str": "soriced",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "soriced"
+            },
+            {
+              "repr_str": "apple",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "apple"
+            },
+            {
+              "repr_str": "banana",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "ripe",
+                "jelly"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "banana"
+            },
+            {
+              "repr_str": "unalin",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "ripe",
+                "fresh"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "unalin"
+            },
+            {
+              "repr_str": "fress",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "ripe",
+                "fresh"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen",
+                "pantry"
+              ],
+              "type_name": "fress"
+            },
+            {
+              "repr_str": "plate",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "ceramic",
+                "glass"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "kitchen"
+              ],
+              "type_name": "plate"
+            },
+            {
+              "repr_str": "delly",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "old",
+                "thin"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "ousnee",
+                "ationee"
+              ],
+              "type_name": "delly"
+            },
+            {
+              "repr_str": "pillow",
+              "takeable": True,
+              "movable": True,
+              "supported": True,
+              "possible_adjs": [
+                "down",
+                "small"
+              ],
+              "traits": [
+                "takeable",
+                "movable",
+                "needs_support"
+              ],
+              "standard_locations": [
+                "ationee"
+              ],
+              "type_name": "pillow"
+            }
+          ],
+          "domain_definitions": [
+            {
+              "domain_id": "partial_new_words",
+              "types": {
+                "room": [
+                  "kitchen",
+                  "pantry",
+                  "het",
+                  "ousnee",
+                  "broomcloset",
+                  "ationee"
+                ],
+                "entity": [
+                  "player",
+                  "inventory",
+                  "floor",
+                  "player",
+                  "inventory",
+                  "floor",
+                  "table",
+                  "micon",
+                  "ceoust",
+                  "refrigerator",
+                  "thot",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "pottedplant",
+                  "chair",
+                  "bed",
+                  "couch",
+                  "catint",
+                  "penol",
+                  "soriced",
+                  "apple",
+                  "banana",
+                  "unalin",
+                  "fress",
+                  "plate",
+                  "delly",
+                  "pillow"
+                ],
+                "container": [
+                  "inventory",
+                  "refrigerator",
+                  "thot",
+                  "wardrobe",
+                  "freezer"
+                ],
+                "receptacle": [
+                  "inventory",
+                  "floor",
+                  "table",
+                  "micon",
+                  "ceoust",
+                  "refrigerator",
+                  "thot",
+                  "wardrobe",
+                  "shelf",
+                  "freezer",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
+                "support": [
+                  "floor",
+                  "table",
+                  "micon",
+                  "ceoust",
+                  "shelf",
+                  "chair",
+                  "bed",
+                  "couch"
+                ],
+                "openable": [
+                  "refrigerator",
+                  "thot",
+                  "wardrobe",
+                  "freezer"
+                ],
+                "takeable": [
+                  "pottedplant",
+                  "catint",
+                  "penol",
+                  "soriced",
+                  "apple",
+                  "banana",
+                  "unalin",
+                  "fress",
+                  "plate",
+                  "delly",
+                  "pillow"
+                ],
+                "movable": [
+                  "pottedplant",
+                  "catint",
+                  "penol",
+                  "soriced",
+                  "apple",
+                  "banana",
+                  "unalin",
+                  "fress",
+                  "plate",
+                  "delly",
+                  "pillow"
+                ],
+                "needs_support": [
+                  "pottedplant",
+                  "catint",
+                  "penol",
+                  "soriced",
+                  "apple",
+                  "banana",
+                  "unalin",
+                  "fress",
+                  "plate",
+                  "delly",
+                  "pillow"
+                ]
+              },
+              "predicates": [
+                {
+                  "predicate_id": "open",
+                  "variable": "e",
+                  "mutability": "openable"
+                },
+                {
+                  "predicate_id": "closed",
+                  "variable": "e",
+                  "mutability": "openable"
+                }
+              ]
+            }
+          ]
+        }
     # initialize test interpreter:
-    test_interpreter = AdventureIFInterpreter(game_instance_exmpl)
+    test_interpreter = AdventureIFInterpreter("D:/AdventureClemGame/adventuregame", game_instance_exmpl)
     # run optimal solution:
     test_interpreter.execute_optimal_solution()

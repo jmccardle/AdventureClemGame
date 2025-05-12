@@ -1235,6 +1235,7 @@ class ClingoAdventureGenerator(object):
                                 entity_def_content['type_name'] = entity_def_type
                                 final_entity_definitions.append(final_entity_def)
 
+                            # TODO: replace new-word actions in optimal_commands
 
                             # full raw adventure data:
                             viable_adventure = {
