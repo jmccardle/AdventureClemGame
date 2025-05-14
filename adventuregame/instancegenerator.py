@@ -65,10 +65,6 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                         instance_prompt = basic_prompt.replace("$GOAL$", goal_str)
                         # fill in new-words explanations:
                         if adventures[difficulty][adventure_id]['prompt_template_set'] == 'new-words_created':
-                            # TODO: handle full-explanation variant
-                            #   - in clingo-adv?
-                            #   - here? -> current loop hierarchy is janky
-                            #   - might be good to overhaul this at deeper level
                             # BASIC full new-words just lists the available
                             new_word_actions = list()
                             for action_def in adventures[difficulty][adventure_id]['action_definitions']:
@@ -187,8 +183,12 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             'entity_definitions']  # game parameters
                         game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
                             'domain_definitions']  # game parameters
-
-
+                        game_instance["visiting_turns"] = adventures[difficulty][adventure_id][
+                            'visiting_turns']  # game parameters
+                        game_instance["visiting_solution"] = adventures[difficulty][adventure_id][
+                            'visiting_solution']  # game parameters
+                        game_instance["visiting_commands"] = adventures[difficulty][adventure_id][
+                            'visiting_commands']  # game parameters
 
                 # BASIC INVENTORY LIMIT
 
@@ -288,6 +288,13 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 
                         game_instance["domain_definitions"] = ["home_domain_invlimit.json"]  # game parameters
 
+                        game_instance["visiting_turns"] = adventures[difficulty][adventure_id][
+                            'visiting_turns']  # game parameters
+                        game_instance["visiting_solution"] = adventures[difficulty][adventure_id][
+                            'visiting_solution']  # game parameters
+                        game_instance["visiting_commands"] = adventures[difficulty][adventure_id][
+                            'visiting_commands']  # game parameters
+
 
 
 
@@ -296,7 +303,7 @@ if __name__ == '__main__':
     # The resulting instances.json is automatically saved to the "in" directory of the game folder
     # AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures"])
     AdventureGameInstanceGenerator().generate(raw_adventures_files=[
-        "curated_home_deliver_three_adventures_v2_2",
+        "curated_home_deliver_three_adventures_v2_2_a",
         "generated_new-words_home-delivery_easy_adventures",
         "generated_new-words_home-delivery_medium_adventures",
         "generated_new-words_created_adventures"],

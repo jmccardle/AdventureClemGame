@@ -224,7 +224,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go living room"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -460,7 +500,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go living room"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -676,7 +756,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go living room",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -922,7 +1037,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go living room",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -1153,7 +1303,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go hallway",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -1394,7 +1584,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go hallway",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -1622,7 +1852,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -1850,7 +2120,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -2081,7 +2391,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -2312,7 +2657,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -2540,7 +2920,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -2768,7 +3188,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -2994,7 +3454,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -3245,7 +3745,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -3491,7 +4031,52 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 8,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -3747,7 +4332,52 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 8,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go kitchen",
+        "go pantry"
+      ]
     }
   ],
   "hard": [
@@ -4005,7 +4635,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go living room"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -4271,7 +4941,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go living room"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -4542,7 +5252,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -4818,7 +5563,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -5099,7 +5884,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -5370,7 +6195,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -5638,7 +6503,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -5916,7 +6821,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -6182,7 +7122,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go bedroom",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -6468,7 +7443,42 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 6,
+      "visiting_solution": [
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go kitchen",
+        "go living room",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -6736,7 +7746,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -6994,7 +8044,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -7285,7 +8375,52 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 8,
+      "visiting_solution": [
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go kitchen",
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -7566,7 +8701,47 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 7,
+      "visiting_solution": [
+        [
+          "go",
+          "pantry1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ]
+      ],
+      "visiting_commands": [
+        "go pantry",
+        "go kitchen",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -7837,7 +9012,52 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 8,
+      "visiting_solution": [
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go bedroom",
+        "go living room",
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go kitchen",
+        "go pantry"
+      ]
     },
     {
       "adventure_type": "home_deliver_three",
@@ -8108,7 +9328,52 @@
         "home_domain.json"
       ],
       "bench_turn_limit": 50,
-      "prompt_template_set": "home_delivery"
+      "prompt_template_set": "home_delivery",
+      "visiting_turns": 8,
+      "visiting_solution": [
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "broomcloset1"
+        ],
+        [
+          "go",
+          "hallway1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "bedroom1"
+        ],
+        [
+          "go",
+          "livingroom1"
+        ],
+        [
+          "go",
+          "kitchen1"
+        ],
+        [
+          "go",
+          "pantry1"
+        ]
+      ],
+      "visiting_commands": [
+        "go hallway",
+        "go broom closet",
+        "go hallway",
+        "go living room",
+        "go bedroom",
+        "go living room",
+        "go kitchen",
+        "go pantry"
+      ]
     }
   ]
 }

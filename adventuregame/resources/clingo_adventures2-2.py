@@ -827,14 +827,13 @@ class ClingoAdventureGenerator(object):
 
         return clingo_str
 
-    def _solve_optimally_asp(self, initial_world_state, goal_facts: list, return_only_actions: bool = True) \
-            -> Tuple[bool, Union[List[str], List[List[str]]], Optional[str]]:
+    def _solve_optimally_asp(self, initial_world_state, goal_facts: list, return_only_actions: bool = True) -> str:
         """
         Generates an optimal solution to an adventure.
         :param initial_world_state: Initial world state fact list.
         :param goal_facts: List of goal facts in string format, ie 'on(sandwich1,table1)'.
         :param return_only_actions: Return only a list of action-at-turn atoms. If False, ALL model atoms are returned.
-        :return: Tuple of: Solvability, list of solution models or optimal solution model, ASP solving encoding.
+        :return: ASP adventure solving encoding.
         """
         # get turn limit from adventure type definition:
         turn_limit: int = self.adv_type_def["optimal_solver_turn_limit"]
@@ -875,6 +874,72 @@ class ClingoAdventureGenerator(object):
                 goal_clingo = goal_clingo.replace("$THING$", goal_tuple[1])
                 goal_clingo = goal_clingo.replace("$TARGET$", goal_tuple[2])
             clingo_str += "\n" + goal_clingo
+
+        # add optimization:
+        minimize_clingo = self.clingo_templates["minimize"]  # -> least number of turns is optimal
+        clingo_str += "\n" + minimize_clingo
+
+        # add output only actions:
+        # this omits all intermediate information and full fact set as only the optimal action sequence is needed
+        if return_only_actions:
+            only_actions_clingo = self.clingo_templates["return_only_actions"]
+            clingo_str += "\n" + only_actions_clingo
+
+        return clingo_str
+
+    def _pre_explore_asp(self, initial_world_state, goal_facts: list, return_only_actions: bool = True,
+                         limit_to_goal_object_rooms: bool = False) -> str:
+        """
+        Generates a pre-exploration action sequence for an adventure.
+        This sequence of actions will have the player visit all rooms in the least amount of turns, but this can be
+        limited to rooms with task objects.
+        Args:
+            initial_world_state: Initial world state fact list.
+            goal_facts: List of goal facts in string format, ie 'on(sandwich1,table1)'.
+            return_only_actions: Return only a list of action-at-turn atoms. If False, ALL model atoms are returned.
+            limit_to_goal_object_rooms: If True, only rooms with task objects are visited. Default: False.
+        Returns:
+            ASP pre-explore encoding.
+        """
+        # get turn limit from adventure type definition:
+        turn_limit: int = self.adv_type_def["optimal_solver_turn_limit"]
+
+        clingo_str = str()
+
+        # add turn generation and limit first:
+        turns_template: str = self.clingo_templates["turns"]
+        turns_clingo = turns_template.replace("$TURNLIMIT$", str(turn_limit))
+        clingo_str += "\n" + turns_clingo
+
+        # add initial world state facts:
+        initial_state_clingo = self._initialize_adventure_turns_asp(initial_world_state)
+        clingo_str += "\n" + initial_state_clingo
+
+        # add actions:
+        for action_name, action_def in self.action_definitions.items():
+            action_asp = action_def['asp']  # action ASP encodings were manually created or generated with new-words
+            clingo_str += "\n" + action_asp
+
+        # add action/turn restraints:
+        actions_turns_clingo: str = self.clingo_templates["action_limits"]  # -> only one action per turn
+        clingo_str += "\n" + actions_turns_clingo
+
+        # add rooms visited tracking:
+        visited_clingo: str = self.clingo_templates["pre_explore_visited"]  # -> room is visited if player is ever at it
+        clingo_str += "\n" + visited_clingo
+
+        if limit_to_goal_object_rooms:
+            # add goal object rooms needing to be visited:
+            for goal in goal_facts:
+                goal_tuple = fact_str_to_tuple(goal)
+                goal_template: str = self.clingo_templates["pre_explore_goal"]
+                goal_clingo = goal_clingo.replace("$THING$", goal_tuple[1])
+
+                clingo_str += "\n" + goal_clingo
+        else:
+            # add all rooms visited requirement:
+            visited_all_clingo: str = self.clingo_templates["pre_explore_all"]  # -> all rooms need to be visited
+            clingo_str += "\n" + visited_all_clingo
 
         # add optimization:
         minimize_clingo = self.clingo_templates["minimize"]  # -> least number of turns is optimal
@@ -1115,6 +1180,50 @@ class ClingoAdventureGenerator(object):
                         cur_optimal_solution)
                     # check if optimal turns within bounds:
                     if min_optimal_turns <= optimal_turns <= max_optimal_turns:
+                        # pre-explore rooms:
+                        # solve current adventure:
+                        visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
+                        # print("visit ASP:\n", visit_asp)
+                        # init fresh clingo controller:
+                        visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                        # add adventure solving asp encoding:
+                        visit_solve_control.add(visit_asp)
+                        # ground clingo controller:
+                        visit_solve_control.ground()
+
+                        print("Visiting solving grounded.")
+
+                        visit_solutions = list()
+                        solvable: bool = False
+                        with visit_solve_control.solve(yield_=True) as solve:
+                            for model in solve:
+                                visit_solutions.append(model.__str__())
+                                # print(model)
+                            satisfiable = str(solve.get())
+                            # print("satisfiable:", satisfiable)
+                            if satisfiable == "SAT":
+                                solvable = True
+                            elif satisfiable == "UNSAT":
+                                solvable = False
+
+                        print("Visiting solving performed.")
+
+                        # skip this raw adventure if it is not solvable under the defined constraints:
+                        if not solvable:
+                            print("Visiting is NOT solvable.")
+                            continue
+
+                        print("Visiting is solvable.")
+                        print()
+
+                        # last yielded model is optimal solution:
+                        visit_optimal_solution = visit_solutions[-1]
+                        # convert optimal solution:
+                        visiting_abstract, visiting_turns, visiting_cmds = self._convert_adventure_solution(
+                            visit_optimal_solution)
+
+                        print("visiting_cmds:", visiting_cmds)
+
                         # get tuple world state:
                         world_state: set = set()
                         for fact in initial_state:
@@ -1171,6 +1280,8 @@ class ClingoAdventureGenerator(object):
                                 'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
                                 'optimal_turns': optimal_turns,
                                 'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'visiting_turns': visiting_turns,
+                                'visiting_solution': visiting_abstract, 'visiting_commands': visiting_cmds,
                                 'action_definitions': self.adv_type_def['action_definitions'],
                                 'room_definitions': self.adv_type_def['room_definitions'],
                                 'entity_definitions': self.adv_type_def['entity_definitions'],
@@ -1386,6 +1497,50 @@ class ClingoAdventureGenerator(object):
         cur_sol_abstract, optimal_turns, cur_sol_cmds = self._convert_adventure_solution(cur_optimal_solution)
         # check if optimal turns within bounds:
         if min_optimal_turns <= optimal_turns <= max_optimal_turns:
+            # pre-explore rooms:
+            # solve current adventure pre-exploration:
+            visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
+            # print("visit ASP:\n", visit_asp)
+            # init fresh clingo controller:
+            visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+            # add adventure solving asp encoding:
+            visit_solve_control.add(visit_asp)
+            # ground clingo controller:
+            visit_solve_control.ground()
+
+            print("Visiting solving grounded.")
+
+            visit_solutions = list()
+            solvable: bool = False
+            with visit_solve_control.solve(yield_=True) as solve:
+                for model in solve:
+                    visit_solutions.append(model.__str__())
+                    # print(model)
+                satisfiable = str(solve.get())
+                # print("satisfiable:", satisfiable)
+                if satisfiable == "SAT":
+                    solvable = True
+                elif satisfiable == "UNSAT":
+                    solvable = False
+
+            print("Visiting solving performed.")
+
+            # skip this raw adventure if it is not solvable under the defined constraints:
+            if not solvable:
+                print("Visiting is NOT solvable.")
+                return
+
+            print("Visiting is solvable.")
+            print()
+
+            # last yielded model is optimal solution:
+            visit_optimal_solution = visit_solutions[-1]
+            # convert optimal solution:
+            visiting_abstract, visiting_turns, visiting_cmds = self._convert_adventure_solution(
+                visit_optimal_solution)
+
+            print("visiting_cmds:", visiting_cmds)
+
             # get tuple world state:
             world_state: set = set()
             for fact in initial_state:
@@ -1441,6 +1596,8 @@ class ClingoAdventureGenerator(object):
                 'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
                 'optimal_turns': optimal_turns,
                 'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                'visiting_turns': visiting_turns,
+                'visiting_solution': visiting_abstract, 'visiting_commands': visiting_cmds,
                 'action_definitions': self.adv_type_def['action_definitions'],
                 'room_definitions': self.adv_type_def['room_definitions'],
                 'entity_definitions': self.adv_type_def['entity_definitions'],
@@ -1473,16 +1630,98 @@ class ClingoAdventureGenerator(object):
 
         self.generate_from_initial_goals(initial_state, goal_state)
 
+    def augment_raw_adventures_pre_explore(self, source_file_path: str):
+        """
+        Add pre-explore sequence to raw adventures in a file.
+        """
+        # load raw adventures file:
+        with open(source_file_path, 'r', encoding='utf-8') as source_file:
+            raw_adventures = json.load(source_file)
+
+        difficulties = list(raw_adventures.keys())
+
+        for difficulty in difficulties:
+            dif_raws = raw_adventures[difficulty]
+            for raw_idx, raw_adv in enumerate(dif_raws):
+                print(f"Augmenting {difficulty} adventure number {raw_idx}...")
+
+                cur_initial_state = raw_adv['initial_state']
+                print(cur_initial_state)
+                cur_goal_set = raw_adv['goal_state']
+                print(cur_goal_set)
+
+                # pre-explore rooms:
+                # solve current adventure pre-exploration:
+                visit_asp: str = self._pre_explore_asp(cur_initial_state, cur_goal_set)
+                # print("visit ASP:\n", visit_asp)
+                # init fresh clingo controller:
+                visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                # add adventure solving asp encoding:
+                visit_solve_control.add(visit_asp)
+                # ground clingo controller:
+                visit_solve_control.ground()
+
+                print("Visiting solving grounded.")
+
+                visit_solutions = list()
+                solvable: bool = False
+                with visit_solve_control.solve(yield_=True) as solve:
+                    for model in solve:
+                        visit_solutions.append(model.__str__())
+                        # print(model)
+                    satisfiable = str(solve.get())
+                    # print("satisfiable:", satisfiable)
+                    if satisfiable == "SAT":
+                        solvable = True
+                    elif satisfiable == "UNSAT":
+                        solvable = False
+
+                print("Visiting solving performed.")
+
+                # skip this raw adventure if it is not solvable under the defined constraints:
+                if not solvable:
+                    print("Visiting is NOT solvable.")
+                    return
+
+                print("Visiting is solvable.")
+                print()
+
+                # last yielded model is optimal solution:
+                visit_optimal_solution = visit_solutions[-1]
+                # convert optimal solution:
+                visiting_abstract, visiting_turns, visiting_cmds = self._convert_adventure_solution(
+                    visit_optimal_solution)
+
+                # print("visiting_cmds:", visiting_cmds)
+
+                raw_adv['visiting_turns'] = visiting_turns
+                raw_adv['visiting_solution'] = visiting_abstract
+                raw_adv['visiting_commands'] = visiting_cmds
+
+                # print(raw_adv)
+
+                # break
+            # break
+
+        # save augmented raw adventures:
+        with open(f"{source_file_path[:-5]}_a.json", 'w', encoding='utf-8') as out_raw_adv_file:
+            out_raw_adv_file.write(json.dumps(raw_adventures, indent=2))
+
+
+
 
 if __name__ == "__main__":
     # init generator:
     # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
 
     # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, goal_set_picking="random")
-    adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1)
+    # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, save_to_file=False)
+
+    adventure_generator.augment_raw_adventures_pre_explore("curated_home_deliver_three_adventures_v2_2.json")

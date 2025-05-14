@@ -57,6 +57,8 @@ class AdventureGameMaster(DialogueGameMaster):
         if self.if_variant == 'plan':
             self.plan_history: list = list()
             self.plan_success_ratio_history: list = list()  # for 'bad' plan scoring
+            # get pre-exploration sequence for planning adventures:
+            self.pre_explore_inputs = self.game_instance['visiting_commands']
         # get goal data set from game instance:
         self.goals_required = set(self.game_instance['goal_state'])
         self.goals_required_cnt = len(self.goals_required)
@@ -72,12 +74,44 @@ class AdventureGameMaster(DialogueGameMaster):
         self.loop_detected: bool = False
 
     def _on_before_game(self):
-        # get initial room description from IF interpreter:
-        initial_room_desc = self.if_interpreter.get_full_room_desc()
-        # combine prompt with initial room description as first message:
-        first_message = self.game_instance["prompt"] + initial_room_desc
-        # add the initial prompts to the message history:
-        self.set_context_for(self.player, first_message)
+        # pre-explore rooms for planning variant:
+        if self.if_variant == 'plan':
+            # get initial room description from IF interpreter:
+            initial_room_desc = self.if_interpreter.get_full_room_desc()
+            # combine prompt with initial room description as first message:
+            first_message_content = self.game_instance["prompt"] + initial_room_desc
+            first_message = {"role": "user","content": first_message_content}
+            # add initial prompt message to player message history:
+            self.player._messages.append(first_message)
+            # execute pre-explore visiting sequence:
+            for pre_exp_idx, pre_exp_action in enumerate(self.pre_explore_inputs):
+                if pre_exp_idx < len(self.pre_explore_inputs)-1:  # only do this by simple history appending before last
+                    # add IF input message to player message history:
+                    input_message: dict = {"role": "assistant",
+                                           "content": f"> {pre_exp_action}\n"
+                                                      f"Next actions: {','.join(self.pre_explore_inputs[pre_exp_idx+1:])}"}
+                    self.player._messages.append(input_message)
+                    # execute pre-explore action:
+                    goals_achieved, if_response, action_info = self.if_interpreter.process_action(pre_exp_action)
+                    # add IF response to player message history:
+                    response_message: dict = {"role": "user", "content": if_response}
+                    self.player._messages.append(response_message)
+                else:  # handle last pair by using set_context_for
+                    # add IF input message to player message history:
+                    input_message: dict = {"role": "assistant",
+                                           "content": f"> {pre_exp_action}\n"
+                                                      f"Next actions: {self.pre_explore_inputs[-1]}"}
+                    self.player._messages.append(input_message)
+                    # execute pre-explore action:
+                    goals_achieved, if_response, action_info = self.if_interpreter.process_action(pre_exp_action)
+                    self.set_context_for(self.player, if_response)
+        else:
+            # get initial room description from IF interpreter:
+            initial_room_desc = self.if_interpreter.get_full_room_desc()
+            # combine prompt with initial room description as first message:
+            first_message = self.game_instance["prompt"] + initial_room_desc
+            # add the initial prompts to the message history:
+            self.set_context_for(self.player, first_message)
 
     def _validate_player_response(self, player: Player, utterance: str) -> bool:
         # logger.info(f"Player response:\n{utterance}")
