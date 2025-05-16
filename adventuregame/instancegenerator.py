@@ -29,25 +29,18 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
             variants: Which variants to make instances for. Currently supported variants are "basic", "planning",
                 "basic_invlimit", "planning_invlimit".
         """
-
-        # TODO: allow loading multiple raw adventure files
-        #   - for more convenient variant/difficulty handling
-        #   -> add outer loop
-
         for raw_adventures_file in raw_adventures_files:
-            # load generated adventures:
+            # load raw adventures:
             adventures = self.load_json(f"resources/{raw_adventures_file}")
-
             # get difficulties:
             difficulties = list(adventures.keys())
-
             # get adventure type from first raw adventure:
             adventure_type = adventures[difficulties[0]][0]['adventure_type']
 
             for difficulty in difficulties:
                 # BASIC
                 if "basic" in variants:
-                    # create an experiment:
+                    # create basic experiment:
                     basic_experiment = self.add_experiment(f"{adventure_type}_basic_{difficulty}")
 
                     for adventure_id in tqdm(range(len(adventures[difficulty]))):
@@ -135,6 +128,56 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                                 'domain_definitions']  # game parameters
                             # TODO: de-hardcode the domain difference; just add full domain to home delivery too
 
+                # BASIC with pre-exploration
+
+                if "basic_preexplore" in variants:
+                    if "new-words" in adventure_type:
+                        continue
+                    # create basic pre-explore experiment:
+                    basic_experiment = self.add_experiment(f"{adventure_type}_basic_preexplore_{difficulty}")
+
+                    for adventure_id in tqdm(range(len(adventures[difficulty]))):
+                        goal_str = adventures[difficulty][adventure_id]['goal']
+
+                        initial_state = adventures[difficulty][adventure_id]['initial_state']
+                        goal_state = adventures[difficulty][adventure_id]['goal_state']
+
+                        # load the prepared initial prompt:
+                        if adventures[difficulty][adventure_id]['prompt_template_set'] == 'home_delivery':
+                            basic_prompt = self.load_template("resources/initial_prompts/basic_prompt_done")
+                        # Replace the goal in the templated initial prompt
+                        instance_prompt = basic_prompt.replace("$GOAL$", goal_str)
+                        # Create a game instance
+                        game_instance = self.add_game_instance(basic_experiment, adventure_id)
+                        game_instance["variant"] = "basic_preexplore"  # game parameters
+                        game_instance["prompt"] = instance_prompt  # game parameters
+                        # game_instance["goal_str"] = goal_str  # game parameters
+                        # game_instance["first_room_str"] = first_room_str  # game parameters
+                        game_instance["initial_state"] = initial_state  # game parameters
+                        game_instance["goal_state"] = goal_state  # game parameters
+                        game_instance["max_turns"] = adventures[difficulty][adventure_id][
+                            'bench_turn_limit']  # game parameters
+                        game_instance["optimal_turns"] = adventures[difficulty][adventure_id][
+                            'optimal_turns']  # game parameters
+                        game_instance["optimal_solution"] = adventures[difficulty][adventure_id][
+                            'optimal_solution']  # game parameters
+                        game_instance["optimal_commands"] = adventures[difficulty][adventure_id][
+                            'optimal_commands']  # game parameters
+                        game_instance["action_definitions"] = adventures[difficulty][adventure_id][
+                            'action_definitions']  # game parameters
+                        game_instance["room_definitions"] = adventures[difficulty][adventure_id][
+                            'room_definitions']  # game parameters
+                        game_instance["entity_definitions"] = adventures[difficulty][adventure_id][
+                            'entity_definitions']  # game parameters
+                        if adventure_type == "home_deliver_three":
+                            game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
+                                'domain_definitions']  # game parameters
+                        game_instance["visiting_turns"] = adventures[difficulty][adventure_id][
+                            'visiting_turns']  # game parameters
+                        game_instance["visiting_solution"] = adventures[difficulty][adventure_id][
+                            'visiting_solution']  # game parameters
+                        game_instance["visiting_commands"] = adventures[difficulty][adventure_id][
+                            'visiting_commands']  # game parameters
 
                 # PLANNING
 
@@ -162,6 +205,54 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                         # Create a game instance
                         game_instance = self.add_game_instance(planning_experiment, adventure_id)
                         game_instance["variant"] = "plan"  # game parameters
+                        game_instance["prompt"] = instance_prompt  # game parameters
+                        # game_instance["goal_str"] = goal_str  # game parameters
+                        # game_instance["first_room_str"] = first_room_str  # game parameters
+                        game_instance["initial_state"] = initial_state  # game parameters
+                        game_instance["goal_state"] = goal_state  # game parameters
+                        game_instance["max_turns"] = adventures[difficulty][adventure_id][
+                            'bench_turn_limit']  # game parameters
+                        game_instance["optimal_turns"] = adventures[difficulty][adventure_id][
+                            'optimal_turns']  # game parameters
+                        game_instance["optimal_solution"] = adventures[difficulty][adventure_id][
+                            'optimal_solution']  # game parameters
+                        game_instance["optimal_commands"] = adventures[difficulty][adventure_id][
+                            'optimal_commands']  # game parameters
+                        game_instance["action_definitions"] = adventures[difficulty][adventure_id][
+                            'action_definitions']  # game parameters
+                        game_instance["room_definitions"] = adventures[difficulty][adventure_id][
+                            'room_definitions']  # game parameters
+                        game_instance["entity_definitions"] = adventures[difficulty][adventure_id][
+                            'entity_definitions']  # game parameters
+                        game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
+                            'domain_definitions']  # game parameters
+
+                # PLANNING with pre-exploration
+
+                if "planning_preexplore" in variants:
+                    if "new-words" in adventure_type:
+                        continue
+                    # create an experiment:
+                    planning_experiment = self.add_experiment(f"{adventure_type}_planning_preexplore_{difficulty}")
+
+                    # Load the prepared initial prompt
+                    # planning_prompt = self.load_template("resources/initial_prompts/plan_prompt")
+                    planning_prompt = self.load_template("resources/initial_prompts/plan_prompt_done")
+
+                    for adventure_id in tqdm(range(len(adventures[difficulty]))):
+                        goal_str = adventures[difficulty][adventure_id]['goal']
+                        # first_room_str = adventures[adventure_id]['first_room']
+
+                        initial_state = adventures[difficulty][adventure_id]['initial_state']
+                        goal_state = adventures[difficulty][adventure_id]['goal_state']
+
+                        # Replace the goal in the templated initial prompt
+                        instance_prompt = planning_prompt.replace("$GOAL$", goal_str)
+                        # instance_prompt = instance_prompt.replace("$FIRST_ROOM$", first_room_str)
+
+                        # Create a game instance
+                        game_instance = self.add_game_instance(planning_experiment, adventure_id)
+                        game_instance["variant"] = "plan_preexplore"  # game parameters
                         game_instance["prompt"] = instance_prompt  # game parameters
                         # game_instance["goal_str"] = goal_str  # game parameters
                         # game_instance["first_room_str"] = first_room_str  # game parameters
@@ -239,7 +330,6 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                         game_instance["domain_definitions"] = ["home_domain_invlimit.json"]  # game parameters
 
 
-
                 # PLANNING INVENTORY LIMIT
                 if "planning_invlimit" in variants:
                     if "new-words" in adventure_type:
@@ -296,9 +386,6 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             'visiting_commands']  # game parameters
 
 
-
-
-
 if __name__ == '__main__':
     # The resulting instances.json is automatically saved to the "in" directory of the game folder
     # AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures"])
@@ -307,5 +394,5 @@ if __name__ == '__main__':
         "generated_new-words_home-delivery_easy_adventures",
         "generated_new-words_home-delivery_medium_adventures",
         "generated_new-words_created_adventures"],
-        variants=["basic", "planning", "basic_invlimit", "planning_invlimit"]
+        variants=["basic", "basic_preexplore", "planning", "planning_preexplore", "basic_invlimit", "planning_invlimit"]
     )

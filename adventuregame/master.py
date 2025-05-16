@@ -57,7 +57,8 @@ class AdventureGameMaster(DialogueGameMaster):
         if self.if_variant == 'plan':
             self.plan_history: list = list()
             self.plan_success_ratio_history: list = list()  # for 'bad' plan scoring
-            # get pre-exploration sequence for planning adventures:
+        if "preexplore" in self.if_variant:
+            # get pre-exploration sequence for pre-explore adventures:
             self.pre_explore_inputs = self.game_instance['visiting_commands']
         # get goal data set from game instance:
         self.goals_required = set(self.game_instance['goal_state'])
@@ -74,8 +75,8 @@ class AdventureGameMaster(DialogueGameMaster):
         self.loop_detected: bool = False
 
     def _on_before_game(self):
-        # pre-explore rooms for planning variant:
-        if self.if_variant == 'plan':
+        # pre-explore rooms for pre-explore variants:
+        if "preexplore" in self.if_variant:
             # get initial room description from IF interpreter:
             initial_room_desc = self.if_interpreter.get_full_room_desc()
             # combine prompt with initial room description as first message:
@@ -87,9 +88,13 @@ class AdventureGameMaster(DialogueGameMaster):
             for pre_exp_idx, pre_exp_action in enumerate(self.pre_explore_inputs):
                 if pre_exp_idx < len(self.pre_explore_inputs)-1:  # only do this by simple history appending before last
                     # add IF input message to player message history:
-                    input_message: dict = {"role": "assistant",
-                                           "content": f"> {pre_exp_action}\n"
-                                                      f"Next actions: {','.join(self.pre_explore_inputs[pre_exp_idx+1:])}"}
+                    if "plan" in self.if_variant:
+                        input_message: dict = {"role": "assistant",
+                                               "content": f"> {pre_exp_action}\n"
+                                                          f"Next actions: "
+                                                          f"{','.join(self.pre_explore_inputs[pre_exp_idx+1:])}"}
+                    else:
+                        input_message: dict = {"role": "assistant", "content": f"> {pre_exp_action}"}
                     self.player._messages.append(input_message)
                     # execute pre-explore action:
                     goals_achieved, if_response, action_info = self.if_interpreter.process_action(pre_exp_action)
@@ -98,9 +103,12 @@ class AdventureGameMaster(DialogueGameMaster):
                     self.player._messages.append(response_message)
                 else:  # handle last pair by using set_context_for
                     # add IF input message to player message history:
-                    input_message: dict = {"role": "assistant",
-                                           "content": f"> {pre_exp_action}\n"
-                                                      f"Next actions: {self.pre_explore_inputs[-1]}"}
+                    if "plan" in self.if_variant:
+                        input_message: dict = {"role": "assistant",
+                                               "content": f"> {pre_exp_action}\n"
+                                                          f"Next actions: {self.pre_explore_inputs[-1]}"}
+                    else:
+                        input_message: dict = {"role": "assistant", "content": f"> {pre_exp_action}"}
                     self.player._messages.append(input_message)
                     # execute pre-explore action:
                     goals_achieved, if_response, action_info = self.if_interpreter.process_action(pre_exp_action)
