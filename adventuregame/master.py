@@ -5,7 +5,10 @@ from typing import List, Dict, Tuple
 from clemcore.backends import Model
 from clemcore.utils import file_utils
 import clemcore.clemgame.metrics as metrics
-from clemcore.clemgame import GameSpec, GameMaster, GameBenchmark, GameScorer, DialogueGameMaster, Player
+from clemcore.clemgame import GameSpec, GameMaster, GameBenchmark, GameScorer, DialogueGameMaster, Player, ParseError, \
+    GameError
+from clemcore.clemgame.master import RuleViolationError
+
 
 import logging
 
@@ -26,7 +29,6 @@ class AdventurePlayer(Player):
         return "Go"
 
 
-
 class AdventureGameMaster(DialogueGameMaster):
     """
     DialogueGameMaster subclass for AdventureGame.
@@ -41,6 +43,7 @@ class AdventureGameMaster(DialogueGameMaster):
         self.invalid_format: str = ""  # to track responses with invalid format
         self.finished: bool = False  # game finished successfully
         self.model_done = False  # model used DONE action to end game
+        self.turn_goal_score = 0
 
     def _on_setup(self, **game_instance):
         self.game_instance = game_instance  # fetch game parameters here
@@ -121,9 +124,22 @@ class AdventureGameMaster(DialogueGameMaster):
             # add the initial prompts to the message history:
             self.set_context_for(self.player, first_message)
 
-    def _validate_player_response(self, player: Player, utterance: str) -> bool:
+    def _parse_response(self, player: Player, utterance: str) -> Tuple[str, bool]:
+        """
+        Decide if a response utterance should be modified. If not simply return the utterance.
+        When a modified utterance and a true value is returned, then a 'parse' event is logged.
+
+        For the planning variant, this extracts plans and adds them to the plan history for later processing.
+
+        Args:
+            player: Clem player that produced the response.
+            utterance: The response string to be potentially modified.
+        Returns:
+            The (modified) response and if to log the parse action (default: True).
+        Raises:
+            ParseError if command tag or next actions are missing.
+        """
         # logger.info(f"Player response:\n{utterance}")
-        self.log_to_self("metadata", f"Round: {self.current_round}")
         # check player response:
         if player == self.player:
             # check rule: response must start with IF >
@@ -136,27 +152,17 @@ class AdventureGameMaster(DialogueGameMaster):
                         self.log_to_self("hallucinated_finish", utterance)
                         break
                 self.invalid_format = "command_tag_missing"
-                return False
+                raise ParseError("command_tag_missing", utterance)
+                return utterance, False
             if self.if_variant == 'plan':
                 # check rule: response must contain 'Next actions:' on its own line
                 # if utterance is DONE action, don't fail
                 if "\nNext actions:" not in utterance and "done" not in utterance:
                     self.success = False
                     self.invalid_format = "next_actions_missing"
-                    return False
-        return True
+                    raise ParseError("next_actions_missing", utterance)
+                    return utterance, False
 
-    def _parse_response(self, player: Player, utterance: str) -> Tuple[str, bool]:
-        """
-        Decide if a response utterance should be modified. If not simply return the utterance.
-        When a modified utterance and a true value is returned, then a 'parse' event is logged.
-
-        For the planning variant, this extracts plans and adds them to the plan history for later processing.
-
-        :param player: Clem player that produced the response.
-        :param utterance: The response string to be potentially modified.
-        :return: The (modified) response and if to log the parse action (default: True)
-        """
         # logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
         if self.if_variant == 'plan':
             # do not split for next actions plan if action is 'done'
@@ -174,6 +180,7 @@ class AdventureGameMaster(DialogueGameMaster):
                 self.log_to_self(f"turn_plan", plan_sequence)
                 return utterance, True
             else:
+                raise ParseError("next_actions_missing", utterance)
                 return utterance, False
 
         return utterance, True
@@ -183,9 +190,7 @@ class AdventureGameMaster(DialogueGameMaster):
         After turn increment, before prompting.
         Logs current turn index for convenient comparison of runtime logs and transcripts.
         """
-        # TODO: change log_message_to_self to clemcore 2.0.0 version
-        # self.log_message_to_self(f"Turn {self.current_round}")
-        self.log_event("GM", "GM", {'type': "metadata", 'content': f"Turn {self.current_round}"})
+        self.log_to_self("metadata", f"Turn {self.current_round}")
 
     def _does_game_proceed(self) -> bool:
         """
@@ -218,7 +223,7 @@ class AdventureGameMaster(DialogueGameMaster):
         # otherwise keep playing:
         return True
 
-    def _on_valid_player_response(self, player: Player, parsed_response: Tuple[str, bool]):
+    def _advance_game(self, player: Player, parsed_response: Tuple[str, bool]):
         """
         Play loop hook: Called after all players have been prompted and their responses have been parsed+validated.
         """
@@ -273,6 +278,8 @@ class AdventureGameMaster(DialogueGameMaster):
             post_goal_count = len(self.goals_achieved)
             # calculate turn goal score; can be negative if a goal is 'unachieved':
             turn_score = post_goal_count - prior_goal_count
+            # set turn_goal_score attribute for playpen turn score:
+            self.turn_goal_score = turn_score
             # combine goal info into dict:
             goal_status = {"goal_states_achieved": list(self.goals_achieved), "turn_goal_score": turn_score}
             # record goal status dict for scoring:
@@ -323,10 +330,28 @@ class AdventureGameMaster(DialogueGameMaster):
             # record successful turn:
             self.turns.append(self.success)
 
+    def _on_parse_error(self, error: ParseError):
+        """Handle incorrect player utterance errors"""
+        # TODO: implement clemcore 3.0.2 parse error handling
+        pass
+
+    def _on_game_error(self, error: GameError):
+        """Handle incorrect player action errors"""
+        # TODO: implement clemcore 3.0.2 game error handling
+        pass
+
     def _on_after_game(self):
         # record final results once game episode has ended:
         game_result = {"goal_states_achieved": list(self.goals_achieved), "game_successfully_finished": self.finished}
         self.log_to_self("game_result", game_result)
+
+    def compute_turn_score(self):
+        """Return count of goal states achieved this turn as turn score."""
+        return self.turn_goal_score
+
+    def compute_episode_score(self):
+        """Return count of goal states achieved this episode as episode score."""
+        return len(self.goals_achieved)
 
 
 class AdventureGameScorer(GameScorer):
@@ -343,6 +368,9 @@ class AdventureGameScorer(GameScorer):
         Writes to score file in the episode directory.
         :param episode_interactions: Dict containing episode records for entire episode and turns.
         """
+
+        # TODO: update scoring to clemcore 3.0.2
+
         # get adventure/episode-level info:
         adventure_info: dict = episode_interactions['adventure_info']
         turn_scores = []
@@ -622,6 +650,8 @@ class AdventureGameScorer(GameScorer):
 class AdventureGameBenchmark(GameBenchmark):
     def __init__(self, game_spec: GameSpec):
         super().__init__(game_spec)
+
+        # TODO: update benchmark setup to clemcore 3.0.2
 
     def get_description(self):
         return "Interactive Fiction clemgame"
