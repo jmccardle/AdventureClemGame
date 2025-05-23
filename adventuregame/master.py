@@ -153,7 +153,6 @@ class AdventureGameMaster(DialogueGameMaster):
                         break
                 self.invalid_format = "command_tag_missing"
                 raise ParseError("command_tag_missing", utterance)
-                return utterance, False
             if self.if_variant == 'plan':
                 # check rule: response must contain 'Next actions:' on its own line
                 # if utterance is DONE action, don't fail
@@ -161,7 +160,6 @@ class AdventureGameMaster(DialogueGameMaster):
                     self.success = False
                     self.invalid_format = "next_actions_missing"
                     raise ParseError("next_actions_missing", utterance)
-                    return utterance, False
 
         # logger.info(f"AdventureGameMaster._on_parse_response() input utterance: {utterance}")
         if self.if_variant == 'plan':
@@ -181,7 +179,6 @@ class AdventureGameMaster(DialogueGameMaster):
                 return utterance, True
             else:
                 raise ParseError("next_actions_missing", utterance)
-                return utterance, False
 
         return utterance, True
 
@@ -330,16 +327,6 @@ class AdventureGameMaster(DialogueGameMaster):
             # record successful turn:
             self.turns.append(self.success)
 
-    def _on_parse_error(self, error: ParseError):
-        """Handle incorrect player utterance errors"""
-        # TODO: implement clemcore 3.0.2 parse error handling
-        pass
-
-    def _on_game_error(self, error: GameError):
-        """Handle incorrect player action errors"""
-        # TODO: implement clemcore 3.0.2 game error handling
-        pass
-
     def _on_after_game(self):
         # record final results once game episode has ended:
         game_result = {"goal_states_achieved": list(self.goals_achieved), "game_successfully_finished": self.finished}
@@ -477,40 +464,40 @@ class AdventureGameScorer(GameScorer):
                 turn_score["violated_request_count"] = 0
                 turn_score["parsed_request_count"] = 1
             # record standard turn-level request scores:
-            self.log_turn_score(turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"])
-            self.log_turn_score(turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"])
-            self.log_turn_score(turn_idx, metrics.METRIC_REQUEST_COUNT_VIOLATED, turn_score["violated_request_count"])
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"])
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"])
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_VIOLATED, turn_score["violated_request_count"])
             # record invalid format type turn values:
             if invalid_format == "command_tag_missing":
-                self.log_turn_score(turn_idx, 'command_tag_missing', 1)
-                self.log_turn_score(turn_idx, 'next_actions_missing', 0)
+                self.log_round_score(turn_idx, 'command_tag_missing', 1)
+                self.log_round_score(turn_idx, 'next_actions_missing', 0)
             elif invalid_format == "next_actions_missing":
-                self.log_turn_score(turn_idx, 'command_tag_missing', 0)
-                self.log_turn_score(turn_idx, 'next_actions_missing', 1)
+                self.log_round_score(turn_idx, 'command_tag_missing', 0)
+                self.log_round_score(turn_idx, 'next_actions_missing', 1)
             else:
-                self.log_turn_score(turn_idx, 'command_tag_missing', 0)
-                self.log_turn_score(turn_idx, 'next_actions_missing', 0)
+                self.log_round_score(turn_idx, 'command_tag_missing', 0)
+                self.log_round_score(turn_idx, 'next_actions_missing', 0)
             # record hallucinated finish:
-            self.log_turn_score(turn_idx, 'hallucination', hallucination)
+            self.log_round_score(turn_idx, 'hallucination', hallucination)
             # record IF interaction fail values by phase:
-            self.log_turn_score(turn_idx, 'action_parsing_fail', turn_fail["parsing"])
-            self.log_turn_score(turn_idx, 'action_resolution_fail', turn_fail["resolution"])
+            self.log_round_score(turn_idx, 'action_parsing_fail', turn_fail["parsing"])
+            self.log_round_score(turn_idx, 'action_resolution_fail', turn_fail["resolution"])
             # record fine-grained IF interaction fail values:
             for fail_type in fail_types[2:]:
-                self.log_turn_score(turn_idx, fail_type, turn_fail[fail_type])
+                self.log_round_score(turn_idx, fail_type, turn_fail[fail_type])
             # record turn-level goal score:
-            self.log_turn_score(turn_idx, 'goal_score', turn_score["goal_score"])
+            self.log_round_score(turn_idx, 'goal_score', turn_score["goal_score"])
 
             # exploration:
             if turn_exploration:
-                self.log_turn_score(turn_idx, 'epistemic_action', turn_exploration['epistemic_action'])
-                self.log_turn_score(turn_idx, 'pragmatic_action', turn_exploration['pragmatic_action'])
-                self.log_turn_score(turn_idx,
+                self.log_round_score(turn_idx, 'epistemic_action', turn_exploration['epistemic_action'])
+                self.log_round_score(turn_idx, 'pragmatic_action', turn_exploration['pragmatic_action'])
+                self.log_round_score(turn_idx,
                                     'effective_epistemic_gain_amount',
                                     turn_exploration['effective_epistemic_gain_amount'])
-                self.log_turn_score(turn_idx, 'known_entities_ratio', turn_exploration['known_entities_ratio'])
-                self.log_turn_score(turn_idx, 'visited_rooms_ratio', turn_exploration['visited_rooms_ratio'])
-                self.log_turn_score(turn_idx,
+                self.log_round_score(turn_idx, 'known_entities_ratio', turn_exploration['known_entities_ratio'])
+                self.log_round_score(turn_idx, 'visited_rooms_ratio', turn_exploration['visited_rooms_ratio'])
+                self.log_round_score(turn_idx,
                                     'known_goal_entities_ratio',
                                     turn_exploration['known_goal_entities_ratio'])
 
@@ -522,7 +509,7 @@ class AdventureGameScorer(GameScorer):
 
             # record planning values:
             for plan_type in plan_types:
-                self.log_turn_score(turn_idx, plan_type, plan_record[plan_type])
+                self.log_round_score(turn_idx, plan_type, plan_record[plan_type])
             # BAD PLAN FOLLOWING
             if turn_idx >= 1:
                 followed_bad_plan: int = 0
@@ -650,8 +637,6 @@ class AdventureGameScorer(GameScorer):
 class AdventureGameBenchmark(GameBenchmark):
     def __init__(self, game_spec: GameSpec):
         super().__init__(game_spec)
-
-        # TODO: update benchmark setup to clemcore 3.0.2
 
     def get_description(self):
         return "Interactive Fiction clemgame"
