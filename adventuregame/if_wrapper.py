@@ -10,6 +10,7 @@ import jinja2
 import os
 from copy import deepcopy
 from typing import List, Set, Union
+import itertools
 
 from clemcore.clemgame import GameResourceLocator
 
@@ -62,60 +63,10 @@ class IFTransformer(Transformer):
         return action_dict
 
 
-class PDDLActionTransformer(Transformer):
-    """PDDL action definition transformer to convert Lark parse to python dict for further use.
+class PDDLBaseTransformer(Transformer):
+    """PDDL parse transformer for shared base methods/grammar rules.
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
-    constant/type/default term string.
-    """
-    def action(self, content):
-        # print("action cont:", content)
-
-        # action_def_dict = {'action_name': content[1].value, 'content': content[3:]}
-        action_def_dict = {'action_name': content[1].value.lower()}
-
-        for cont in content:
-            # print(type(cont))
-            if type(cont) == lark.Token:
-                # print(cont.type, cont.value)
-                pass
-            else:
-                # print("non-Token", cont)
-                if 'parameters' in cont:
-                    action_def_dict['parameters'] = cont['parameters']
-                elif 'precondition' in cont:
-                    action_def_dict['precondition'] = cont['precondition']
-                elif 'effect' in cont:
-                    action_def_dict['effect'] = cont['effect']
-
-
-        # action: lark.Tree = content[0]
-        # action_type = action.data  # main grammar rule the input was parsed as
-        # action_content = action.children  # all parsed arguments of the action 'VP'
-
-        # print("action returns:", action_def_dict)
-        return action_def_dict
-        # return content
-        # pass
-
-    def parameters(self, content):
-        parameter_list = None
-        if type(content[0]) == lark.Token and content[0].type == "WS":
-            parameter_list = content[1]
-        # print("parameters:", parameter_list)
-
-        return {'parameters': parameter_list}
-
-    def precondition(self, content):
-        # print("precond cont:", content)
-        # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
-
-    def effect(self, content):
-        # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
-        # print("effect returns:", effect_dict)
-        return effect_dict
-
+    constant/type/default term string."""
     def forall(self, content):
         # print("forall cont:", content)
         iterated_object = content[2]
@@ -344,7 +295,62 @@ class PDDLActionTransformer(Transformer):
         return decrease_dict
 
 
-class PDDLDomainTransformer(Transformer):
+class PDDLActionTransformer(PDDLBaseTransformer):
+    """PDDL action definition transformer to convert Lark parse to python dict for further use.
+    Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
+    constant/type/default term string.
+    """
+    def action(self, content):
+        # print("action cont:", content)
+
+        # action_def_dict = {'action_name': content[1].value, 'content': content[3:]}
+        action_def_dict = {'action_name': content[1].value.lower()}
+
+        for cont in content:
+            # print(type(cont))
+            if type(cont) == lark.Token:
+                # print(cont.type, cont.value)
+                pass
+            else:
+                # print("non-Token", cont)
+                if 'parameters' in cont:
+                    action_def_dict['parameters'] = cont['parameters']
+                elif 'precondition' in cont:
+                    action_def_dict['precondition'] = cont['precondition']
+                elif 'effect' in cont:
+                    action_def_dict['effect'] = cont['effect']
+
+
+        # action: lark.Tree = content[0]
+        # action_type = action.data  # main grammar rule the input was parsed as
+        # action_content = action.children  # all parsed arguments of the action 'VP'
+
+        # print("action returns:", action_def_dict)
+        return action_def_dict
+        # return content
+        # pass
+
+    def parameters(self, content):
+        parameter_list = None
+        if type(content[0]) == lark.Token and content[0].type == "WS":
+            parameter_list = content[1]
+        # print("parameters:", parameter_list)
+
+        return {'parameters': parameter_list}
+
+    def precondition(self, content):
+        # print("precond cont:", content)
+        # print("precond cont:", content[1][1:])
+        return {'precondition': content[1:-1]}
+
+    def effect(self, content):
+        # print("effect cont:", content)
+        effect_dict = {'effect': content[1:-1]}
+        # print("effect returns:", effect_dict)
+        return effect_dict
+
+
+class PDDLDomainTransformer(PDDLBaseTransformer):
     """PDDL domain definition transformer to convert Lark parse to python dict for further use.
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
@@ -402,29 +408,6 @@ class PDDLDomainTransformer(Transformer):
         # print("types return:", {'types': types_list})
         return {'types': types_dict}
 
-    def type_list(self, content):
-        # print(content)
-        return {'type_list': content}
-
-    def type_list_element(self, content):
-        # print("type_list_item cont:", content)
-        type_list_items = list()
-        for item_element in content:
-            if 'variable' in item_element:
-                type_list_items.append(item_element)
-            elif type(item_element) == lark.Token:
-                if item_element.type == "WORDP":
-                    type_list_items.append(item_element.value)
-                elif item_element.type == "DASH":
-                    break
-
-        if content[-1].type == "WS":
-            cat_name = content[-2].value
-        else:
-            cat_name = content[-1].value
-        # print("type_list_item return:", {'type_list_item': cat_name, 'items': type_list_items})
-        return {'type_list_element': cat_name, 'items': type_list_items}
-
     def parameters(self, content):
         parameter_list = None
         if type(content[0]) == lark.Token and content[0].type == "WS":
@@ -443,98 +426,6 @@ class PDDLDomainTransformer(Transformer):
         effect_dict = {'effect': content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
-
-    def forall(self, content):
-        # print("forall cont:", content)
-        iterated_object = content[2]
-        # print("iterated object:", iterated_object)
-        forall_body = content[4:]
-        # print("forall body:", forall_body)
-
-        forall_dict = {'forall': iterated_object, 'body': forall_body}
-        # print("forall returns:", forall_dict)
-        return forall_dict
-
-    def when(self, content):
-        # print("when cont:", content)
-        when_items = list()
-        for when_item in content:
-            # ignore delimiters and whitespace:
-            if type(when_item) == lark.Token and when_item.type in ["WHENL", "WS"]:
-                pass
-            else:
-                when_items.append(when_item)
-        when_dict = {'when': when_items}
-        # print("when returns:", when_dict)
-        return when_dict
-
-    def andp(self, content):
-        # print("andp cont:", content)
-        and_items = list()
-        for and_item in content:
-            # ignore delimiters and whitespace:
-            if type(and_item) == lark.Token and and_item.type in ["ANDL", "WS"]:
-                pass
-            else:
-                and_items.append(and_item)
-        and_dict = {'and': and_items}
-        # print("andp returns:", and_dict, "\n")
-        return and_dict
-
-    def orp(self, content):
-        # print("orp cont:", content)
-        or_items = list()
-        for or_item in content:
-            # ignore delimiters and whitespace:
-            if type(or_item) == lark.Token and or_item.type in ["ORL", "WS"]:
-                pass
-            else:
-                or_items.append(or_item)
-        or_dict = {'or': or_items}
-        # print("orp returns:", or_dict, "\n")
-        return or_dict
-
-    def notp(self, content):
-        # print("notp cont:", content)
-        # (not X) always wraps only one item, hence:
-        return {'not': content[2]}
-
-    def pred(self, content):
-        # print("pred content:", content)
-        if type(content[0]) == lark.Token:
-            pred_type = content[0].value
-        else:
-            pred_type = content[0]
-        # valence up to three, using None assignments to avoid downstream checks
-        pred_arg1 = None
-        pred_arg2 = None
-        pred_arg3 = None
-
-        if len(content) >= 3:
-            # print('pred arg 1:', content[2])
-            if type(content[2]) == lark.Token:
-                pred_arg1 = content[2].value
-            else:
-                pred_arg1 = content[2]
-        if len(content) >= 5:
-            if type(content[4]) == lark.Token:
-                pred_arg2 = content[4].value
-            else:
-                pred_arg2 = content[4]
-        if len(content) >= 7:
-            if type(content[6]) == lark.Token:
-                pred_arg3 = content[6].value
-            else:
-                pred_arg3 = content[6]
-
-        pred_dict = {'predicate': pred_type, 'arg1': pred_arg1, 'arg2': pred_arg2, 'arg3': pred_arg3}
-        # print(pred_dict, "\n")
-
-        return pred_dict
-
-    def var(self, content):
-        # print(content[0])
-        return {'variable': content[0].value}
 
     def functions(self, content):
         # print("functions content:", content)
@@ -566,22 +457,6 @@ class PDDLDomainTransformer(Transformer):
 
         return function_dict
 
-    def function(self, content):
-        # print("function content:", content)
-
-        function_dict = dict()
-
-        if content[0].type == 'NUMBER':
-            # print("function NUMBER:", content[0].value)
-            function_dict['function_number'] = content[0].value
-        else:
-            function_dict['function_id'] = content[0].value
-            function_dict['function_variable'] = content[2]
-
-        # print("function_dict:", function_dict)
-
-        return function_dict
-
     def event(self, content):
         # print("event content:", content)
 
@@ -603,101 +478,98 @@ class PDDLDomainTransformer(Transformer):
 
         return event_dict
 
-    def equal(self, content):
-        # print("greq content:", content)
 
-        equal_dict = {'num_comp': "equal"}
+class PDDLEventTransformer(PDDLBaseTransformer):
+    """PDDL event definition transformer to convert Lark parse to python dict for further use.
+    Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
+    constant/type/default term string.
+    """
+    def event(self, content):
+        # print("event content:", content)
 
-        equal_dict['arg1'] = content[2]
-        equal_dict['arg2'] = content[4]
+        event_id = content[2].value
+        # print("event_id:", event_id)
 
-        # print("greq_dict:", greq_dict)
+        event_dict = {'event_id': content[2].value}
 
-        return equal_dict
+        for event_item in content[4:]:
+            # print("event_item:", event_item)
+            if 'parameters' in event_item:
+                # event_dict['event_parameters'] = event_item['parameters']
+                event_dict['parameters'] = event_item['parameters']
+            if 'precondition' in event_item:
+                # event_dict['event_precondition'] = event_item['precondition']
+                event_dict['precondition'] = event_item['precondition']
+            if 'effect' in event_item:
+                # event_dict['event_effect'] = event_item['effect']
+                event_dict['effect'] = event_item['effect']
 
-    def greater(self, content):
-        # print("greq content:", content)
+        # print("event_dict:", event_dict)
 
-        greater_dict = {'num_comp': "greater"}
+        return event_dict
 
-        greater_dict['arg1'] = content[2]
-        greater_dict['arg2'] = content[4]
+    def types(self, content):
+        # print("types cont:", content)
+        types_list = list()
+        for cont in content:
+            if 'type_list_element' in cont:
+                types_list.append(cont)
+        types_dict = dict()
+        for type_list in types_list:
+            # print(type_list)
+            types_dict[f'{type_list["type_list_element"]}'] = type_list['items']
+        # print("types return:", {'types': types_list})
+        return {'types': types_dict}
 
-        # print("greq_dict:", greq_dict)
+    def parameters(self, content):
+        parameter_list = None
+        if type(content[0]) == lark.Token and content[0].type == "WS":
+            parameter_list = content[1]
+        # print("parameters:", parameter_list)
 
-        return greater_dict
+        return {'parameters': parameter_list}
 
-    def greq(self, content):
-        # print("greq content:", content)
+    def precondition(self, content):
+        # print("precond cont:", content)
+        # print("precond cont:", content[1][1:])
+        return {'precondition': content[1:-1]}
 
-        greq_dict = {'num_comp': "greq"}
+    def effect(self, content):
+        # print("effect cont:", content)
+        effect_dict = {'effect': content[1:-1]}
+        # print("effect returns:", effect_dict)
+        return effect_dict
 
-        greq_dict['arg1'] = content[2]
-        greq_dict['arg2'] = content[4]
+    def functions(self, content):
+        # print("functions content:", content)
+        functions_dict = {'functions': list()}
+        for functions_item in content:
+            if 'function_def_predicate' in functions_item:
+                functions_dict['functions'].append(functions_item)
 
-        # print("greq_dict:", greq_dict)
+        return functions_dict
 
-        return greq_dict
+    def function_list_element(self, content):
+        # print("function_list_element content:", content)
 
-    def less(self, content):
-        # print("greq content:", content)
+        # for function_item in content:
+        #    print("function_list_element item:", function_item)
 
-        less_dict = {'num_comp': "less"}
+        function_def_predicate = content[0].value
+        # print("function_predicate:", function_predicate)
 
-        less_dict['arg1'] = content[2]
-        less_dict['arg2'] = content[4]
+        function_def_variable = content[2]
+        # print("function_variable:", function_variable)
 
-        # print("greq_dict:", greq_dict)
+        function_def_type = content[6].value
+        # print("function_type:", function_type)
 
-        return less_dict
+        function_dict = {'function_def_predicate': function_def_predicate,
+                         'function_def_variable': function_def_variable,
+                         "function_def_type": function_def_type}
 
-    def leq(self, content):
-        # print("greq content:", content)
+        return function_dict
 
-        leq_dict = {'num_comp': "leq"}
-
-        leq_dict['arg1'] = content[2]
-        leq_dict['arg2'] = content[4]
-
-        # print("greq_dict:", greq_dict)
-
-        return leq_dict
-
-    def assign(self, content):
-        # print("greq content:", content)
-
-        assign_dict = {'function_change': "assign"}
-
-        assign_dict['arg1'] = content[2]
-        assign_dict['arg2'] = content[4]
-
-        # print("greq_dict:", greq_dict)
-
-        return assign_dict
-
-    def increase(self, content):
-        # print("greq content:", content)
-
-        increase_dict = {'function_change': "increase"}
-
-        increase_dict['arg1'] = content[2]
-        increase_dict['arg2'] = content[4]
-
-        # print("greq_dict:", greq_dict)
-
-        return increase_dict
-
-    def decrease(self, content):
-        # print("greq content:", content)
-
-        decrease_dict = {'function_change': "decrease"}
-
-        decrease_dict['arg1'] = content[2]
-        decrease_dict['arg2'] = content[4]
-
-        # print("greq_dict:", greq_dict)
-
-        return decrease_dict
 
 
 class AdventureIFInterpreter(GameResourceLocator):
@@ -813,6 +685,9 @@ class AdventureIFInterpreter(GameResourceLocator):
         self.action_def_parser = Lark(action_def_grammar, start="action")
         domain_def_grammar = self.load_file(f"resources{os.sep}pddl_domain.lark")
         self.domain_def_parser = Lark(domain_def_grammar, start="define")
+        if "event_definitions" in self.game_instance:
+            event_def_grammar = self.load_file(f"resources{os.sep}pddl_events.lark")
+            self.event_def_parser = Lark(event_def_grammar, start="event")
 
     def initialize_action_types(self):
         """
@@ -943,7 +818,43 @@ class AdventureIFInterpreter(GameResourceLocator):
                 mutable_states.append(predicate['predicate_id'])
             self.domain['mutable_states'] = mutable_states
 
-        # TODO: establish events
+    def initialize_event_types(self):
+        """Load and process the event(s) used in this adventure.
+        Definitions are loaded from external files.
+        """
+        # load event definitions in game instance:
+        event_definitions: list = list()
+
+        for event_def in self.game_instance["event_definitions"]:
+            # check if event definition is file name string:
+            if type(event_def) == str:
+                events_file = self.load_json(f"resources{os.sep}definitions{os.sep}{event_def[:-5]}")
+                event_definitions += events_file
+            # check if event definition is direct dict:
+            elif type(event_def) == dict:
+                event_definitions.append(event_def)
+
+        # print("event_definitions", event_definitions)
+
+        for event_definition in event_definitions:
+            self.event_types[event_definition['type_name']] = dict()
+            # get all action attributes:
+            for event_attribute in event_definition:
+                if not event_attribute == 'type_name':
+                    self.event_types[event_definition['type_name']][event_attribute] = event_definition[
+                        event_attribute]
+
+        for event_type in self.event_types:
+            cur_event_type = self.event_types[event_type]
+            if 'pddl' in cur_event_type:
+                parsed_event_pddl = self.event_def_parser.parse(cur_event_type['pddl'])
+                processed_event_pddl = self.event_def_transformer.transform(parsed_event_pddl)
+                # print(processed_event_pddl)
+                cur_event_type['interaction'] = processed_event_pddl
+            else:
+                raise KeyError
+
+        # print(self.event_types)
 
     def initialize_action_parsing(self, print_lark_grammar: bool = False):
         """
@@ -2384,6 +2295,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         variable_map = dict()
         parameters_base = cur_action_def['interaction']['parameters']
         # print(parameters_base)
+        # print("cur_action_def:", cur_action_def)
         # check that parameters key correctly contains a PDDL type_list:
         if not 'type_list' in parameters_base:
             raise KeyError
@@ -2708,340 +2620,175 @@ class AdventureIFInterpreter(GameResourceLocator):
         prior_world_state = deepcopy(self.world_state)
 
         # iterate over defined events:
-        for cur_event in self.event_types:
-            # TODO: init event types along with domain
+        for cur_event_type in self.event_types:
+            cur_event_def = self.event_types[cur_event_type]
+            # print("cur_event_def:", cur_event_def)
 
-        # get current action definition:
-        cur_action_def = self.action_types[action_dict['type']]
-        # print("cur_action_def:", cur_action_def)
-        # pretty_action(cur_action_def)
-        # get current action PDDL parameter mapping:
-        cur_action_pddl_map = self.action_types[action_dict['type']]['pddl_parameter_mapping']
-        # print("cur_action_pddl_map:", cur_action_pddl_map)
+            # PARAMETERS
+            variable_map = dict()
+            parameters_base = cur_event_def['interaction']['parameters']
+            # print("parameters_base:", parameters_base)
+            # check that parameters key correctly contains a PDDL type_list:
+            if not 'type_list' in parameters_base:
+                raise KeyError
 
-        # PARAMETERS
-        variable_map = dict()
-        parameters_base = cur_action_def['interaction']['parameters']
-        # print(parameters_base)
-        # check that parameters key correctly contains a PDDL type_list:
-        if not 'type_list' in parameters_base:
-            raise KeyError
-        # type match fail variable to allow parameter failure feedback after precon failures:
-        type_match_fails: list = list()
-        # get parameters list:
-        parameters = parameters_base['type_list']
-        for param_idx, parameter in enumerate(parameters):
-            # print("\nparameter:", parameter, "idx:", param_idx)
-            cur_parameter_type = parameter['type_list_element']
-            # print("cur_parameter_type:", cur_parameter_type)
-            # go over variables in parameter:
-            for variable in parameter['items']:
-                # print("variable:", variable)
-                var_id = variable["variable"]
-                # print("var_id:", var_id)
-                # use parameter mapping to resolve variable:
-                cur_var_map = cur_action_pddl_map[f'?{var_id}']
-                # print("cur_var_map:", cur_var_map)
-                match cur_var_map[0]:
-                    # assign action arguments:
-                    case 'arg1':
-                        variable_map[var_id] = action_dict['arg1']
-                    case 'arg2':
-                        if 'arg2' in action_dict:
-                            # print("arg2 in action_dict")
-                            variable_map[var_id] = action_dict['arg2']
-                        else:
-                            # print("arg2 NOT in action_dict")
-                            # check alternate mapping:
-                            if len(cur_var_map) == 2:
-                                # print("Alternate mapping:", cur_var_map[1])
-                                if cur_var_map[1] == "arg1_receptacle":
-                                    # print("variable_map:", variable_map)
-                                    arg1_variable = None
-                                    for assigned_variable, assigned_value in cur_action_pddl_map.items():
-                                        # print("Checking", assigned_variable, assigned_value)
-                                        # print("assigned_variable value:", cur_action_pddl_map[assigned_variable])
-                                        if assigned_value[0] == "arg1":
-                                            # print("arg1 variable:", assigned_variable)
-                                            arg1_variable = assigned_variable[1:]
-                                            # print("arg1_variable:", arg1_variable)
-                                            break
-                                    arg1_value = variable_map[arg1_variable]
-                                    # print(arg1_value)
-                                    arg1_receptacle = None
-                                    for fact in self.world_state:
-                                        if fact[0] in ["in", "on"]:
-                                            if fact[1] == f"{arg1_value}1":  # assume only one instance of each type
-                                                arg1_receptacle = fact[2]
-                                                # print("arg1_receptacle:", arg1_receptacle)
-                                                break
-                                    variable_map[var_id] = arg1_receptacle
-                            else:
-                                variable_map[var_id] = None
-                    # assign default wildcards:
-                    case 'current_player_room':
-                        variable_map[var_id] = self.get_player_room()
-                    case 'player':
-                        # for now only single-player, so the current player is always player1:
-                        variable_map[var_id] = "player1"
-                    case 'inventory':
-                        # for now only single-player, so the current player inventory is always 'inventory':
-                        variable_map[var_id] = "inventory"
+            # get parameters list:
+            parameters = parameters_base['type_list']
+            # print("parameters:", parameters)
+            cur_var_type_map: dict = dict()
+            for parameter in parameters:
+                # print("\nparameter:", parameter)
+                cur_parameter_type = parameter['type_list_element']
+                # print("cur_parameter_type:", cur_parameter_type)
 
-                # check type match:
-                # assume all world state instance IDs end in numbers:
+                # go over variables in parameter:
+                for variable in parameter['items']:
+                    # print("variable:", variable)
+                    var_id = variable["variable"]
+                    # print("var_id:", var_id)
 
-                # logger.info(variable_map)
-
-                if variable_map[var_id]:
-                    if variable_map[var_id].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                        # logger.info(self.inst_to_type_dict)
-                        # logger.info(f"{variable_map[var_id]} in self.inst_to_type_dict: {variable_map[var_id] in self.inst_to_type_dict}")
-                        # logger.info(f"{variable_map[var_id]} in self.room_to_type_dict: {variable_map[var_id] in self.room_to_type_dict}")
-                        if variable_map[var_id] in self.inst_to_type_dict:
-                            var_type = self.inst_to_type_dict[variable_map[var_id]]
-                        elif variable_map[var_id] in self.room_to_type_dict:
-                            var_type = self.room_to_type_dict[variable_map[var_id]]
+                    # use parameter mapping to resolve variable:
+                    # cur_var_map = cur_event_pddl_map[f'?{var_id}']
+                    # print("cur_var_map:", cur_var_map)
+                    if var_id not in cur_var_type_map:
+                        # print(f"{var_id} not in cur_var_type_map")
+                        cur_var_type_map[var_id] = [cur_parameter_type]
                     else:
-                        # assume that other strings are essentially type strings:
-                        var_type = variable_map[var_id]
-                else:
-                    var_type = variable_map[var_id]
+                        cur_var_type_map[var_id].append(cur_parameter_type)
 
-                # print("var_type:", var_type)
+            # print("cur_var_type_map:", cur_var_type_map)
+            # get all type-matching entities:
+            cur_var_candidates: dict = dict()
+            for key, value in cur_var_type_map.items():
+                # print(key, value)
+                candidate_types: list = list()
+                for cur_type in value:
+                    # print(self.domain['types'])
+                    # print(type(self.domain['types']))
+                    # get domain supertypes:
+                    if cur_type in self.domain['types']:
+                        # value is domain supertype
+                        candidate_types += self.domain['types'][cur_type]
+                    else:
+                        candidate_types.append(cur_type)
+                cur_var_candidates[key] = [type_fact[1] for type_fact in self.world_state
+                                           if type_fact[0] in ["type", "room"] and type_fact[2] in candidate_types]
 
-                # DOMAIN TYPE CHECK
-                type_matched = False
-                if type(var_type) == str:
-                    # NOTE: Inventory contents are handled via effects PDDL forall now.
-                    if var_type in self.domain['supertypes']:
-                        # print("domain supertypes for current var_type:", self.domain['supertypes'][var_type])
-                        pass
-                    # check if type matches directly:
-                    if var_type == cur_parameter_type:
-                        type_matched = True
-                    # check if type matches through supertype:
-                    elif var_type in self.domain['supertypes'] and cur_parameter_type in self.domain['supertypes'][
-                        var_type]:
-                        type_matched = True
-                    # print("type matched:", type_matched)
-                else:
-                    # Fallback for edge cases
-                    type_matched = True
+            # print("cur_var_candidates:", cur_var_candidates)
+            candidates_lists = list(cur_var_candidates.values())
+            # print(candidates_lists)
+            candidate_combos = list(itertools.product(*candidates_lists))
+            # print("candidate_combos:", candidate_combos)
+            # iterate over candidate combos:
+            for candidate_combo in candidate_combos:
+                variable_map = deepcopy(cur_var_type_map)
+                key_iterator = 0
+                for value in candidate_combo:
+                    variable_map[list(variable_map.keys())[key_iterator]] = value
+                    key_iterator += 1
+                # print("variable_map:", variable_map)
+                # check event precondition:
+                # PRECONDITION
+                preconditions: list = cur_event_def['interaction']['precondition'][0]
+                # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
+                self.precon_idx = -1
+                # self.precon_idx = 0
+                self.precon_tuples = list()
+                self.precon_trace = list()
+                checked_conditions = self.check_conditions(preconditions, variable_map)
+                # print("Event checked_conditions:",checked_conditions)
+                # print("Checked precon tuples:", self.precon_tuples)
 
-                if not type_matched:
-                    # get the index of the mismatched variable:
-                    var_idx = list(cur_action_pddl_map.keys()).index(f"?{var_id}")
-                    # get fail feedback template using mismatched variable index:
-                    feedback_template = cur_action_def['failure_feedback']['parameters'][var_idx][0]
-                    feedback_jinja = jinja2.Template(feedback_template)
-                    # fill feedback template:
-                    jinja_args = {var_id: variable_map[var_id]}
+                # if checked_conditions:
+                if self.precon_trace[-1]['fulfilled']:
+                    logger.info("Event preconditions fulfilled!")
+                    # print("Preconditions fulfilled!")
+
+                    # EFFECT
+                    # IMPORTANT: Events MUST change their precondition to not be true (in the same way) after they have
+                    # been triggered!
+                    effects: list = cur_event_def['interaction']['effect']
+                    if 'and' in effects[0]:  # handle multi-predicate effect, but allow non-and single predicate effect
+                        effects: list = cur_event_def['interaction']['effect'][0]['and']
+                    # print("effects:", effects)
+
+                    world_state_effects = {'added': [], 'removed': []}
+
+                    for effect in effects:
+                        # print("effect:", effect)
+                        if 'forall' in effect:
+                            forall_results = self.resolve_forall(effect, variable_map)
+                            world_state_effects['added'] += forall_results['added']
+                            world_state_effects['removed'] += forall_results['removed']
+                        elif 'when' in effect:
+                            when_results = self.resolve_when(effect, variable_map)
+                            world_state_effects['added'] += when_results['added']
+                            world_state_effects['removed'] += when_results['removed']
+                        else:
+                            resolve_effect_results = self.resolve_effect(effect, variable_map)
+                            world_state_effects['added'] += resolve_effect_results['added']
+                            world_state_effects['removed'] += resolve_effect_results['removed']
+
+                    # print("world_state_effects:", world_state_effects)
+
+                    # print("World state after effects:", self.world_state)
+
+                    # add deepcopy of new current world state to world state history:
+                    self.world_state_history.append(deepcopy(self.world_state))
+
+                    # TODO: handle world state history properly; only needed for planning, ie not for current work
+
+                    # get all changed facts:
+                    post_world_state = deepcopy(self.world_state)
+                    post_resolution_changes = post_world_state.difference(prior_world_state)
+                    if prior_world_state == self.world_state_history[-2]:
+                        logger.info(f"Prior world state matches second to last world state in history")
+                    logger.info(f"Resolution world state changes: {post_resolution_changes}")
+
+                    # EVENT FEEDBACK
+
+                    # type word variable map instead of instance ID:
+                    clean_feedback_variable_map = deepcopy(variable_map)
+                    for key in clean_feedback_variable_map:
+                        if clean_feedback_variable_map[key]:
+                            if clean_feedback_variable_map[key].endswith(
+                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                                clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
+
+                    event_feedback_template = cur_event_def['event_feedback']
+                    # print("event_feedback_template:", event_feedback_template)
+
+                    feedback_jinja = jinja2.Template(event_feedback_template)
+
+                    # jinja_args: dict = {}
+                    jinja_args: dict = clean_feedback_variable_map
+                    if "room_desc" in event_feedback_template:
+                        jinja_args["room_desc"] = self.get_full_room_desc()
+                    if "inventory_desc" in event_feedback_template:
+                        jinja_args["inventory_desc"] = self.get_inventory_desc()
+                    if "prep" in event_feedback_template:
+                        # get preposition fact from world state effects:
+                        for added_fact in world_state_effects['added']:
+                            if added_fact[0] in ['in', 'on']:
+                                jinja_args["prep"] = added_fact[0]
+                                break
+                    if "container_content" in event_feedback_template:
+                        # get opened container fact from world state effects:
+                        for added_fact in world_state_effects['added']:
+                            if added_fact[0] == "open":
+                                opened_container_id = added_fact[1]
+                                break
+                        jinja_args["container_content"] = self.get_container_content_desc(opened_container_id)
+
                     feedback_str = feedback_jinja.render(jinja_args)
-                    feedback_str = feedback_str.capitalize()
-                    # use action def feedback fail type:
-                    fail_type = cur_action_def['failure_feedback']['parameters'][var_idx][1]
+                    # feedback_str = feedback_str.capitalize()
 
-                    failed_action_info = {'failed_action_type': action_dict['type'],
-                                          'failed_parameter': variable_map[var_id]}
+                    # print("feedback_str:", feedback_str)
 
-                    fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
+                    return True, feedback_str, {'world_state_effects': world_state_effects}
 
-                    type_match_fails.append((False, feedback_str, fail_dict))
-
-                    # return False, feedback_str, fail_dict
-
-        # variable map is filled during parameter checking
-        # print("variable_map pre-preconditions:", variable_map)
-
-        # PRECONDITION
-        preconditions: list = cur_action_def['interaction']['precondition'][0]
-        # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
-        self.precon_idx = -1
-        # self.precon_idx = 0
-        self.precon_tuples = list()
-        self.precon_trace = list()
-        checked_conditions = self.check_conditions(preconditions, variable_map)
-        # print("Main action checked_conditions:",checked_conditions)
-        # print("Checked precon tuples:", self.precon_tuples)
-
-        # if checked_conditions:
-        if self.precon_trace[-1]['fulfilled']:
-            logger.info("Preconditions fulfilled!")
-            pass
-        else:
-            logger.info("Preconditions not fulfilled!")
-
-            # NOTE: The first precondition fact that does not check out is used for feedback. This means that the order
-            # of predicates (and clauses) in the precondition PDDL for the action determines feedback priority!
-
-            logger.info(f"precon_trace: {self.precon_trace}")
-
-            def feedback_idx_from_precon_trace(precon_trace):
-                # iterate over precon trace:
-                for item in precon_trace[-1]['and']:
-                    # print("precon_trace item:", item)
-                    # print("Checks out:", item['fulfilled'])
-                    if not item['fulfilled']:
-                        # print("Precon trace item does not check out:")
-                        # print(item)
-                        if 'or' in item:
-                            # print("or clause:", item)
-                            for or_item in item['or']:
-                                # print("or_item:", or_item)
-                                if 'and' in or_item:
-                                    for and_item in or_item['and']:
-                                        if not and_item['fulfilled']:
-                                            # print("or and_item does not check out:", and_item)
-                                            if 'not' in and_item:
-                                                feedback_idx = and_item['not']['precon_idx']
-                                                return feedback_idx, and_item
-                                            feedback_idx = and_item['precon_idx']
-                                            return feedback_idx, and_item
-                                elif 'predicate_tuple' in or_item:
-                                    if not or_item['fulfilled']:
-                                        if 'not' in or_item:
-                                            feedback_idx = or_item['not']['precon_idx']
-                                            return feedback_idx, or_item
-                                        feedback_idx = or_item['precon_idx']
-                                        return feedback_idx, or_item
-                        elif 'and' in item:
-                            for and_item in item['and']:
-                                if not and_item['fulfilled']:
-                                    # print("or and_item does not check out:", and_item)
-                                    if 'not' in and_item:
-                                        feedback_idx = and_item['not']['precon_idx']
-                                        return feedback_idx, and_item
-                                    feedback_idx = and_item['precon_idx']
-                                    return feedback_idx, and_item
-                        elif 'predicate_tuple' in item:
-                            if not item['fulfilled']:
-                                feedback_idx = item['precon_idx']
-                                return feedback_idx, item
-                        elif 'not' in item:
-                            if not item['fulfilled']:
-                                feedback_idx = item['not']['precon_idx']
-                                return feedback_idx, item
-
-            # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
-
-            feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(self.precon_trace)
-            logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
-
-            # get textual failure feedback template:
-            feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx][0]
-            feedback_jinja = jinja2.Template(feedback_template)
-            # fill feedback template:
-            clean_feedback_variable_map = deepcopy(variable_map)
-            for key in clean_feedback_variable_map:
-                if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
-            jinja_args = clean_feedback_variable_map
-            feedback_str = feedback_jinja.render(jinja_args)
-            feedback_str = feedback_str.capitalize()
-            # failed action information for records:
-            failed_action_info = {'failed_action_type': action_dict['type'],
-                                  'failed_precon_predicate': failed_precon_predicate}
-            # use action def feedback fail type:
-            fail_type = cur_action_def['failure_feedback']['precondition'][feedback_idx][1]
-            fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
-
-            return False, feedback_str, fail_dict
-
-        # if there were type match fails, return the first including feedback:
-        if type_match_fails:
-            return type_match_fails[0]
-
-        # print("variable_map post-preconditions:", variable_map)
-
-        # EFFECT
-
-        effects: list = cur_action_def['interaction']['effect']
-        if 'and' in effects[0]:  # handle multi-predicate effect, but allow non-and single predicate effect
-            effects: list = cur_action_def['interaction']['effect'][0]['and']
-        # print("effects:", effects)
-
-        world_state_effects = {'added': [], 'removed': []}
-
-        for effect in effects:
-            # print("effect:", effect)
-            if 'forall' in effect:
-                forall_results = self.resolve_forall(effect, variable_map)
-                world_state_effects['added'] += forall_results['added']
-                world_state_effects['removed'] += forall_results['removed']
-            elif 'when' in effect:
-                when_results = self.resolve_when(effect, variable_map)
-                world_state_effects['added'] += when_results['added']
-                world_state_effects['removed'] += when_results['removed']
-            else:
-                resolve_effect_results = self.resolve_effect(effect, variable_map)
-                world_state_effects['added'] += resolve_effect_results['added']
-                world_state_effects['removed'] += resolve_effect_results['removed']
-
-        # print("world_state_effects:", world_state_effects)
-
-        # print("World state after effects:", self.world_state)
-
-        # add deepcopy of new current world state to world state history:
-        self.world_state_history.append(deepcopy(self.world_state))
-
-        # TODO: handle world state history properly; only needed for planning, ie not for current work
-
-        # get all changed facts:
-        post_world_state = deepcopy(self.world_state)
-        post_resolution_changes = post_world_state.difference(prior_world_state)
-        if prior_world_state == self.world_state_history[-2]:
-            logger.info(f"Prior world state matches second to last world state in history")
-        logger.info(f"Resolution world state changes: {post_resolution_changes}")
-
-        # SUCCESS FEEDBACK
-
-        # type word variable map instead of instance ID:
-        clean_feedback_variable_map = deepcopy(variable_map)
-        for key in clean_feedback_variable_map:
-            if clean_feedback_variable_map[key]:
-                if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
-
-        success_feedback_template = cur_action_def['success_feedback']
-        # print("success_feedback_template:", success_feedback_template)
-
-        feedback_jinja = jinja2.Template(success_feedback_template)
-
-        # jinja_args: dict = {}
-        jinja_args: dict = clean_feedback_variable_map
-        if "room_desc" in success_feedback_template:
-            jinja_args["room_desc"] = self.get_full_room_desc()
-        if "inventory_desc" in success_feedback_template:
-            jinja_args["inventory_desc"] = self.get_inventory_desc()
-        if "prep" in success_feedback_template:
-            if "prep" in action_dict:
-                jinja_args["prep"] = action_dict['prep']
-            else:
-                # get preposition fact from world state effects:
-                for added_fact in world_state_effects['added']:
-                    if added_fact[0] in ['in', 'on']:
-                        jinja_args["prep"] = added_fact[0]
-                        break
-        if "container_content" in success_feedback_template:
-            # get opened container fact from world state effects:
-            for added_fact in world_state_effects['added']:
-                if added_fact[0] == "open":
-                    opened_container_id = added_fact[1]
-                    break
-            jinja_args["container_content"] = self.get_container_content_desc(opened_container_id)
-        if "arg1_desc" in success_feedback_template:
-            # get description of arg1 entity:
-            entity_desc = self.get_entity_desc(action_dict['arg1'])
-            # print()
-            jinja_args["arg1_desc"] = entity_desc
-
-        feedback_str = feedback_jinja.render(jinja_args)
-        # feedback_str = feedback_str.capitalize()
-
-        # print("feedback_str:", feedback_str)
-
-        return True, feedback_str, {'world_state_effects': world_state_effects}
+            # since no event triggered, return[0] = False:
+            return False, "", {}
 
     def get_exploration_info(self, action_type = None, full_exploration_state = False, full_exploration_history = False):
         exploration_info = dict()
@@ -3195,10 +2942,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # logger.info(f"Post-process_action world state:\n{self.world_state}")
                 # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
-                # TODO: run events
+                events_feedback: list = list()
+                events_world_state_changes: list = list()
+                event_triggered, event_feedback, event_world_state_changes = self.run_events()
+                while event_triggered:
+                    events_feedback.append(event_feedback)
+                    events_world_state_changes.append(event_world_state_changes)
+                    event_triggered, event_feedback, event_world_state_changes = self.run_events()
 
+                results_feedback = base_result_str + "\n" + "\n".join(events_feedback)
 
-                return goals_achieved_response, base_result_str, extra_action_info
+                # TODO?: only give feedback for events happening in current player room? -> shouldn't be necessary for now
+
+                return goals_achieved_response, results_feedback, extra_action_info
 
     def execute_optimal_solution(self):
         """
@@ -3294,164 +3050,35 @@ if __name__ == "__main__":
     PATH = ""
     # example game instance:
     game_instance_exmpl = {
-          "game_id": 3,
+          "game_id": 0,
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nIn addition to common actions, you can ortid, enerk and alism.\n\nYour goal for this game is: Put the delly in the thot, the plate on the micon and the penol on the table.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
             "at(kitchen1floor1,kitchen1)",
-            "at(pantry1floor1,pantry1)",
-            "at(het1floor1,het1)",
-            "at(ousnee1floor1,ousnee1)",
-            "at(broomcloset1floor1,broomcloset1)",
-            "at(ationee1floor1,ationee1)",
-            "at(table1,ousnee1)",
-            "at(micon1,ousnee1)",
-            "at(ceoust1,kitchen1)",
-            "at(refrigerator1,pantry1)",
-            "at(thot1,kitchen1)",
-            "at(wardrobe1,ationee1)",
-            "at(shelf1,ousnee1)",
-            "at(freezer1,pantry1)",
-            "at(pottedplant1,het1)",
-            "at(chair1,ousnee1)",
-            "at(bed1,ationee1)",
-            "at(couch1,ousnee1)",
-            "at(catint1,broomcloset1)",
-            "at(penol1,broomcloset1)",
-            "at(soriced1,pantry1)",
-            "at(apple1,pantry1)",
-            "at(banana1,pantry1)",
-            "at(unalin1,pantry1)",
-            "at(fress1,pantry1)",
-            "at(plate1,kitchen1)",
-            "at(delly1,ationee1)",
-            "at(pillow1,ationee1)",
-            "at(player1,ationee1)",
+            "at(table1,kitchen1)",
+            "at(player1,kitchen1)",
+            "at(toad1,kitchen1)",
+            "at(greenbeetle1,kitchen1)",
+            "at(cauldron1,kitchen1)"
             "type(kitchen1floor1,floor)",
-            "type(pantry1floor1,floor)",
-            "type(het1floor1,floor)",
-            "type(ousnee1floor1,floor)",
-            "type(broomcloset1floor1,floor)",
-            "type(ationee1floor1,floor)",
             "type(player1,player)",
             "type(table1,table)",
-            "type(micon1,micon)",
-            "type(ceoust1,ceoust)",
-            "type(refrigerator1,refrigerator)",
-            "type(thot1,thot)",
-            "type(wardrobe1,wardrobe)",
-            "type(shelf1,shelf)",
-            "type(freezer1,freezer)",
-            "type(pottedplant1,pottedplant)",
-            "type(chair1,chair)",
-            "type(bed1,bed)",
-            "type(couch1,couch)",
-            "type(catint1,catint)",
-            "type(penol1,penol)",
-            "type(soriced1,soriced)",
-            "type(apple1,apple)",
-            "type(banana1,banana)",
-            "type(unalin1,unalin)",
-            "type(fress1,fress)",
-            "type(plate1,plate)",
-            "type(delly1,delly)",
-            "type(pillow1,pillow)",
+            "type(toad1,toad)",
+            "type(greenbeetle1,greenbeetle)",
+            "type(cauldron1,cauldron)",
             "room(kitchen1,kitchen)",
-            "room(pantry1,pantry)",
-            "room(het1,het)",
-            "room(ousnee1,ousnee)",
-            "room(broomcloset1,broomcloset)",
-            "room(ationee1,ationee)",
             "support(kitchen1floor1)",
-            "support(pantry1floor1)",
-            "support(het1floor1)",
-            "support(ousnee1floor1)",
-            "support(broomcloset1floor1)",
-            "support(ationee1floor1)",
             "support(table1)",
-            "support(micon1)",
-            "support(ceoust1)",
-            "support(shelf1)",
-            "support(chair1)",
-            "support(bed1)",
-            "support(couch1)",
-            "on(pillow1,bed1)",
-            "on(delly1,ationee1floor1)",
-            "on(plate1,kitchen1floor1)",
-            "on(penol1,broomcloset1floor1)",
-            "on(catint1,broomcloset1floor1)",
-            "on(pottedplant1,het1floor1)",
-            "container(refrigerator1)",
-            "container(thot1)",
-            "container(wardrobe1)",
-            "container(freezer1)",
-            "in(fress1,refrigerator1)",
-            "in(unalin1,refrigerator1)",
-            "in(banana1,refrigerator1)",
-            "in(apple1,refrigerator1)",
-            "in(soriced1,refrigerator1)",
-            "exit(kitchen1,pantry1)",
-            "exit(kitchen1,ousnee1)",
-            "exit(kitchen1,het1)",
-            "exit(pantry1,kitchen1)",
-            "exit(het1,kitchen1)",
-            "exit(het1,broomcloset1)",
-            "exit(ousnee1,kitchen1)",
-            "exit(broomcloset1,het1)",
-            "exit(ationee1,het1)",
-            "exit(het1,ationee1)",
+            "on(toad1,kitchen1floor1)",
+            "on(greenbeetle1,table1)",
             "receptacle(table1)",
-            "receptacle(micon1)",
-            "receptacle(ceoust1)",
-            "receptacle(refrigerator1)",
-            "receptacle(thot1)",
-            "receptacle(wardrobe1)",
-            "receptacle(shelf1)",
-            "receptacle(freezer1)",
-            "receptacle(chair1)",
-            "receptacle(bed1)",
-            "receptacle(couch1)",
-            "openable(refrigerator1)",
-            "openable(thot1)",
-            "openable(wardrobe1)",
-            "openable(freezer1)",
-            "closed(refrigerator1)",
-            "closed(thot1)",
-            "closed(wardrobe1)",
-            "closed(freezer1)",
-            "takeable(pottedplant1)",
-            "takeable(catint1)",
-            "takeable(penol1)",
-            "takeable(soriced1)",
-            "takeable(apple1)",
-            "takeable(banana1)",
-            "takeable(unalin1)",
-            "takeable(fress1)",
-            "takeable(plate1)",
-            "takeable(delly1)",
-            "takeable(pillow1)",
-            "movable(pottedplant1)",
-            "movable(catint1)",
-            "movable(penol1)",
-            "movable(soriced1)",
-            "movable(apple1)",
-            "movable(banana1)",
-            "movable(unalin1)",
-            "movable(fress1)",
-            "movable(plate1)",
-            "movable(delly1)",
-            "movable(pillow1)",
-            "needs_support(pottedplant1)",
-            "needs_support(catint1)",
-            "needs_support(penol1)",
-            "needs_support(soriced1)",
-            "needs_support(apple1)",
-            "needs_support(banana1)",
-            "needs_support(unalin1)",
-            "needs_support(fress1)",
-            "needs_support(plate1)",
-            "needs_support(delly1)",
-            "needs_support(pillow1)"
+            "takeable(toad1)",
+            "takeable(greenbeetle1)",
+            "movable(toad1)",
+            "movable(greenbeetle1)",
+            "needs_support(toad1)",
+            "needs_support(greenbeetle1)",
+            "hungry(toad1)"
           ],
           "goal_state": [
             "in(delly1,thot1)",
@@ -3522,1133 +3149,14 @@ if __name__ == "__main__":
             ]
           ],
           "optimal_commands": [
-            "look around",
-            "take delly",
-            "go het",
-            "go broom closet",
-            "take penol",
-            "go het",
-            "go kitchen",
-            "take plate",
-            "open thot",
-            "go ousnee",
-            "put plate on micon",
-            "go kitchen",
-            "put delly in thot",
-            "go ousnee",
-            "put penol on table"
+            # "look around"
+            "take green beetle"
           ],
-          "action_definitions": [
-            {
-              "lark": "open: OPEN thing\nOPEN.1: \"open\" WS",
-              "pddl": "(:action OPEN\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (closed ?e)\n        )\n    :effect (and\n        (open ?e)\n        (not (closed ?e))\n        (forall (?c - takeable)\n            (when\n                (in ?c ?e)\n                (and\n                    (accessible ?c)\n                )\n            )\n        )\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?e": [
-                  "arg1"
-                ],
-                "?r": [
-                  "current_player_room"
-                ],
-                "?p": [
-                  "player"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ e }} is not openable.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "The {{ e }} is not closed.",
-                    "entity_state_mismatch"
-                  ]
-                ]
-              },
-              "success_feedback": "The {{ e }} is now open. {{ container_content }}",
-              "asp": "{ action_t(TURN,open,THING):at_t(TURN,THING,ROOM),closed_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nopen_t(TURN+1,THING) :- action_t(TURN,open,THING).\nopen_t(TURN+1,THING) :- turn(TURN), open_t(TURN,THING), not action_t(TURN,close,THING).",
-              "epistemic": True,
-              "pragmatic": True,
-              "explanation": "To VERB is to make something physically unobstructed and uncovered, and make its contents available for use or interaction.",
-              "type_name": "open"
-            },
-            {
-              "lark": "close: CLOSE thing\nCLOSE.1: \"alism\" WS",
-              "pddl": "(:action CLOSE\n    :parameters (?e - openable ?r - room ?p - player)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (open ?e)\n        )\n    :effect (and\n        (closed ?e)\n        (not (open ?e))\n        (forall (?i - takeable)\n            (when\n                (in ?i ?e)\n                (and\n                    (not (accessible ?i))\n                )\n            )\n        )\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?e": [
-                  "arg1"
-                ],
-                "?r": [
-                  "current_player_room"
-                ],
-                "?p": [
-                  "player"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ e }} is not openable.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "The {{ e }} is not open.",
-                    "entity_state_mismatch"
-                  ]
-                ]
-              },
-              "success_feedback": "The {{ e }} is now closed.",
-              "asp": "{ action_t(TURN,close,THING):at_t(TURN,THING,ROOM),open_t(TURN,THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nclosed_t(TURN+1,THING) :- action_t(TURN,close,THING).\nclosed_t(TURN+1,THING) :- turn(TURN), closed_t(TURN,THING), not action_t(TURN,open,THING).",
-              "epistemic": False,
-              "pragmatic": False,
-              "explanation": "To alism is to remove or block an opening of something, and make its contents unavailable for use or interaction.",
-              "new_word": "alism",
-              "type_name": "close"
-            },
-            {
-              "lark": "take: TAKE PREP* thing (PREP thing)*\nTAKE.1: \"ortid\" WS",
-              "pddl": "(:action TAKE\n    :parameters (?e - takeable ?s - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (or \n            (in ?e inventory)\n            (at ?s ?r)\n            )        \n        (accessible ?e)\n        (or\n            (and\n                (on ?e ?s)\n                (support ?s)\n                )\n            (and\n                (open ?s)\n                (container ?s)\n                (in ?e ?s)\n                )\n            )\n        )\n    :effect (and\n        (in ?e ?i)\n        (when\n            (and\n                (support ?s)\n                (on ?e ?s)\n                )\n            (not (on ?e ?s))\n            )\n        (when\n            (and\n                (container ?s)\n                (in ?e ?s)\n                )\n            (not (in ?e ?s))\n            )\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?e": [
-                  "arg1"
-                ],
-                "?s": [
-                  "arg2",
-                  "arg1_receptacle"
-                ],
-                "?p": [
-                  "player"
-                ],
-                "?i": [
-                  "inventory"
-                ],
-                "?r": [
-                  "current_player_room"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ e }} is not takeable.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ s }} is not a receptacle.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ i }} is not an inventory. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "The {{ e }} is already in your inventory.",
-                    "entity_already_inventory"
-                  ],
-                  [
-                    "You can't see a {{ s }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "The {{ e }} is not on the {{ s }}.",
-                    "entity_state_mismatch"
-                  ],
-                  [
-                    "The {{ s }} is not a support.",
-                    "entity_trait_mismatch"
-                  ],
-                  [
-                    "The {{ s }} is not open.",
-                    "entity_state_mismatch"
-                  ],
-                  [
-                    "The {{ s }} is not a container.",
-                    "entity_trait_mismatch"
-                  ],
-                  [
-                    "The {{ e }} is not in the {{ s }}.",
-                    "entity_state_mismatch"
-                  ]
-                ]
-              },
-              "success_feedback": "You take the {{ e }}. {{ inventory_desc }}",
-              "asp": "{ action_t(TURN,take,THING):at_t(TURN,THING,ROOM),takeable(THING),in_t(TURN,THING,CONTAINER),open_t(TURN,CONTAINER),at_t(TURN,player1,ROOM);action_t(TURN,take,THING):at_t(TURN,THING,ROOM),takeable(THING),on_t(TURN,THING,SUPPORT),support(SUPPORT),at_t(TURN,player1,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,THING,inventory) :- action_t(TURN,take,THING).\nin_t(TURN+1,THING,TARGET) :- turn(TURN), in_t(TURN,THING,TARGET), not action_t(TURN,take,THING), TARGET != inventory.\non_t(TURN+1,THING,TARGET) :- turn(TURN), on_t(TURN,THING,TARGET), not action_t(TURN,take,THING).",
-              "epistemic": False,
-              "pragmatic": True,
-              "explanation": "To ortid is to get something into one's hands, possession or control.",
-              "new_word": "ortid",
-              "type_name": "take"
-            },
-            {
-              "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: \"enerk\" WS",
-              "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
-              "pddl_parameter_mapping": {
-                "?e": [
-                  "arg1"
-                ],
-                "?t": [
-                  "arg2"
-                ],
-                "?p": [
-                  "player"
-                ],
-                "?i": [
-                  "inventory"
-                ],
-                "?r": [
-                  "current_player_room"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ e }} is not moveable.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ t }} is not a receptacle.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ i }} is not an inventory. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "You can't see a {{ t }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "The {{ t }} is not a container.",
-                    "entity_trait_mismatch"
-                  ],
-                  [
-                    "The {{ t }} is not open.",
-                    "entity_state_mismatch"
-                  ],
-                  [
-                    "The {{ t }} is not a support.",
-                    "entity_trait_mismatch"
-                  ]
-                ]
-              },
-              "success_feedback": "You put the {{ e }} {{ prep }} the {{ t }}.",
-              "asp": "{ action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),support(TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),support(TARGET),movable(THING),on_t(TURN,THING,SOURCE),support(SOURCE);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),support(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), container(TARGET).\non_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), support(TARGET).\nin_t(TURN+1,THING,inventory) :- turn(TURN), in_t(TURN,THING,inventory), not action_t(TURN,put,THING,_).",
-              "epistemic": False,
-              "pragmatic": True,
-              "explanation": "To enerk is to physically place something somewhere.",
-              "new_word": "enerk",
-              "type_name": "put"
-            },
-            {
-              "lark": "go: GO (\"back\" WS)* (\"to\" WS)* thing\nGO.1: (\"go\" | \"enter\" | \"return\" | \"proceed\" | \"move\") WS",
-              "pddl": "(:action GO\n    :parameters (?c ?d - room ?p - player ?i - inventory)\n    :precondition (and\n        (at ?p ?c)\n        (not (at ?p ?d))\n        (exit ?c ?d)\n        )\n    :effect (and\n        (at ?p ?d)\n        (not (at ?p ?c))\n        (forall (?e - takeable)\n            (when\n                (in ?e ?i)\n                (and\n                    (at ?e ?d)\n                    (not (at ?e ?c))\n                )\n            )\n        )\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?c": [
-                  "current_player_room"
-                ],
-                "?d": [
-                  "arg1"
-                ],
-                "?p": [
-                  "player"
-                ],
-                "?i": [
-                  "inventory"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ c }} is not a room.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ d }} is not a room.",
-                    "domain_trait_type_mismatch"
-                  ],
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ i }} is not an inventory. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You are already in the {{ d }}.",
-                    "going_to_current_room"
-                  ],
-                  [
-                    "You can't go to a {{ d }} from here.",
-                    "no_exit_to"
-                  ]
-                ]
-              },
-              "success_feedback": "{{ room_desc }}",
-              "asp": "{ action_t(TURN,go,TARGET):exit(ROOM,TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nat_t(TURN+1,player1,TARGET) :- action_t(TURN,go,TARGET).\nat_t(TURN+1,player1,ROOM) :- turn(TURN), at_t(TURN,player1,ROOM), not action_t(TURN,go,_).\nat_t(TURN+1,THING,TARGET) :- action_t(TURN,go,TARGET), in_t(TURN,THING,inventory).\nat_t(TURN+1,THING,ROOM) :- turn(TURN), at_t(TURN,THING,ROOM), not in_t(TURN,THING,inventory), not turn_limit(TURN), THING != player1.",
-              "epistemic": True,
-              "pragmatic": True,
-              "explanation": "To VERB is to move through space, especially to a place.",
-              "type_name": "go"
-            },
-            {
-              "lark": "done: DONE\nDONE.1: (\"done\" | \"quit\" | \"finish\") WS*",
-              "pddl": "(:action DONE\n    :parameters (?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        )\n    :effect (and\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?p": [
-                  "player"
-                ],
-                "?r": [
-                  "current_player_room"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ]
-                ]
-              },
-              "success_feedback": "You consider yourself done.",
-              "asp": "",
-              "epistemic": False,
-              "pragmatic": True,
-              "explanation": "To VERB is to end the game.",
-              "type_name": "done"
-            },
-            {
-              "lark": "examine: EXAMINE thing\nEXAMINE.1: (\"examine\" | \"check\" | \"inspect\" | \"search\") WS",
-              "pddl": "(:action EXAMINE\n    :parameters (?p - player ?r - room ?e - entity)\n    :precondition (and\n        (at ?p ?r)\n        (or\n            (at ?e ?r)\n            (type ?e inventory)\n            )\n        (accessible ?e)\n            )\n    :effect (and\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?p": [
-                  "player"
-                ],
-                "?r": [
-                  "current_player_room"
-                ],
-                "?e": [
-                  "arg1"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ e }} is not an entity. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ],
-                  [
-                    "Your inventory is not an entity. (This should not occur.)",
-                    "world_state_discrepancy"
-                  ],
-                  [
-                    "You can't see a {{ e }} here.",
-                    "entity_not_accessible"
-                  ]
-                ]
-              },
-              "success_feedback": "{{ arg1_desc }}",
-              "asp": "",
-              "epistemic": True,
-              "pragmatic": False,
-              "explanation": "To VERB is to observe or inspect carefully.",
-              "type_name": "examine"
-            },
-            {
-              "lark": "look: LOOK (\"at\"* ( thing | \"around\" | \"room\" ) )\nLOOK.1: (\"look\" | \"examine\" | \"check\" | \"inspect\" | \"search\") WS",
-              "pddl": "(:action LOOK\n    :parameters (?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n            )\n    :effect (and\n    )\n)",
-              "pddl_parameter_mapping": {
-                "?p": [
-                  "player"
-                ],
-                "?r": [
-                  "current_player_room"
-                ]
-              },
-              "failure_feedback": {
-                "parameters": [
-                  [
-                    "{{ p }} is not a player. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ],
-                  [
-                    "{{ r }} is not a room. (This should not occur.)",
-                    "domain_type_discrepancy"
-                  ]
-                ],
-                "precondition": [
-                  [
-                    "You are not where you are! (This should not occur.)",
-                    "world_state_discrepancy"
-                  ]
-                ]
-              },
-              "success_feedback": "{{ room_desc }}",
-              "asp": "",
-              "epistemic": True,
-              "pragmatic": False,
-              "explanation": "To VERB is to inspect a room.",
-              "type_name": "look"
-            }
-          ],
-          "room_definitions": [
-            {
-              "repr_str": "kitchen",
-              "standard_content": [
-                "refrigerator",
-                "ceoust",
-                "table"
-              ],
-              "exit_targets": [
-                "pantry",
-                "ousnee",
-                "het"
-              ],
-              "max_connections": 3,
-              "type_name": "kitchen"
-            },
-            {
-              "repr_str": "pantry",
-              "standard_content": [
-                "refrigerator",
-                "shelf",
-                "freezer"
-              ],
-              "exit_targets": [
-                "kitchen",
-                "het"
-              ],
-              "max_connections": 1,
-              "type_name": "pantry"
-            },
-            {
-              "repr_str": "het",
-              "standard_content": [
-                "pottedplant"
-              ],
-              "exit_targets": [
-                "kitchen",
-                "pantry",
-                "ousnee",
-                "broomcloset"
-              ],
-              "max_connections": 4,
-              "type_name": "het"
-            },
-            {
-              "repr_str": "ousnee",
-              "standard_content": [
-                "pottedplant",
-                "table",
-                "chair",
-                "couch"
-              ],
-              "exit_targets": [
-                "kitchen",
-                "het"
-              ],
-              "max_connections": 2,
-              "type_name": "ousnee"
-            },
-            {
-              "repr_str": "broom closet",
-              "standard_content": [
-                "catint"
-              ],
-              "exit_targets": [
-                "het"
-              ],
-              "max_connections": 1,
-              "type_name": "broomcloset"
-            },
-            {
-              "repr_str": "ationee",
-              "standard_content": [
-                "bed",
-                "wardrobe"
-              ],
-              "exit_targets": [
-                "ousnee",
-                "het"
-              ],
-              "max_connections": 1,
-              "type_name": "ationee"
-            }
-          ],
-          "entity_definitions": [
-            {
-              "repr_str": "you",
-              "hidden": True,
-              "traits": [],
-              "type_name": "player"
-            },
-            {
-              "repr_str": "inventory",
-              "hidden": True,
-              "container": True,
-              "traits": [
-                "container",
-                "receptacle"
-              ],
-              "type_name": "inventory"
-            },
-            {
-              "repr_str": "floor",
-              "hidden": True,
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "type_name": "floor"
-            },
-            {
-              "repr_str": "table",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "metal",
-                "low",
-                "high"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "ousnee"
-              ],
-              "type_name": "table"
-            },
-            {
-              "repr_str": "micon",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "metal",
-                "small"
-              ],
-              "standard_locations": [
-                "ousnee",
-                "ationee"
-              ],
-              "type_name": "micon"
-            },
-            {
-              "repr_str": "ceoust",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "metal",
-                "low",
-                "high"
-              ],
-              "standard_locations": [
-                "kitchen"
-              ],
-              "type_name": "ceoust"
-            },
-            {
-              "repr_str": "refrigerator",
-              "container": True,
-              "openable": True,
-              "traits": [
-                "container",
-                "openable",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "large",
-                "fancy"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "refrigerator"
-            },
-            {
-              "repr_str": "thot",
-              "container": True,
-              "openable": True,
-              "traits": [
-                "container",
-                "openable",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "metal",
-                "large",
-                "fancy"
-              ],
-              "standard_locations": [
-                "kitchen"
-              ],
-              "type_name": "thot"
-            },
-            {
-              "repr_str": "wardrobe",
-              "container": True,
-              "openable": True,
-              "traits": [
-                "container",
-                "openable",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "large",
-                "fancy"
-              ],
-              "standard_locations": [
-                "ationee"
-              ],
-              "type_name": "wardrobe"
-            },
-            {
-              "repr_str": "shelf",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "wooden",
-                "metal",
-                "low",
-                "high"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry",
-                "ousnee"
-              ],
-              "type_name": "shelf"
-            },
-            {
-              "repr_str": "freezer",
-              "container": True,
-              "openable": True,
-              "traits": [
-                "container",
-                "openable",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "large",
-                "deep"
-              ],
-              "standard_locations": [
-                "pantry"
-              ],
-              "type_name": "freezer"
-            },
-            {
-              "repr_str": "potted plant",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "possible_adjs": [
-                "large",
-                "small"
-              ],
-              "standard_locations": [
-                "ousnee",
-                "het",
-                "ationee"
-              ],
-              "type_name": "pottedplant"
-            },
-            {
-              "repr_str": "chair",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "comfy",
-                "wooden",
-                "padded"
-              ],
-              "standard_locations": [
-                "ousnee"
-              ],
-              "type_name": "chair"
-            },
-            {
-              "repr_str": "bed",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "comfy",
-                "wooden"
-              ],
-              "standard_locations": [
-                "ationee"
-              ],
-              "type_name": "bed"
-            },
-            {
-              "repr_str": "couch",
-              "support": True,
-              "traits": [
-                "support",
-                "receptacle"
-              ],
-              "possible_adjs": [
-                "comfy",
-                "wooden",
-                "padded"
-              ],
-              "standard_locations": [
-                "ousnee"
-              ],
-              "type_name": "couch"
-            },
-            {
-              "repr_str": "catint",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "broomcloset"
-              ],
-              "type_name": "catint"
-            },
-            {
-              "repr_str": "penol",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "broomcloset"
-              ],
-              "type_name": "penol"
-            },
-            {
-              "repr_str": "soriced",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "soriced"
-            },
-            {
-              "repr_str": "apple",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "apple"
-            },
-            {
-              "repr_str": "banana",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "ripe",
-                "jelly"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "banana"
-            },
-            {
-              "repr_str": "unalin",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "ripe",
-                "fresh"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "unalin"
-            },
-            {
-              "repr_str": "fress",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "ripe",
-                "fresh"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen",
-                "pantry"
-              ],
-              "type_name": "fress"
-            },
-            {
-              "repr_str": "plate",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "ceramic",
-                "glass"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "kitchen"
-              ],
-              "type_name": "plate"
-            },
-            {
-              "repr_str": "delly",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "old",
-                "thin"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "ousnee",
-                "ationee"
-              ],
-              "type_name": "delly"
-            },
-            {
-              "repr_str": "pillow",
-              "takeable": True,
-              "movable": True,
-              "supported": True,
-              "possible_adjs": [
-                "down",
-                "small"
-              ],
-              "traits": [
-                "takeable",
-                "movable",
-                "needs_support"
-              ],
-              "standard_locations": [
-                "ationee"
-              ],
-              "type_name": "pillow"
-            }
-          ],
-          "domain_definitions": [
-            {
-              "domain_id": "partial_new_words",
-              "types": {
-                "room": [
-                  "kitchen",
-                  "pantry",
-                  "het",
-                  "ousnee",
-                  "broomcloset",
-                  "ationee"
-                ],
-                "entity": [
-                  "player",
-                  "inventory",
-                  "floor",
-                  "player",
-                  "inventory",
-                  "floor",
-                  "table",
-                  "micon",
-                  "ceoust",
-                  "refrigerator",
-                  "thot",
-                  "wardrobe",
-                  "shelf",
-                  "freezer",
-                  "pottedplant",
-                  "chair",
-                  "bed",
-                  "couch",
-                  "catint",
-                  "penol",
-                  "soriced",
-                  "apple",
-                  "banana",
-                  "unalin",
-                  "fress",
-                  "plate",
-                  "delly",
-                  "pillow"
-                ],
-                "container": [
-                  "inventory",
-                  "refrigerator",
-                  "thot",
-                  "wardrobe",
-                  "freezer"
-                ],
-                "receptacle": [
-                  "inventory",
-                  "floor",
-                  "table",
-                  "micon",
-                  "ceoust",
-                  "refrigerator",
-                  "thot",
-                  "wardrobe",
-                  "shelf",
-                  "freezer",
-                  "chair",
-                  "bed",
-                  "couch"
-                ],
-                "support": [
-                  "floor",
-                  "table",
-                  "micon",
-                  "ceoust",
-                  "shelf",
-                  "chair",
-                  "bed",
-                  "couch"
-                ],
-                "openable": [
-                  "refrigerator",
-                  "thot",
-                  "wardrobe",
-                  "freezer"
-                ],
-                "takeable": [
-                  "pottedplant",
-                  "catint",
-                  "penol",
-                  "soriced",
-                  "apple",
-                  "banana",
-                  "unalin",
-                  "fress",
-                  "plate",
-                  "delly",
-                  "pillow"
-                ],
-                "movable": [
-                  "pottedplant",
-                  "catint",
-                  "penol",
-                  "soriced",
-                  "apple",
-                  "banana",
-                  "unalin",
-                  "fress",
-                  "plate",
-                  "delly",
-                  "pillow"
-                ],
-                "needs_support": [
-                  "pottedplant",
-                  "catint",
-                  "penol",
-                  "soriced",
-                  "apple",
-                  "banana",
-                  "unalin",
-                  "fress",
-                  "plate",
-                  "delly",
-                  "pillow"
-                ]
-              },
-              "predicates": [
-                {
-                  "predicate_id": "open",
-                  "variable": "e",
-                  "mutability": "openable"
-                },
-                {
-                  "predicate_id": "closed",
-                  "variable": "e",
-                  "mutability": "openable"
-                }
-              ]
-            }
-          ]
+          "action_definitions": ["witch_actions_core.json"],
+          "room_definitions": ["witch_rooms.json"],
+          "entity_definitions": ["witch_entities.json"],
+          "domain_definitions": ["witch_domain_core.json"],
+          "event_definitions": ["witch_events.json"]
         }
     # initialize test interpreter:
     test_interpreter = AdventureIFInterpreter("D:/AdventureClemGame/adventuregame", game_instance_exmpl)

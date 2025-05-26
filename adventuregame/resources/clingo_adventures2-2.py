@@ -67,6 +67,7 @@ class ClingoAdventureGenerator(object):
                 self.new_word_iterate_idx = 0
                 self._replace_assign_new_word_definitions()
 
+        # TODO: add events
 
         clingo_template_file = "clingo_templates.json"
         if 'clingo_templates' in self.adv_type_def:

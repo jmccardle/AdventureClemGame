@@ -1,0 +1,14 @@
+(define
+    (domain witchhouse)
+    (:types
+        kitchen pantry hallway livingroom broomcloset bedroom - room
+        player inventory floor table sidetable counter icebox cupboard wardrobe shelf cauldron lilyofthevalley chair bed couch broom mop sandwich apple banana orange peach plate book pillow toad greenbeetle - entity
+        inventory floor table sidetable counter icebox cupboard wardrobe shelf chair bed couch cauldron - receptacle
+        inventory icebox cauldron wardrobe - container
+        greenbeetle - beetle
+        toad - toad
+        )
+    (:functions
+        (itemcount ?i - inventory)
+        )
+    )

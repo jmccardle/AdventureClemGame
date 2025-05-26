@@ -227,5 +227,13 @@
     "possible_adjs": ["shiny", "spiny"],
     "traits": ["takeable", "movable", "needs_support"],
     "standard_locations": ["pantry"]
+  },
+  {
+    "type_name": "cauldron",
+    "repr_str": "cauldron",
+    "container": true,
+    "traits": ["container", "receptacle"],
+    "possible_adjs": ["copper", "iron", "earthen"],
+    "standard_locations": ["kitchen"]
   }
 ]
