@@ -214,7 +214,7 @@
     "takeable": true,
     "movable": true,
     "supported": true,
-    "possible_adjs": ["green", "brown"],
+    "possible_adjs": ["warty", "hypnotic"],
     "traits": ["takeable", "movable", "needs_support"],
     "standard_locations": ["bedroom"]
   },

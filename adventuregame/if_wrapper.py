@@ -2736,7 +2736,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # add deepcopy of new current world state to world state history:
                     self.world_state_history.append(deepcopy(self.world_state))
 
-                    # TODO: handle world state history properly; only needed for planning, ie not for current work
+                    # TODO?: handle world state history properly; only needed for planning, ie not for current work
 
                     # get all changed facts:
                     post_world_state = deepcopy(self.world_state)
@@ -3059,25 +3059,31 @@ if __name__ == "__main__":
             "at(player1,kitchen1)",
             "at(toad1,kitchen1)",
             "at(greenbeetle1,kitchen1)",
-            "at(cauldron1,kitchen1)"
+            "at(cauldron1,kitchen1)",
+            "at(pottedplant1,kitchen1)",
             "type(kitchen1floor1,floor)",
             "type(player1,player)",
             "type(table1,table)",
             "type(toad1,toad)",
             "type(greenbeetle1,greenbeetle)",
+            "type(pottedplant1,pottedplant)",
             "type(cauldron1,cauldron)",
             "room(kitchen1,kitchen)",
             "support(kitchen1floor1)",
             "support(table1)",
             "on(toad1,kitchen1floor1)",
             "on(greenbeetle1,table1)",
+            "on(pottedplant1,table1)",
             "receptacle(table1)",
             "takeable(toad1)",
             "takeable(greenbeetle1)",
+            "takeable(pottedplant1)",
             "movable(toad1)",
             "movable(greenbeetle1)",
+            "movable(pottedplant1)",
             "needs_support(toad1)",
             "needs_support(greenbeetle1)",
+            "needs_support(pottedplant1)",
             "hungry(toad1)"
           ],
           "goal_state": [
@@ -3151,6 +3157,7 @@ if __name__ == "__main__":
           "optimal_commands": [
             # "look around"
             "take green beetle"
+            # "take potted plant"
           ],
           "action_definitions": ["witch_actions_core.json"],
           "room_definitions": ["witch_rooms.json"],
