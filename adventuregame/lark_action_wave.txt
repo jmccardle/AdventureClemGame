@@ -1,0 +1,2 @@
+wave: WAVE thing (("at" | "over" | "on") WS)* thing
+WAVE.1: ("wave" | "wiggle" | "swirl" ) WS

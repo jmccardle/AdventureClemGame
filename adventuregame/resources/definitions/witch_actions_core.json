@@ -95,7 +95,7 @@
   {
     "type_name": "put",
     "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\" | \"drop\") WS",
-    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (open ?t)\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (when\n            (in ?e ?i)\n            (decrease (itemcount ?i) 1)\n            )\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
+    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (not (closed ?t))\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?t": ["arg2"],
@@ -116,7 +116,7 @@
         ["You can't see a {{ e }} here.", "entity_not_accessible"],
         ["You can't see a {{ t }} here.", "entity_not_accessible"],
         ["The {{ t }} is not a container.", "entity_trait_mismatch"],
-        ["The {{ t }} is not open.", "entity_state_mismatch"],
+        ["The {{ t }} is closed.", "entity_state_mismatch"],
         ["The {{ t }} is not a support.", "entity_trait_mismatch"]
       ]
     },
@@ -228,5 +228,92 @@
     "epistemic": true,
     "pragmatic": false,
     "explanation": "To VERB is to inspect a room."
+  },
+  {
+    "type_name": "dump",
+    "lark": "dump: DUMP thing PREP* thing\nDUMP.1: (\"dump\" | \"pour\" | \"empty\" ) WS",
+    "pddl": "(:action DUMP\n    :parameters (?b - bucket ?t - container ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?b ?r)\n        (at ?t ?r)\n        )\n    :effect (and\n        (when\n            (type ?b plasmbucket)\n            (and\n                (type ectoplasm1 ectoplasm)\n                (at ectoplasm1 ?r)\n                (in ectoplasm1 ?t)\n                (accessible ectoplasm1)\n                )\n            )\n        (when\n            (type ?b waterbucket)\n            (and\n                (type water1 water)\n                (at water1 ?r)\n                (in water1 ?t)\n                (accessible water1)\n                )\n            )\n        )\n)",
+    "pddl_parameter_mapping": {
+      "?b": ["arg1"],
+      "?t": ["arg2"],
+      "?p": ["player"],
+      "?r": ["current_player_room"]
+    },
+    "failure_feedback": {
+      "parameters": [
+        ["{{ b }} is not a bucket. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ t }} is not a container.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
+      ],
+      "precondition": [
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ b }} here.", "entity_not_accessible"],
+        ["You can't see a {{ t }} here.", "entity_not_accessible"]
+      ]
+    },
+    "success_feedback": "You pour the contents of {{ b }} into the {{ t }}. The {{ b }} instantly refills itself.",
+    "asp": "",
+    "epistemic": false,
+    "pragmatic": true,
+    "explanation": "To VERB is to cause (liquid, or liquid-like substance) to flow in a stream, either out of a container or into it."
+  },
+  {
+    "type_name": "wave",
+    "lark": "wave: WAVE thing ((\"at\" | \"over\" | \"on\") WS)* thing\nWAVE.1: (\"wave\" | \"wiggle\" | \"swirl\" ) WS",
+    "pddl": "(:action WAVE\n    :parameters (?w - wand ?t - container ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?w ?r)\n        (at ?t ?r)\n        )\n    :effect (and\n        (when\n            (type ?w firewand)\n            (and\n                (not (cold ?t))\n                (hot ?t)\n                )\n            )\n        (when\n            (type ?w icewand)\n            (and\n                (not (hot ?t))\n                (cold ?t)\n                )\n            )\n        (when\n            (type ?w fairywand)\n            (glittery ?t)\n            )\n        (when\n            (type ?w zulpowand)\n            (sproinkly ?t)\n            )\n        )\n)",
+    "pddl_parameter_mapping": {
+      "?w": ["arg1"],
+      "?t": ["arg2"],
+      "?p": ["player"],
+      "?r": ["current_player_room"]
+    },
+    "failure_feedback": {
+      "parameters": [
+        ["{{ b }} is not a bucket. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ t }} is not a container.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
+      ],
+      "precondition": [
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ b }} here.", "entity_not_accessible"],
+        ["You can't see a {{ t }} here.", "entity_not_accessible"]
+      ]
+    },
+    "success_feedback": "You wave the {{ w }} at the {{ t }}. {{ arg2_desc }}",
+    "asp": "",
+    "epistemic": false,
+    "pragmatic": true,
+    "explanation": "To VERB is to cause (liquid, or liquid-like substance) to flow in a stream, either out of a container or into it."
+  },
+  {
+    "type_name": "stir",
+    "lark": "stir: STIR thing ((\"with\" | \"using\") WS)* thing\nSTIR.1: (\"stir\" | \"agitate\" | \"mix\" | \"blend\") WS",
+    "pddl": "(:action STIR\n    :parameters (?s - stirrer ?l - liquid ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?s ?r)\n        (at ?l ?r)\n        )\n    :effect (and\n        (when\n            (type ?s ladle)\n            (ladlestirred ?l)\n            )\n        (when\n            (type ?s whisk)\n            (whisked ?l)\n            )\n        (when\n            (type ?s spoon)\n            (spoonstirred ?l)\n            )\n        (when\n            (type ?s borpulus)\n            (borpulusstirred ?l)\n            )\n        )\n)",
+    "pddl_parameter_mapping": {
+      "?s": ["arg2"],
+      "?l": ["arg1"],
+      "?p": ["player"],
+      "?r": ["current_player_room"]
+    },
+    "failure_feedback": {
+      "parameters": [
+        ["{{ s }} is not a stirrer.", "domain_type_discrepancy"],
+        ["{{ l }} is not a liquid.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
+      ],
+      "precondition": [
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ s }} here.", "entity_not_accessible"],
+        ["You can't see a {{ l }} here.", "entity_not_accessible"]
+      ]
+    },
+    "success_feedback": "You stir the {{ l }} with the {{ s }}.",
+    "asp": "",
+    "epistemic": false,
+    "pragmatic": true,
+    "explanation": "To VERB is to disturb the content of (a container) by passing an object through it."
   }
 ]

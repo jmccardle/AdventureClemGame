@@ -1,0 +1,2 @@
+stir: STIR thing (("with" | "using") WS)* thing
+STIR.1: ("stir" | "agitate" | "mix" | "blend") WS

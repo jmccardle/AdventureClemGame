@@ -79,16 +79,6 @@
     "standard_locations": ["kitchen", "pantry", "livingroom"]
   },
   {
-    "type_name": "lilyofthevalley",
-    "repr_str": "lily of the valley",
-    "takeable": true,
-    "movable": true,
-    "supported": true,
-    "traits": ["takeable", "movable", "needs_support"],
-    "possible_adjs": ["large", "small"],
-    "standard_locations": ["hallway", "bedroom"]
-  },
-  {
     "type_name": "chair",
     "repr_str": "chair",
     "support": true,
@@ -136,7 +126,7 @@
     "takeable": true,
     "movable": true,
     "supported": true,
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["kitchen", "pantry"]
   },
   {
@@ -145,7 +135,7 @@
     "takeable": true,
     "movable": true,
     "supported": true,
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["kitchen", "pantry"]
   },
   {
@@ -155,7 +145,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": ["ripe", "jelly"],
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["kitchen", "pantry"]
   },
   {
@@ -165,7 +155,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": ["ripe", "fresh"],
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["kitchen", "pantry"]
   },
   {
@@ -175,7 +165,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": ["ripe", "fresh"],
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["kitchen", "pantry"]
   },
   {
@@ -216,7 +206,7 @@
     "supported": true,
     "possible_adjs": ["warty", "hypnotic"],
     "traits": ["takeable", "movable", "needs_support"],
-    "standard_locations": ["bedroom"]
+    "standard_locations": ["bedroom", "kitchen", "pantry"]
   },
   {
     "type_name": "greenbeetle",
@@ -225,8 +215,158 @@
     "movable": true,
     "supported": true,
     "possible_adjs": ["shiny", "spiny"],
-    "traits": ["takeable", "movable", "needs_support"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["garden", "cellar"]
+  },
+  {
+    "type_name": "redbeetle",
+    "repr_str": "red beetle",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["shiny", "spiny"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["garden", "cellar"]
+  },
+  {
+    "type_name": "eyeofnewt",
+    "repr_str": "eye of newt",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "standard_locations": ["pantry"]
+  },
+  {
+    "type_name": "plinklecrystal",
+    "repr_str": "plinkle crystal",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage"]
+  },
+  {
+    "type_name": "plonklecrystal",
+    "repr_str": "plonkle crystal",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage"]
+  },
+  {
+    "type_name": "plunklecrystal",
+    "repr_str": "plunkle crystal",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage"]
+  },
+  {
+    "type_name": "spider",
+    "repr_str": "spider",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage", "cellar"]
+  },
+  {
+    "type_name": "spiderweb",
+    "repr_str": "spiderweb",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage", "cellar"]
+  },
+  {
+    "type_name": "spideregg",
+    "repr_str": "spider egg",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["smelly", "fresh"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "standard_locations": ["storage", "cellar"]
+  },
+  {
+    "type_name": "lilyofthevalley",
+    "repr_str": "lily of the valley",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "possible_adjs": ["large", "small"],
+    "standard_locations": ["herbarium", "garden"]
+  },
+  {
+    "type_name": "nightshade",
+    "repr_str": "nightshade",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "possible_adjs": ["large", "small"],
+    "standard_locations": ["herbarium", "garden"]
+  },
+  {
+    "type_name": "pricklypear",
+    "repr_str": "prickly pear",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "possible_adjs": ["large", "small"],
+    "standard_locations": ["herbarium"]
+  },
+  {
+    "type_name": "waterbucket",
+    "repr_str": "bucket of water",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "possible_adjs": ["large", "small"],
+    "standard_locations": ["herbarium", "garden"]
+  },
+  {
+    "type_name": "water",
+    "repr_str": "water",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["needs_support", "ingredient"],
+    "possible_adjs": ["clear", "fresh"],
+    "standard_locations": []
+  },
+  {
+    "type_name": "plasmbucket",
+    "repr_str": "bucket of ectoplasm",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "possible_adjs": ["large", "small"],
+    "standard_locations": ["storage", "garden"]
+  },
+  {
+    "type_name": "ectoplasm",
+    "repr_str": "ectoplasm",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "traits": ["needs_support", "ingredient"],
+    "possible_adjs": ["gooey", "fresh"],
+    "standard_locations": []
   },
   {
     "type_name": "cauldron",
@@ -235,5 +375,105 @@
     "traits": ["container", "receptacle"],
     "possible_adjs": ["copper", "iron", "earthen"],
     "standard_locations": ["kitchen"]
+  },
+  {
+    "type_name": "ladle",
+    "repr_str": "ladle",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["pantry", "kitchen", "storage"]
+  },
+  {
+    "type_name": "whisk",
+    "repr_str": "whisk",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["pantry", "kitchen", "storage"]
+  },
+  {
+    "type_name": "spoon",
+    "repr_str": "spoon",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["pantry", "kitchen", "storage"]
+  },
+  {
+    "type_name": "borpulus",
+    "repr_str": "borpulus",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["pantry", "kitchen", "storage"]
+  },
+  {
+    "type_name": "firewand",
+    "repr_str": "fire wand",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["workshop"]
+  },
+  {
+    "type_name": "icewand",
+    "repr_str": "ice wand",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["workshop"]
+  },
+  {
+    "type_name": "fairywand",
+    "repr_str": "fairy wand",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["workshop"]
+  },
+  {
+    "type_name": "zulpowand",
+    "repr_str": "zulpo's wand",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": ["rusty", "copper"],
+    "traits": ["takeable", "movable", "needs_support", "tool"],
+    "standard_locations": ["workshop"]
+  },
+  {
+    "type_name": "liquid",
+    "repr_str": "liquid",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": [],
+    "traits": [],
+    "standard_locations": []
+  },
+  {
+    "type_name": "potion",
+    "repr_str": "finished potion",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": [],
+    "traits": [],
+    "standard_locations": []
   }
 ]

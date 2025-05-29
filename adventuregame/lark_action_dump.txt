@@ -1,0 +1,2 @@
+dump: DUMP thing PREP* thing
+DUMP.1: ("dump" | "pour" | "empty" ) WS

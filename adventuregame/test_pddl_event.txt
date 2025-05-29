@@ -16,6 +16,7 @@
         )
     :effect (and
         (not (at ?b ?r))
+        (at ?b garden1)
         (not (hungry ?t))
         )
     )
