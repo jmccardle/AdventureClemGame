@@ -1341,6 +1341,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         for fact in self.world_state:
             if fact[1] == entity_id:
                 # print("entity state fact:", fact)
+                if fact[0] == "text":
+                    entity_desc_list.append("There is writing on it.")
                 # describe 'openable' entity states:
                 if fact[0] == "openable":
                     openable_entity: str = fact[1]
@@ -1457,7 +1459,6 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     entity_desc_list.append(support_content_desc)
 
-                # TODO: new-word entity descriptions
                 if self.domain['mutable_states'] and fact[0] in self.domain['mutable_states']:
                     if not fact[0] == "at":
                         mutable_state_entity: str = fact[1]
@@ -1466,9 +1467,26 @@ class AdventureIFInterpreter(GameResourceLocator):
                         mutable_state_desc = f"The {mutable_state_entity} is {fact[0]}."
                         entity_desc_list.append(mutable_state_desc)
 
-                # TODO?: room description? -> LOOK action
-
         return " ".join(entity_desc_list)
+
+    def get_entity_text(self, entity) -> str:
+        """Get the readable text of an entity.
+        Used for the READ action.
+        """
+        # get entity ID:
+        # NOTE: This assumes only one instance of any entity type is in any adventure!
+        entity_id = str()
+        for fact in self.world_state:
+            if fact[0] == 'type' and fact[2] == entity:
+                entity_id = fact[1]
+                break
+
+        # get entity's text fact:
+        for fact in self.world_state:
+            if fact[1] == entity_id:
+                # return text fact content:
+                if fact[0] == "text":
+                    return fact[2]
 
     def get_current_perceived(self) -> set:
         current_perceived: set = set()
@@ -2663,6 +2681,12 @@ class AdventureIFInterpreter(GameResourceLocator):
             # print()
             jinja_args["arg2_desc"] = entity_desc
 
+        if "arg1_text" in success_feedback_template:
+            # get text of arg1 entity:
+            entity_text = self.get_entity_text(action_dict['arg1'])
+            # print()
+            jinja_args["arg1_text"] = entity_text
+
         feedback_str = feedback_jinja.render(jinja_args)
         # feedback_str = feedback_str.capitalize()
 
@@ -2996,7 +3020,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 logger.info(f"Resolution result: {resolution_result}")
                 base_result_str = resolution_result
 
-                print("world state effects:", fail['world_state_effects'])
+                # print("world state effects:", fail['world_state_effects'])
 
                 # check goal achievement:
                 self.goals_achieved = self.goal_state & self.world_state
@@ -3026,13 +3050,15 @@ class AdventureIFInterpreter(GameResourceLocator):
                 events_world_state_changes: list = list()
                 event_triggered, event_feedback, event_world_state_changes = self.run_events()
                 if event_world_state_changes:
-                    print("event_world_state_changes:", event_world_state_changes)
+                    # print("event_world_state_changes:", event_world_state_changes)
+                    pass
                 while event_triggered:
                     events_feedback.append(event_feedback)
                     events_world_state_changes.append(event_world_state_changes)
                     event_triggered, event_feedback, event_world_state_changes = self.run_events()
                     if event_world_state_changes:
-                        print("event_world_state_changes:", event_world_state_changes)
+                        # print("event_world_state_changes:", event_world_state_changes)
+                        pass
 
                 results_feedback = base_result_str + "\n" + "\n".join(events_feedback)
 
@@ -3155,6 +3181,7 @@ if __name__ == "__main__":
             "at(fairywand1,kitchen1)",
             "at(zulpowand1,kitchen1)",
             "at(ladle1,kitchen1)",
+            "at(potionrecipe1,kitchen1)",
 
             "type(kitchen1floor1,floor)",
             "type(player1,player)",
@@ -3173,6 +3200,10 @@ if __name__ == "__main__":
             "type(fairywand1,fairywand)",
             "type(zulpowand1,zulpowand)",
             "type(ladle1,ladle)",
+            "type(potionrecipe1,potionrecipe)",
+
+            # "readable(potionrecipe1)",
+            "text(potionrecipe1,This is a potion recipe.\nIt has multiple lines!\nWith all the ingredients\nlike beetles, conkies, woppahs, etc)",
 
             "room(kitchen1,kitchen)",
             "support(kitchen1floor1)",
@@ -3190,6 +3221,7 @@ if __name__ == "__main__":
             "on(fairywand1,table1)",
             "on(zulpowand1,table1)",
             "on(ladle1,table1)",
+            "on(potionrecipe1,table1)",
 
             "receptacle(table1)",
             "takeable(toad1)",
@@ -3269,13 +3301,14 @@ if __name__ == "__main__":
             ]
           ],
           "optimal_commands": [
-            "dump bucket of ectoplasm into cauldron",
-            "wave ice wand at cauldron",
-            "put nightshade in cauldron",
-            "put spider egg in cauldron",
-            "stir liquid with ladle",
-            "put plinkle crystal in cauldron",
-            "look around"
+            "read potion recipe",
+            # "dump bucket of ectoplasm into cauldron",
+            # "wave ice wand at cauldron",
+            # "put nightshade in cauldron",
+            # "put spider egg in cauldron",
+            # "stir liquid with ladle",
+            # "put plinkle crystal in cauldron",
+            # "look around"
           ],
           "action_definitions": ["witch_actions_core.json"],
           "room_definitions": ["witch_rooms.json"],

@@ -230,6 +230,34 @@
     "explanation": "To VERB is to inspect a room."
   },
   {
+    "type_name": "read",
+    "lark": "read: READ thing\nREAD.1: \"read\" WS",
+    "pddl": "(:action EXAMINE\n    :parameters (?p - player ?r - room ?e - entity)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (accessible ?e)\n        (readable ?e)\n        )\n    :effect (and\n    )\n)",
+    "pddl_parameter_mapping": {
+      "?p": ["player"],
+      "?r": ["current_player_room"],
+      "?e": ["arg1"]
+    },
+    "failure_feedback": {
+      "parameters": [
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ e }} is not an entity. (This should not occur.)", "domain_type_discrepancy"]
+      ],
+      "precondition": [
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["You can't see any text on the {{ e }}.", "entity_not_readable"]
+      ]
+    },
+    "success_feedback": "You read the {{ e }}:\n{{ arg1_text }}",
+    "asp": "",
+    "epistemic": true,
+    "pragmatic": false,
+    "explanation": "To VERB is to look at and interpret letters or other information that is written."
+  },
+  {
     "type_name": "dump",
     "lark": "dump: DUMP thing PREP* thing\nDUMP.1: (\"dump\" | \"pour\" | \"empty\" ) WS",
     "pddl": "(:action DUMP\n    :parameters (?b - bucket ?t - container ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?b ?r)\n        (at ?t ?r)\n        )\n    :effect (and\n        (when\n            (type ?b plasmbucket)\n            (and\n                (type ectoplasm1 ectoplasm)\n                (at ectoplasm1 ?r)\n                (in ectoplasm1 ?t)\n                (accessible ectoplasm1)\n                )\n            )\n        (when\n            (type ?b waterbucket)\n            (and\n                (type water1 water)\n                (at water1 ?r)\n                (in water1 ?t)\n                (accessible water1)\n                )\n            )\n        )\n)",

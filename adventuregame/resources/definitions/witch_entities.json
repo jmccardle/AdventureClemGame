@@ -475,5 +475,15 @@
     "possible_adjs": [],
     "traits": [],
     "standard_locations": []
+  },
+  {
+    "type_name": "potionrecipe",
+    "repr_str": "potion recipe",
+    "takeable": true,
+    "movable": true,
+    "supported": true,
+    "possible_adjs": [],
+    "traits": ["readable"],
+    "standard_locations": ["bedroom"]
   }
 ]
