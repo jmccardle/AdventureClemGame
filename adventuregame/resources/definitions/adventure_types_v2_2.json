@@ -117,26 +117,5 @@
     "min_optimal_turns": 5,
     "max_optimal_turns": 30,
     "bench_turn_limit": 50
-  },
-  "potion_brewing": {
-    "use_premade_definitions": true,
-    "action_definitions": ["witch_actions_core.json"],
-    "room_definitions": ["witch_rooms.json"],
-    "entity_definitions": ["witch_entities.json"],
-    "domain_definitions": ["witch_domain_core.json"],
-    "event_definitions": ["witch_events_core.json"],
-    "initial_state_config": {
-      "entity_adjectives": "none"
-    },
-    "task_config": {
-      "task": "potion"
-    },
-    "goal_count": 1,
-    "mutable_fact_types": ["open", "closed", "at", "in", "on", "cold"],
-    "optimal_solver_turn_limit": 50,
-    "min_optimal_turns": 5,
-    "max_optimal_turns": 30,
-    "bench_turn_limit": 50,
-    "prompt_template_set": "potion_brewing"
   }
 }

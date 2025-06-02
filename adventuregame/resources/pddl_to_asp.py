@@ -170,4 +170,5 @@ def augment_actions_file_with_asp(action_defs_file_path: str):
 
 
 if __name__ == "__main__":
-    augment_actions_file_with_asp("new_word_generation/new_actions_test.json")
+    # augment_actions_file_with_asp("new_word_generation/new_actions_test.json")
+    augment_actions_file_with_asp("definitions/witch_actions_core_testing.json")

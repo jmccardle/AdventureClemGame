@@ -59,6 +59,8 @@ class ClingoAdventureGenerator(object):
             self._load_premade_entity_definitions()
             self._load_premade_action_definitions()
             self._load_premade_domain_definition()
+            if 'event_definitions' in self.adv_type_def:
+                self._load_premade_event_definitions()
         else:
             if self.adv_type_def['definition_method'] == "create":
                 self.new_word_iterate_idx = 0
@@ -66,8 +68,6 @@ class ClingoAdventureGenerator(object):
             if self.adv_type_def['definition_method'] == "replace":
                 self.new_word_iterate_idx = 0
                 self._replace_assign_new_word_definitions()
-
-        # TODO: add events
 
         clingo_template_file = "clingo_templates.json"
         if 'clingo_templates' in self.adv_type_def:
@@ -137,6 +137,26 @@ class ClingoAdventureGenerator(object):
                 if not type_key == 'type_name':
                     type_def_dict[type_key] = type_value
             self.action_definitions[type_def['type_name']] = type_def_dict
+
+    def _load_premade_event_definitions(self):
+        # load event type definitions:
+        event_definitions: list = list()
+        for event_def_source in self.adv_type_def["event_definitions"]:
+            with open(f"definitions/{event_def_source}", 'r', encoding='utf-8') as events_file:
+                event_definitions += json.load(events_file)
+
+        # testing asp generation:
+        # action_definitions = augment_action_defs_with_asp(action_definitions)
+        # -> needs more sophisticated PDDL to ASP to work on v2 home delivery...
+
+        if not hasattr(self, 'event_definitions'):
+            self.event_definitions = dict()
+        for type_def in event_definitions:
+            type_def_dict = dict()
+            for type_key, type_value in type_def.items():
+                if not type_key == 'type_name':
+                    type_def_dict[type_key] = type_value
+            self.event_definitions[type_def['type_name']] = type_def_dict
 
     def _load_premade_domain_definition(self):
         # load domain definition:
@@ -792,6 +812,8 @@ class ClingoAdventureGenerator(object):
 
         clingo_str = str()
 
+        # TODO: add events
+
         self.id_to_type_dict: dict = dict()
 
         # convert fact strings to tuples:
@@ -1441,6 +1463,8 @@ class ClingoAdventureGenerator(object):
                     else:  # optimal turns not within bounds, discard this raw adventure
                         continue
 
+        # TODO: potion brewing
+        # TODO: 'pre-parsed' core events in potion raw adventures
 
         # adventures difficulty from adventure type definition:
         if 'difficulty' in self.adv_type_def:
@@ -1714,10 +1738,14 @@ class ClingoAdventureGenerator(object):
 if __name__ == "__main__":
     # init generator:
     # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
+
+    # print(adventure_generator.domain_def)
+    print(adventure_generator.entity_definitions)
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
@@ -1725,4 +1753,4 @@ if __name__ == "__main__":
     # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, goal_set_picking="random")
     # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, save_to_file=False)
 
-    adventure_generator.augment_raw_adventures_pre_explore("curated_home_deliver_three_adventures_v2_2.json")
+    # adventure_generator.augment_raw_adventures_pre_explore("curated_home_deliver_three_adventures_v2_2.json")
