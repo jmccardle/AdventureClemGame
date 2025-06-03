@@ -198,31 +198,27 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t)\n"
                               )
                 feedback_str: str = (
-                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
                     f"the {prior_ingredient} with a "
-                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}"
+                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])} "
                     f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid in the cauldron.")
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1:
                 event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                               f"\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n"
                               f"\t:precondition (and\n"
-                              f"\t\t(at {prior_ingredient}1 ?r)\n"
                               f"\t\t(at ?c ?r)\n"
                               f"\t\t(at ?i ?r)\n"
                               f"\t\t(type ?c cauldron)\n"
                               f"\t\t(type ?i {current_entity})\n"
                               f"\t\t(in ?i ?c)\n"
-                              f"\t\t(in {prior_ingredient}1 ?c)\n"
+                              f"\t\t(in liquid{step_idx} ?c)\n"
                               f"\t\t)\n"
                               f"\t:effect (and\n"
-                              f"\t\t(not (type {prior_ingredient}1 {prior_ingredient}))\n"
-                              f"\t\t(not (at {prior_ingredient}1 ?r))\n"
-                              f"\t\t(not (in {prior_ingredient}1 ?c))\n"
-                              f"\t\t(not (accessible {prior_ingredient}1))\n"
-                              f"\t\t(not (at ?i ?r))\n"
-                              f"\t\t(not (in ?i ?c))\n"
-                              f"\t\t(not (type ?i {current_entity}))\n"
+                              f"\t\t(not (type {current_entity}1 {current_entity}))\n"
+                              f"\t\t(not (at {current_entity}1 ?r))\n"
+                              f"\t\t(not (in {current_entity}1 ?c))\n"
+                              f"\t\t(not (accessible {current_entity}1))\n"
                               f"\t\t(type potion1 potion)\n"
                               f"\t\t(at potion1 ?r)\n"
                               f"\t\t(in potion1 ?c)\n"
@@ -231,9 +227,9 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t)\n"
                               )
                 feedback_str: str = (
-                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
                     f"the liquid with a "
-                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}"
+                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])} "
                     f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion in the cauldron.")
             else:  # after first step event, before last
                 # iterate liquid:
@@ -264,7 +260,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t)\n"
                               )
                 feedback_str: str = (
-                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
                     f"the liquid in the cauldron with a "
                     f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}.")
 
@@ -301,10 +297,12 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at liquid1 ?r)\n"
                                   f"\t\t(in liquid1 ?c)\n"
                                   f"\t\t(accessible liquid1)\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
                     feedback_str: str = (
-                        f"The {prior_ingredient} in the {applied_predicate} cauldron "
-                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"The {entity_defs[prior_ingredient]['repr_str']} in the {applied_predicate} cauldron "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
@@ -328,7 +326,15 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at liquid1 ?r)\n"
                                   f"\t\t(in liquid1 ?c)\n"
                                   f"\t\t(accessible liquid1)\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
+                    feedback_str: str = (
+                        f"The {entity_defs[prior_ingredient]['repr_str']} "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1
                 if tool_category == "wand":
@@ -350,10 +356,12 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at potion1 ?r)\n"
                                   f"\t\t(in potion1 ?c)\n"
                                   f"\t\t(accessible potion1)\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
                     feedback_str: str = (
                         f"The liquid in the {applied_predicate} cauldron "
-                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
@@ -377,7 +385,15 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at potion1 ?r)\n"
                                   f"\t\t(in potion1 ?c)\n"
                                   f"\t\t(accessible potion1)\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
+                    feedback_str: str = (
+                        f"The liquid in the {applied_predicate} cauldron "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
             else:
                 # iterate liquid
                 if tool_category == "wand":
@@ -399,10 +415,12 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at liquid{step_idx+1} ?r)\n"
                                   f"\t\t(in liquid{step_idx+1} ?c)\n"
                                   f"\t\t(accessible liquid{step_idx+1})\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
                     feedback_str: str = (
                         f"The liquid in the {applied_predicate} cauldron "
-                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}.")
                 elif tool_category == "stirrer":
@@ -425,14 +443,23 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(at liquid{step_idx+1} ?r)\n"
                                   f"\t\t(in liquid{step_idx+1} ?c)\n"
                                   f"\t\t(accessible liquid{step_idx+1})\n"
+                                  f"\t\t)\n"
+                                  f"\t)\n"
                                   )
+                    feedback_str: str = (
+                        f"The liquid "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}.")
 
         step_event_dict['pddl'] = event_pddl
+        step_event_dict['event_feedback'] = feedback_str
         step_events.append(step_event_dict)
     print()
     for step_event in step_events:
-        print(step_event)
-        print(step_event['pddl'])
+        # print(step_event)
+        # print(step_event['pddl'])
+        print(step_event['event_feedback'])
         print()
 
 
