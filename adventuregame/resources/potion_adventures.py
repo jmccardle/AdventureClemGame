@@ -116,7 +116,7 @@ def generate_potion_recipe(
 
 def create_potion_recipe_events(potion_recipe: dict,
                                 domain_def: dict, entity_defs: dict, tool_categories: tuple = ('stirrer', 'wand'),
-                                always_bucket: bool = True):
+                                always_bucket: bool = True, rng_seed: int = 42):
     """Create events for stages of a potion recipe.
     Args:
         potion_recipe: A dict holding all ingredients and steps of a potion recipe.
@@ -124,8 +124,10 @@ def create_potion_recipe_events(potion_recipe: dict,
         entity_defs: Entity definitions, including tool attributes 'applied_attribute' and 'applied_predicate'.
         always_bucket: If True, the first step is using a liquid bucket to add a base liquid to the cauldron.
             Default: True
+        rng_seed: Numpy random generation seed.
     """
-    # TODO: implement recipe event creation
+    rng = np.random.default_rng(seed=rng_seed)
+
     step_events: list = list()
 
     if always_bucket:
@@ -146,14 +148,17 @@ def create_potion_recipe_events(potion_recipe: dict,
         prior_ingredient: str = ""
         prior_tool: str = ""
         if step_idx == 0:
-            prior_ingredient = f"{potion_recipe['steps'][0]['entity_type']}1"
+            # prior_ingredient = f"{potion_recipe['steps'][0]['entity_type']}1"
+            prior_ingredient = potion_recipe['steps'][0]['entity_type']
             print(f"prior_ingredient is {prior_ingredient}")
         else:
             if potion_recipe['steps'][step_idx]['step_type'] == 'use_tool':
-                prior_tool = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
+                # prior_tool = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
+                prior_tool = potion_recipe['steps'][step_idx]['entity_type']
                 print(f"prior_tool is {prior_tool}")
             elif potion_recipe['steps'][step_idx]['step_type'] == 'add_ingredient':
-                prior_ingredient = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
+                # prior_ingredient = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
+                prior_ingredient = potion_recipe['steps'][step_idx]['entity_type']
                 print(f"prior_ingredient is {prior_ingredient}")
 
         current_entity = step['entity_type']
@@ -161,49 +166,274 @@ def create_potion_recipe_events(potion_recipe: dict,
         current_entity_id = f"{step['entity_type']}1"
         print(f"current entity ID is {current_entity_id}")
 
-        # check precondition
-        precon_facts: list = list()
+        # TODO: feedback strings
         if step['step_type'] == 'add_ingredient':
             # absorb into liquid event
-            if step_idx == 0:
-                # create liquid1
-                pass
-            else:
-                # iterate liquid
-                pass
-            pass
-            # after first step event:
-            event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                          f"\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n"
-                          f"\t:precondition (and\n"
-                          f"\t\t(at liquid1 ?r)\n"
-                          f"\t\t(at ?c ?r)\n"
-                          f"\t\t(at ?i ?r)\n"
-                          f"\t\t(type ?c cauldron)\n"
-                          f"\t\t(type ?i {current_entity})\n"
-                          f"\t\t(in ?i ?c)\n"
-                          f"\t\t(in liquid1 ?c)\n"
-                          f"\t\t)\n"
-                          )
+            if step_idx == 0:  # first step
+                # create liquid1:
+                event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                              f"\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n"
+                              f"\t:precondition (and\n"
+                              f"\t\t(at {prior_ingredient}1 ?r)\n"
+                              f"\t\t(at ?c ?r)\n"
+                              f"\t\t(at ?i ?r)\n"
+                              f"\t\t(type ?c cauldron)\n"
+                              f"\t\t(type ?i {current_entity})\n"
+                              f"\t\t(in ?i ?c)\n"
+                              f"\t\t(in {prior_ingredient}1 ?c)\n"
+                              f"\t\t)\n"
+                              f"\t:effect (and\n"
+                              f"\t\t(not (type {prior_ingredient}1 {prior_ingredient}))\n"
+                              f"\t\t(not (at {prior_ingredient}1 ?r))\n"
+                              f"\t\t(not (in {prior_ingredient}1 ?c))\n"
+                              f"\t\t(not (accessible {prior_ingredient}1))\n"
+                              f"\t\t(not (at ?i ?r))\n"
+                              f"\t\t(not (in ?i ?c))\n"
+                              f"\t\t(not (type ?i {current_entity}))\n"
+                              f"\t\t(type liquid1 liquid)\n"
+                              f"\t\t(at liquid1 ?r)\n"
+                              f"\t\t(in liquid1 ?c)\n"
+                              f"\t\t(accessible liquid1)\n"
+                              f"\t\t)\n"
+                              f"\t)\n"
+                              )
+                feedback_str: str = (
+                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"the {prior_ingredient} with a "
+                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}"
+                    f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid in the cauldron.")
+            elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
+                # create potion1:
+                event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                              f"\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n"
+                              f"\t:precondition (and\n"
+                              f"\t\t(at {prior_ingredient}1 ?r)\n"
+                              f"\t\t(at ?c ?r)\n"
+                              f"\t\t(at ?i ?r)\n"
+                              f"\t\t(type ?c cauldron)\n"
+                              f"\t\t(type ?i {current_entity})\n"
+                              f"\t\t(in ?i ?c)\n"
+                              f"\t\t(in {prior_ingredient}1 ?c)\n"
+                              f"\t\t)\n"
+                              f"\t:effect (and\n"
+                              f"\t\t(not (type {prior_ingredient}1 {prior_ingredient}))\n"
+                              f"\t\t(not (at {prior_ingredient}1 ?r))\n"
+                              f"\t\t(not (in {prior_ingredient}1 ?c))\n"
+                              f"\t\t(not (accessible {prior_ingredient}1))\n"
+                              f"\t\t(not (at ?i ?r))\n"
+                              f"\t\t(not (in ?i ?c))\n"
+                              f"\t\t(not (type ?i {current_entity}))\n"
+                              f"\t\t(type potion1 potion)\n"
+                              f"\t\t(at potion1 ?r)\n"
+                              f"\t\t(in potion1 ?c)\n"
+                              f"\t\t(accessible potion1)\n"
+                              f"\t\t)\n"
+                              f"\t)\n"
+                              )
+                feedback_str: str = (
+                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"the liquid with a "
+                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}"
+                    f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion in the cauldron.")
+            else:  # after first step event, before last
+                # iterate liquid:
+                event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                              f"\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n"
+                              f"\t:precondition (and\n"
+                              f"\t\t(at liquid{step_idx} ?r)\n"
+                              f"\t\t(at ?c ?r)\n"
+                              f"\t\t(at ?i ?r)\n"
+                              f"\t\t(type ?c cauldron)\n"
+                              f"\t\t(type ?i {current_entity})\n"
+                              f"\t\t(in ?i ?c)\n"
+                              f"\t\t(in liquid{step_idx} ?c)\n"
+                              f"\t\t)\n"
+                              f"\t:effect (and\n"
+                              f"\t\t(not (type liquid{step_idx} liquid))\n"
+                              f"\t\t(not (at liquid{step_idx} ?r))\n"
+                              f"\t\t(not (in liquid{step_idx} ?c))\n"
+                              f"\t\t(not (accessible liquid{step_idx}))\n"
+                              f"\t\t(not (at ?i ?r))\n"
+                              f"\t\t(not (in ?i ?c))\n"
+                              f"\t\t(not (type ?i {current_entity}))\n"
+                              f"\t\t(type liquid{step_idx+1} liquid)\n"
+                              f"\t\t(at liquid{step_idx+1}  ?r)\n"
+                              f"\t\t(in liquid{step_idx+1}  ?c)\n"
+                              f"\t\t(accessible liquid{step_idx+1} )\n"
+                              f"\t\t)\n"
+                              f"\t)\n"
+                              )
+                feedback_str: str = (
+                    f"The {current_entity} {rng.choice(['combines with', 'mingles with', 'absorbs into'])}"
+                    f"the liquid in the cauldron with a "
+                    f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}.")
+
         elif step['step_type'] == 'use_tool':
             # swirl/puff/etc event
+            print(f"use_tool step, {current_entity}")
+            # check if wand or stirrer:
+            tool_category = str()
+            if current_entity in domain_def['types']['wand']:  # ugly hardcode, but quick
+                tool_category = "wand"
+            elif current_entity in domain_def['types']['stirrer']:  # ugly hardcode, but quick
+                tool_category = "stirrer"
+            # get applied predicate:
+            applied_predicate = entity_defs[current_entity]['applied_predicate']
+            print(f"{current_entity} applies {applied_predicate}")
             if step_idx == 0:
                 # create liquid1
-                pass
+                if tool_category == "wand":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l {prior_ingredient})\n"
+                                  f"\t\t({applied_predicate} ?c)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(type liquid1 liquid)\n"
+                                  f"\t\t(at liquid1 ?r)\n"
+                                  f"\t\t(in liquid1 ?c)\n"
+                                  f"\t\t(accessible liquid1)\n"
+                                  )
+                    feedback_str: str = (
+                        f"The {prior_ingredient} in the {applied_predicate} cauldron "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
+                elif tool_category == "stirrer":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l {prior_ingredient})\n"
+                                  f"\t\t({applied_predicate} ?l)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(not ({applied_predicate} ?l))\n"
+                                  f"\t\t(type liquid1 liquid)\n"
+                                  f"\t\t(at liquid1 ?r)\n"
+                                  f"\t\t(in liquid1 ?c)\n"
+                                  f"\t\t(accessible liquid1)\n"
+                                  )
+            elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
+                # create potion1
+                if tool_category == "wand":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l {prior_ingredient})\n"
+                                  f"\t\t({applied_predicate} ?c)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(type potion1 potion)\n"
+                                  f"\t\t(at potion1 ?r)\n"
+                                  f"\t\t(in potion1 ?c)\n"
+                                  f"\t\t(accessible potion1)\n"
+                                  )
+                    feedback_str: str = (
+                        f"The liquid in the {applied_predicate} cauldron "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
+                elif tool_category == "stirrer":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l {prior_ingredient})\n"
+                                  f"\t\t({applied_predicate} ?l)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(not ({applied_predicate} ?l))\n"
+                                  f"\t\t(type potion1 potion)\n"
+                                  f"\t\t(at potion1 ?r)\n"
+                                  f"\t\t(in potion1 ?c)\n"
+                                  f"\t\t(accessible potion1)\n"
+                                  )
             else:
                 # iterate liquid
-                pass
-            pass
-            event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                          f"\t:parameters (l - liquid ?c - container ?r - room)\n"
-                          f"\t:precondition (and\n"
-                          f"\t\t(at ?l ?r)\n"
-                          f"\t\t(at ?c ?r)\n"
-                          f"\t\t(in ?l ?c)\n"
-                          f"\t\t(type ?c cauldron)\n"
-                          f"\t\t(type ?l {prior_ingredient})\n"
-                          f"\t\t({cauldron_tool_predicate} ?c)"
-                          f")")
+                if tool_category == "wand":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l liquid{step_idx})\n"
+                                  f"\t\t({applied_predicate} ?c)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(type liquid{step_idx+1} liquid)\n"
+                                  f"\t\t(at liquid{step_idx+1} ?r)\n"
+                                  f"\t\t(in liquid{step_idx+1} ?c)\n"
+                                  f"\t\t(accessible liquid{step_idx+1})\n"
+                                  )
+                    feedback_str: str = (
+                        f"The liquid in the {applied_predicate} cauldron "
+                        f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])}"
+                        f"with a "
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}.")
+                elif tool_category == "stirrer":
+                    event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
+                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:precondition (and\n"
+                                  f"\t\t(at ?l ?r)\n"
+                                  f"\t\t(at ?c ?r)\n"
+                                  f"\t\t(in ?l ?c)\n"
+                                  f"\t\t(type ?c cauldron)\n"
+                                  f"\t\t(type ?l liquid{step_idx})\n"
+                                  f"\t\t({applied_predicate} ?l)\n"
+                                  f"\t\t)\n"
+                                  f"\t:effect (and\n"
+                                  f"\t\t(not (at ?l ?r))\n"
+                                  f"\t\t(not (in ?l ?c))\n"
+                                  f"\t\t(not (accessible ?l))\n"
+                                  f"\t\t(not ({applied_predicate} ?l))\n"
+                                  f"\t\t(type liquid{step_idx+1} liquid)\n"
+                                  f"\t\t(at liquid{step_idx+1} ?r)\n"
+                                  f"\t\t(in liquid{step_idx+1} ?c)\n"
+                                  f"\t\t(accessible liquid{step_idx+1})\n"
+                                  )
+
+        step_event_dict['pddl'] = event_pddl
+        step_events.append(step_event_dict)
+    print()
+    for step_event in step_events:
+        print(step_event)
+        print(step_event['pddl'])
+        print()
 
 
 
