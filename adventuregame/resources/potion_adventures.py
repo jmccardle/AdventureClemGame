@@ -118,6 +118,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                 domain_def: dict, entity_defs: dict, tool_categories: tuple = ('stirrer', 'wand'),
                                 always_bucket: bool = True, rng_seed: int = 42):
     """Create events for stages of a potion recipe.
+    Currently assumes that recipes always start with using bucket to add liquid.
     Args:
         potion_recipe: A dict holding all ingredients and steps of a potion recipe.
         domain_def: Domain definition dictionary to get ingredients and tools from.
@@ -148,25 +149,21 @@ def create_potion_recipe_events(potion_recipe: dict,
         prior_ingredient: str = ""
         prior_tool: str = ""
         if step_idx == 0:
-            # prior_ingredient = f"{potion_recipe['steps'][0]['entity_type']}1"
             prior_ingredient = potion_recipe['steps'][0]['entity_type']
             print(f"prior_ingredient is {prior_ingredient}")
         else:
             if potion_recipe['steps'][step_idx]['step_type'] == 'use_tool':
-                # prior_tool = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
                 prior_tool = potion_recipe['steps'][step_idx]['entity_type']
                 print(f"prior_tool is {prior_tool}")
             elif potion_recipe['steps'][step_idx]['step_type'] == 'add_ingredient':
-                # prior_ingredient = f"{potion_recipe['steps'][step_idx]['entity_type']}1"
                 prior_ingredient = potion_recipe['steps'][step_idx]['entity_type']
                 print(f"prior_ingredient is {prior_ingredient}")
 
         current_entity = step['entity_type']
 
         current_entity_id = f"{step['entity_type']}1"
-        print(f"current entity ID is {current_entity_id}")
+        # print(f"current entity ID is {current_entity_id}")
 
-        # TODO: feedback strings
         if step['step_type'] == 'add_ingredient':
             # absorb into liquid event
             if step_idx == 0:  # first step
@@ -202,6 +199,50 @@ def create_potion_recipe_events(potion_recipe: dict,
                     f"the {prior_ingredient} with a "
                     f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])} "
                     f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid in the cauldron.")
+                # ASP
+                asp_rules: list = list()
+                # event trigger ASP:
+                # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+                # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE):PRECON_FACTS } :- turn(TURN), room(ROOM)."
+                asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                                  f"potion_step_{step_idx+1}")
+                precon_facts = (f"at_t(TURN,{prior_ingredient}1,ROOM), at_t(TURN,{current_entity}1,ROOM), at_t(TURN,cauldron1,ROOM),"
+                                f"in_t(TURN,{prior_ingredient}1,cauldron1), in_t(TURN,{current_entity}1,cauldron1)")
+                asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                                  precon_facts)
+                print(asp_event_trigger)
+                asp_rules.append(asp_event_trigger)
+                # event effects ASP:
+                # added facts:
+                print("add facts:")
+                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx+1}")
+                effect_add_asp_string = (f"type(liquid1,liquid), at_t(TURN,liquid1,ROOM), in_t(TURN,liquid1,cauldron1), "
+                                         f"accessible_t(TURN,liquid1)")
+                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                print(asp_next_turn_add)
+                asp_rules.append(asp_next_turn_add)
+                # removed facts:
+                print("remove facts:")
+                effect_sub_predicates = [f"at_t(TURN,{prior_ingredient}1,ROOM)",
+                                         f"in_t(TURN,{prior_ingredient}1,cauldron1)",
+                                         f"accessible_t(TURN,{prior_ingredient}1)",
+                                         f"at_t(TURN,{current_entity}1,ROOM)",
+                                         f"in_t(TURN,{current_entity}1,cauldron1)"]
+                for sub_pred in effect_sub_predicates:
+                    # template for reversible mutables:
+                    asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                    # insert into ASP encoding rule template:
+                    asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                    effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                    print(asp_next_turn_sub)
+                    asp_rules.append(asp_next_turn_sub)
+                # combine ASP rules:
+                combined_asp_rules = ", ".join(asp_rules)
+
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1:
                 event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
@@ -231,6 +272,49 @@ def create_potion_recipe_events(potion_recipe: dict,
                     f"the liquid with a "
                     f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])} "
                     f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion in the cauldron.")
+                # ASP
+                asp_rules: list = list()
+                # event trigger ASP:
+                asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                              f"potion_step_{step_idx + 1}")
+                precon_facts = (
+                    f"at_t(TURN,{current_entity}1,ROOM), at_t(TURN,cauldron1,ROOM),"
+                    f"in_t(TURN,liquid{step_idx},cauldron1), in_t(TURN,{current_entity}1,cauldron1)")
+                asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                              precon_facts)
+                print(asp_event_trigger)
+                asp_rules.append(asp_event_trigger)
+                # event effects ASP:
+                # added facts:
+                print("add facts:")
+                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                effect_add_asp_string = (
+                    f"type(potion1,potion), at_t(TURN,potion1,ROOM), in_t(TURN,potion1,cauldron1), "
+                    f"accessible_t(TURN,potion1)")
+                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                print(asp_next_turn_add)
+                asp_rules.append(asp_next_turn_add)
+                # removed facts:
+                print("remove facts:")
+                effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                         f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                         f"accessible_t(TURN,liquid{step_idx})",
+                                         f"at_t(TURN,{current_entity}1,ROOM)",
+                                         f"in_t(TURN,{current_entity}1,cauldron1)"]
+                for sub_pred in effect_sub_predicates:
+                    # template for reversible mutables:
+                    asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                    # insert into ASP encoding rule template:
+                    asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                    effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                    print(asp_next_turn_sub)
+                    asp_rules.append(asp_next_turn_sub)
+                # combine ASP rules:
+                combined_asp_rules = ", ".join(asp_rules)
             else:  # after first step event, before last
                 # iterate liquid:
                 event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
@@ -263,6 +347,51 @@ def create_potion_recipe_events(potion_recipe: dict,
                     f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
                     f"the liquid in the cauldron with a "
                     f"{rng.choice(['puff of vapor', 'swirling pattern', 'gloopy sound', 'pop', 'phase shift'])}.")
+                # ASP
+                asp_rules: list = list()
+                # event trigger ASP:
+                # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+                # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE):PRECON_FACTS } :- turn(TURN), room(ROOM)."
+                asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                              f"potion_step_{step_idx + 1}")
+                precon_facts = (
+                    f"at_t(TURN,{current_entity}1,ROOM), at_t(TURN,cauldron1,ROOM),"
+                    f"in_t(TURN,liquid{step_idx},cauldron1), in_t(TURN,{current_entity}1,cauldron1)")
+                asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                              precon_facts)
+                print(asp_event_trigger)
+                asp_rules.append(asp_event_trigger)
+                # event effects ASP:
+                # added facts:
+                print("add facts:")
+                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                effect_add_asp_string = (
+                    f"type(liquid{step_idx + 1},liquid), at_t(TURN,liquid{step_idx + 1},ROOM), "
+                    f"in_t(TURN,liquid{step_idx + 1},cauldron1), accessible_t(TURN,liquid{step_idx + 1})")
+                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                print(asp_next_turn_add)
+                asp_rules.append(asp_next_turn_add)
+                # removed facts:
+                print("remove facts:")
+                effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                         f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                         f"accessible_t(TURN,liquid{step_idx})",
+                                         f"at_t(TURN,{current_entity}1,ROOM)",
+                                         f"in_t(TURN,{current_entity}1,cauldron1)"]
+                for sub_pred in effect_sub_predicates:
+                    # template for reversible mutables:
+                    asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                    # insert into ASP encoding rule template:
+                    asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                    effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                    asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                    print(asp_next_turn_sub)
+                    asp_rules.append(asp_next_turn_sub)
+                # combine ASP rules:
+                combined_asp_rules = ", ".join(asp_rules)
 
         elif step['step_type'] == 'use_tool':
             # swirl/puff/etc event
@@ -306,6 +435,50 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+                    # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE):PRECON_FACTS } :- turn(TURN), room(ROOM)."
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,{prior_ingredient}1,ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,{prior_ingredient}1,cauldron1), {applied_predicate}_t(TURN,cauldron1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(liquid1,liquid), at_t(TURN,liquid1,ROOM), in_t(TURN,liquid1,cauldron1), "
+                        f"accessible_t(TURN,liquid1)")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,{prior_ingredient}1,ROOM)",
+                                             f"in_t(TURN,{prior_ingredient}1,cauldron1)",
+                                             f"accessible_t(TURN,{prior_ingredient}1)",
+                                             f"{applied_predicate}_t(TURN,cauldron1)"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -335,6 +508,50 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE,THING):at_t(TURN,THING,ROOM),PRECON_FACTS } :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN)."
+                    # asp_potential_event_trigger = "{ event_t(TURN,EVENT_TYPE):PRECON_FACTS } :- turn(TURN), room(ROOM)."
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,{prior_ingredient}1,ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,{prior_ingredient}1,cauldron1), {applied_predicate}_t(TURN,{prior_ingredient}1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(liquid1,liquid), at_t(TURN,liquid1,ROOM), in_t(TURN,liquid1,cauldron1), "
+                        f"accessible_t(TURN,liquid1)")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,{prior_ingredient}1,ROOM)",
+                                             f"in_t(TURN,{prior_ingredient}1,cauldron1)",
+                                             f"accessible_t(TURN,{prior_ingredient}1)",
+                                             f"{applied_predicate}_t(TURN,{prior_ingredient}1)"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1
                 if tool_category == "wand":
@@ -365,6 +582,47 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,liquid{step_idx},ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,liquid{step_idx},cauldron1), {applied_predicate}_t(TURN,cauldron1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(potion1,potion), at_t(TURN,potion1,ROOM), in_t(TURN,potion1,cauldron1), "
+                        f"accessible_t(TURN,potion1)")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                             f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                             f"accessible_t(TURN,liquid{step_idx})"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -394,6 +652,48 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
                         f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,liquid{step_idx},ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,liquid{step_idx},cauldron1), {applied_predicate}_t(TURN,cauldron1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(potion1,potion), at_t(TURN,potion1,ROOM), in_t(TURN,potion1,cauldron1), "
+                        f"accessible_t(TURN,potion1)")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                             f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                             f"accessible_t(TURN,liquid{step_idx})",
+                                             f"{applied_predicate}_t(TURN,liquid{step_idx})"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
             else:
                 # iterate liquid
                 if tool_category == "wand":
@@ -423,6 +723,47 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,liquid{step_idx},ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,liquid{step_idx},cauldron1), {applied_predicate}_t(TURN,cauldron1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(liquid{step_idx +1 },liquid), at_t(TURN,liquid{step_idx +1 },ROOM), "
+                        f"in_t(TURN,liquid{step_idx +1 },cauldron1), accessible_t(TURN,liquid{step_idx +1 })")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                             f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                             f"accessible_t(TURN,liquid{step_idx})"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -451,16 +792,61 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
                         f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}.")
+                    # ASP
+                    asp_rules: list = list()
+                    # event trigger ASP:
+                    asp_event_trigger = "event_t(TURN,EVENT_TYPE,ROOM) :- turn(TURN), room(ROOM), PRECON_FACTS."
+                    asp_event_trigger = asp_event_trigger.replace("EVENT_TYPE",
+                                                                  f"potion_step_{step_idx + 1}")
+                    precon_facts = (
+                        f"at_t(TURN,liquid{step_idx},ROOM), at_t(TURN,cauldron1,ROOM),"
+                        f"in_t(TURN,liquid{step_idx},cauldron1), {applied_predicate}_t(TURN,cauldron1)")
+                    asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS",
+                                                                  precon_facts)
+                    print(asp_event_trigger)
+                    asp_rules.append(asp_event_trigger)
+                    # event effects ASP:
+                    # added facts:
+                    print("add facts:")
+                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                    effect_add_asp_string = (
+                        f"type(liquid{step_idx + 1},liquid), at_t(TURN,liquid{step_idx + 1},ROOM), "
+                        f"in_t(TURN,liquid{step_idx + 1},cauldron1), accessible_t(TURN,liquid{step_idx + 1})")
+                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    print(asp_next_turn_add)
+                    asp_rules.append(asp_next_turn_add)
+                    # removed facts:
+                    print("remove facts:")
+                    effect_sub_predicates = [f"at_t(TURN,liquid{step_idx},ROOM)",
+                                             f"in_t(TURN,liquid{step_idx},cauldron1)",
+                                             f"accessible_t(TURN,liquid{step_idx})",
+                                             f"{applied_predicate}_t(TURN,liquid{step_idx})"]
+                    for sub_pred in effect_sub_predicates:
+                        # template for reversible mutables:
+                        asp_next_turn_sub = "MUTABLE_FACT_AFTER :- turn(TURN), MUTABLE_FACT_BEFORE, not event_t(TURN,EVENT_TYPE,ROOM)."
+                        # insert into ASP encoding rule template:
+                        asp_next_turn_sub = asp_next_turn_sub.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_BEFORE", sub_pred)
+                        effect_sub_asp_string = sub_pred.replace("TURN", "TURN+1")
+                        asp_next_turn_sub = asp_next_turn_sub.replace("MUTABLE_FACT_AFTER", effect_sub_asp_string)
+                        print(asp_next_turn_sub)
+                        asp_rules.append(asp_next_turn_sub)
+                    # combine ASP rules:
+                    combined_asp_rules = ", ".join(asp_rules)
 
         step_event_dict['pddl'] = event_pddl
         step_event_dict['event_feedback'] = feedback_str
+        step_event_dict['asp'] = combined_asp_rules
         step_events.append(step_event_dict)
+        print()
     print()
     for step_event in step_events:
         # print(step_event)
         # print(step_event['pddl'])
-        print(step_event['event_feedback'])
-        print()
+        # print(step_event['event_feedback'])
+        # print()
+        pass
 
 
 

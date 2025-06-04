@@ -334,7 +334,7 @@
     "takeable": true,
     "movable": true,
     "supported": true,
-    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient", "bucket"],
     "possible_adjs": ["large", "small"],
     "standard_locations": ["herbarium", "garden"],
     "produced_entity_type": "water"
@@ -355,7 +355,7 @@
     "takeable": true,
     "movable": true,
     "supported": true,
-    "traits": ["takeable", "movable", "needs_support", "ingredient"],
+    "traits": ["takeable", "movable", "needs_support", "ingredient", "bucket"],
     "possible_adjs": ["large", "small"],
     "standard_locations": ["storage", "garden"],
     "produced_entity_type": "ectoplasm"
