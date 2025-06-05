@@ -21,7 +21,7 @@ def split_state_string(state_string: str, value_delimiter: str = "(", value_sepa
 
 
 # adventure source file with initial state and goals:
-source_file_path = "layout_source.json"
+source_file_path = "layout_source2.json"
 # load initial state facts:
 with open(source_file_path, 'r', encoding='utf-8') as source_file:
     adventure_source = json.load(source_file)

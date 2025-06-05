@@ -18,6 +18,7 @@ import numpy as np
 from clingo.control import Control
 import lark
 from lark import Lark, Transformer
+from nltk import elementtree_indent
 from pydantic_core.core_schema import filter_dict_schema
 
 from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
@@ -327,6 +328,25 @@ class ClingoAdventureGenerator(object):
                 # meaning it can be the second argument of put actions, and there can be on(X,kitchen1floor) facts
                 clingo_str += "\n" + floor_support
 
+            # add ceilings to defined room types:
+            if 'add_ceiling_rooms' in self.adv_type_def['initial_state_config']:
+                # print("add ceilings key in adv_type_def")
+                if self.adv_type_def['initial_state_config']['add_ceiling_rooms']:
+                    # print("add ceilings value in adv_type_def is truthy")
+                    # print(self.adv_type_def['initial_state_config']['add_ceiling_rooms'])
+                    if room_type_name in self.adv_type_def['initial_state_config']['add_ceiling_rooms']:
+                        # print(f"{room_type_name} in ceiling add list!")
+                        # add ceiling to room:
+                        ceiling_id = f"{room_id}ceiling1"
+                        ceiling_atom = f"type({ceiling_id},ceiling)."
+                        clingo_str += "\n" + ceiling_atom
+                        # add at() for room floor:
+                        ceiling_at = f"at({ceiling_id},{room_id})."
+                        clingo_str += "\n" + ceiling_at
+                        # add support trait atom for ceiling:
+                        ceiling_support = f"support({ceiling_id})."
+                        clingo_str += "\n" + ceiling_support
+
             # add exit rule:
             # room definitions contain a list of possible adjacent rooms
             permitted_exits_list = list()
@@ -339,11 +359,20 @@ class ClingoAdventureGenerator(object):
             exit_rule = exit_rule.replace("$MAXCONNECTIONS$", str(room_type_values['max_connections']))
             clingo_str += "\n" + exit_rule
         # exit pairing rule:
-        # this makes sure that all passages are usable from both sides
-        exit_pairing_rule = "exit(ROOM,TARGET) :- exit(TARGET,ROOM)."
-        clingo_str += "\n" + exit_pairing_rule
+        pair_exits = True  # exits are paired by default
+        # unpaired exits for witch house:
+        if 'unpaired_exits' in self.adv_type_def['initial_state_config']:
+            if self.adv_type_def['initial_state_config']['unpaired_exits']:
+                pair_exits = False
+        if pair_exits:
+            # this makes sure that all passages are usable from both sides
+            exit_pairing_rule = "exit(ROOM,TARGET) :- exit(TARGET,ROOM)."
+            clingo_str += "\n" + exit_pairing_rule
         # add rule assuring all rooms are reachable from each other:
-        reachable_rule = "reachable(ROOM,TARGET) :- exit(ROOM,TARGET). reachable(ROOM,TARGET) :- reachable(TARGET,ROOM). reachable(ROOM,TARGET) :- reachable(ROOM,TARGET1), reachable(TARGET1,TARGET), ROOM != TARGET. :- room(ROOM,_), room(TARGET,_), ROOM != TARGET, not reachable(ROOM,TARGET)."
+        reachable_rule = ("reachable(ROOM,TARGET) :- exit(ROOM,TARGET). "
+                          # "reachable(ROOM,TARGET) :- reachable(TARGET,ROOM). "
+                          "reachable(ROOM,TARGET) :- reachable(ROOM,TARGET1), reachable(TARGET1,TARGET), ROOM != TARGET. "
+                          ":- room(ROOM,_), room(TARGET,_), ROOM != TARGET, not reachable(ROOM,TARGET).")
         clingo_str += "\n" + reachable_rule
 
         return clingo_str
@@ -361,9 +390,15 @@ class ClingoAdventureGenerator(object):
         # add player type fact:
         player_fact = "type(player1,player)."
         clingo_str += "\n" + player_fact
+
         # add rule for random player start location:
         player_location_rule = "1 { at(player1,ROOM):room(ROOM,_) } 1."
         # = there can be at() facts for the player for each room and there must be exactly one at() fact for the player
+        # witch house constant starting location:
+        if 'constant_start_room' in self.adv_type_def['initial_state_config']:
+            if self.adv_type_def['initial_state_config']['constant_start_room']:
+                player_location_rule = f"at(player1,{self.adv_type_def['initial_state_config']['constant_start_room']})."
+        # print("player_location_rule:", player_location_rule)
         clingo_str += "\n" + player_location_rule
 
         # print(self.entity_definitions)
@@ -377,17 +412,19 @@ class ClingoAdventureGenerator(object):
                 type_atom = f"type({entity_id},{entity_type_name})."
                 # add type atom to asp encoding:
                 clingo_str += "\n" + type_atom
+
                 # location rule:
                 permitted_location_list = list()
 
-                for location in entity_type_values['standard_locations']:
-                    permitted_location = f"at(ENTITY,ROOM):type(ENTITY,{entity_type_name}),room(ROOM,{location})"
-                    permitted_location_list.append(permitted_location)
-                permitted_locations_str = ";".join(permitted_location_list)
+                if entity_type_values["standard_locations"]:
+                    for location in entity_type_values['standard_locations']:
+                        permitted_location = f"at(ENTITY,ROOM):type(ENTITY,{entity_type_name}),room(ROOM,{location})"
+                        permitted_location_list.append(permitted_location)
+                    permitted_locations_str = ";".join(permitted_location_list)
 
-                location_rule = "1 { $PERMITTEDLOCATIONS$ } 1."
-                location_rule = location_rule.replace("$PERMITTEDLOCATIONS$", permitted_locations_str)
-                clingo_str += "\n" + location_rule
+                    location_rule = "1 { $PERMITTEDLOCATIONS$ } 1."
+                    location_rule = location_rule.replace("$PERMITTEDLOCATIONS$", permitted_locations_str)
+                    clingo_str += "\n" + location_rule
 
                 if "traits" in entity_type_values:
                     # add atoms for all traits of this entity type:
@@ -395,7 +432,7 @@ class ClingoAdventureGenerator(object):
                         trait_atom = f"{trait}({entity_id})."
                         clingo_str += "\n" + trait_atom
 
-                    if "needs_support" in entity_type_values['traits']:
+                    if "needs_support" in entity_type_values['traits'] and entity_type_values["standard_locations"]:
                         # on/in rule:
                         # entities that require being on a support can be on any support in the room they are at
                         support_rule = "1 { on($ENTITY$,SUPPORT):at($ENTITY$,ROOM),at(SUPPORT,ROOM),support(SUPPORT);in($ENTITY$,CONTAINER):at($ENTITY$,ROOM),at(CONTAINER,ROOM),container(CONTAINER) } 1."
@@ -426,9 +463,8 @@ class ClingoAdventureGenerator(object):
                                 possible_mutable_asp = possible_mutable_asp.replace("POSSIBLE_MUTABLES", ";".join(possible_mutable_asp_facts))
                                 clingo_str += "\n" + possible_mutable_asp
 
-                # TODO: handle irreversible mutabilities properly; specially with zero initial state
 
-                # no adjectives were used in v1/v2.1/v2.2 adventures
+                # no adjectives were used in v1/v2.1/v2.2/v2.3 adventures
                 if not self.adv_type_def['initial_state_config']["entity_adjectives"] == "none":
                     if "possible_adjs" in entity_type_values:
                         # adjective rule:
@@ -789,12 +825,17 @@ class ClingoAdventureGenerator(object):
                 if not duplicate:
                     # print("added goal combo strs:", goal_strs)
                     goal_combos.append(goal_strs)
-                # print("goal_mutabilities:", goal_mutabilities)
-                # print()
+                    # print("goal_mutabilities:", goal_mutabilities)
+                    # print()
+
+        elif task_config['task'] == "potion":
+            # potion brewing only requires the finished potion to exist
+            # goal_combos = [["at(potion1,_)"]]
+            goal_combos = [["at(potion1,kitchen1)"]]
 
         return goal_combos
 
-    def _initialize_adventure_turns_asp(self, initial_world_state):
+    def _initialize_adventure_turns_asp(self, initial_world_state, events_list: list = []):
         """
         Set up initial world state and create ASP encoding of mutable facts.
         Turn facts have _t in the fact/atom type, and their first value is the turn at which they are true.
@@ -811,8 +852,6 @@ class ClingoAdventureGenerator(object):
             raise ValueError("Mutable states are not defined in adventure type definition, can't create solving ASP!")
 
         clingo_str = str()
-
-        # TODO: add events
 
         self.id_to_type_dict: dict = dict()
 
@@ -848,9 +887,14 @@ class ClingoAdventureGenerator(object):
                 # Ex: type(apple1,apple) = the entity with ID apple1 is of type apple (and will always be)
                 clingo_str += "\n" + const_atom
 
+        if events_list:
+            for event in events_list:
+                clingo_str += "\n" + event['asp']
+
         return clingo_str
 
-    def _solve_optimally_asp(self, initial_world_state, goal_facts: list, return_only_actions: bool = True) -> str:
+    def _solve_optimally_asp(self, initial_world_state, goal_facts: list, return_only_actions: bool = True,
+                             events_list: list = []) -> str:
         """
         Generates an optimal solution to an adventure.
         :param initial_world_state: Initial world state fact list.
@@ -869,7 +913,10 @@ class ClingoAdventureGenerator(object):
         clingo_str += "\n" + turns_clingo
 
         # add initial world state facts:
-        initial_state_clingo = self._initialize_adventure_turns_asp(initial_world_state)
+        if events_list:
+            initial_state_clingo = self._initialize_adventure_turns_asp(initial_world_state, events_list=events_list)
+        else:
+            initial_state_clingo = self._initialize_adventure_turns_asp(initial_world_state)
         clingo_str += "\n" + initial_state_clingo
 
         # add actions:
@@ -1010,26 +1057,33 @@ class ClingoAdventureGenerator(object):
 
         return actions_abstract, len(action_tuples), action_commands
 
-    def _generate_room_layouts(self):
+    def _generate_room_layouts(self, limit: int = 128):
         # init room layout clingo controller:
         room_layout_clingo: Control = Control(["0"])  # ["0"] argument to return all models
         # generate room layout ASP encoding:
         room_layout_asp: str = self._generate_room_layouts_asp()
+        # print(room_layout_asp)
         # add room layout ASP encoding to clingo:
         room_layout_clingo.add(room_layout_asp)
         # ground controller:
         room_layout_clingo.ground()
         # solve for all room layouts:
         room_layouts = list()
+        layout_count: int = 0
         with room_layout_clingo.solve(yield_=True) as solve:
             for model in solve:
-                room_layouts.append(model.__str__())
+                if layout_count <= limit:
+                    room_layouts.append(model.__str__())
+                    layout_count += 1
+                else:
+                    break
         # convert room layout clingo models:
         result_layouts = list()
         for result_layout in room_layouts:
             room_layout_fact_list = result_layout.split()
             # remove 'reachable' helper atoms:
             room_layout_fact_list = [fact for fact in room_layout_fact_list if "reachable" not in fact]
+            # print(room_layout_fact_list)
             result_layouts.append(room_layout_fact_list)
 
         return result_layouts
@@ -1043,6 +1097,7 @@ class ClingoAdventureGenerator(object):
             # generate initial state ASP encoding:
             cur_initial_states_asp = self._generate_initial_states_asp(room_layout)
             # print("cur_initial_states_asp:", cur_initial_states_asp)
+            # print()
             # add initial state ASP encoding to clingo:
             initial_states_clingo.add(cur_initial_states_asp)
             # ground controller:
@@ -1050,7 +1105,17 @@ class ClingoAdventureGenerator(object):
             # solve for all room layouts:
             initial_states_per_layout_count: int = 0
             with initial_states_clingo.solve(yield_=True) as solve:
+                satisfiable = str(solve.get())
+                if satisfiable == "SAT":
+                    # print("intial state generation clingo solvable")
+                    pass
+                else:
+                    # print("!!! intial state generation clingo NOT solvable !!!")
+                    pass
                 for model in solve:
+                    # print("initial state solve model:\n", model)
+                    # print("initial_states_per_layout_count:", initial_states_per_layout_count)
+                    # print()
                     if initial_states_per_layout_count <= initial_states_per_layout:
                         initial_states.append(model.__str__().split())
                         initial_states_per_layout_count += 1
@@ -1107,14 +1172,17 @@ class ClingoAdventureGenerator(object):
 
             # ROOM LAYOUTS
             # NOTE: As the number of room layouts is relatively small, generating all to iterate over is viable.
+            # print(f"{datetime.now()} Generating room layouts...")
             result_layouts = self._generate_room_layouts()
             print("Room layouts generated.")
             # print("result_layouts:", result_layouts)
+            print("result_layouts count:", len(result_layouts))
 
             # INITIAL STATES
             initial_states = self._generate_initial_states(result_layouts, initial_states_per_layout)
             print("Initial states generated.")
             # print("initial_states:", initial_states)
+            # print("initial_states count:", len(initial_states))
 
             # print(initial_states)
             # print(len(initial_states))
@@ -1123,6 +1191,9 @@ class ClingoAdventureGenerator(object):
             # get initial states to generate adventures with:
             if initial_state_picking == "iterative":
                 if initial_state_limit:
+                    print("range(initial_state_limit):", list(range(initial_state_limit)))
+                    # print("initial_states:", initial_states)
+                    print("length initial_states:", len(initial_states))
                     initial_states_used = [initial_states[idx] for idx in range(initial_state_limit)]
                 else:
                     initial_states_used = initial_states
@@ -1136,7 +1207,7 @@ class ClingoAdventureGenerator(object):
 
             # iterate over initial states used:
             for initial_state in initial_states_used:
-                print("initial state:", initial_state)
+                # print("initial state:", initial_state)
 
                 cur_adventure_count = 0
                 keep_generating_adventures = True
@@ -1161,8 +1232,24 @@ class ClingoAdventureGenerator(object):
 
                     print("Current goal set:", goal_set)
 
-                    # solve current adventure:
-                    solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
+                    # potion brewing events:
+                    if self.adv_type_def['task_config']['task'] == 'potion':
+                        from potion_adventures import generate_potion_recipe, create_potion_recipe_events
+                        potion_recipe = generate_potion_recipe(self.domain_def, self.entity_definitions,
+                                                               rng_seed=self.rng.integers(9223372036854775808))
+                        # print("potion recipe:\n", potion_recipe)
+                        # print("potion recipe text:\n", potion_recipe['text'])
+                        potion_events = create_potion_recipe_events(potion_recipe,
+                                                                    self.domain_def, self.entity_definitions,
+                                                                    rng_seed=self.rng.integers(9223372036854775808))
+                        # print("potion events:\n", potion_events)
+                        # solve current adventure ASP encoding:
+                        solve_asp: str = self._solve_optimally_asp(initial_state, goal_set, events_list=potion_events)
+                        # print(solve_asp)
+                    else:
+                        # solve current adventure ASP encoding:
+                        solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
+
                     # print("solve ASP:\n", solve_asp)
                     # init fresh clingo controller:
                     cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
@@ -1203,49 +1290,54 @@ class ClingoAdventureGenerator(object):
                         cur_optimal_solution)
                     # check if optimal turns within bounds:
                     if min_optimal_turns <= optimal_turns <= max_optimal_turns:
-                        # pre-explore rooms:
-                        # solve current adventure:
-                        visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
-                        # print("visit ASP:\n", visit_asp)
-                        # init fresh clingo controller:
-                        visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
-                        # add adventure solving asp encoding:
-                        visit_solve_control.add(visit_asp)
-                        # ground clingo controller:
-                        visit_solve_control.ground()
+                        pre_explore = True
+                        if 'no_pre_explore' in task_config:
+                            if task_config['no_pre_explore']:
+                                pre_explore = False
+                        if pre_explore:
+                            # pre-explore rooms:
+                            # solve current adventure:
+                            visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
+                            # print("visit ASP:\n", visit_asp)
+                            # init fresh clingo controller:
+                            visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                            # add adventure solving asp encoding:
+                            visit_solve_control.add(visit_asp)
+                            # ground clingo controller:
+                            visit_solve_control.ground()
 
-                        print("Visiting solving grounded.")
+                            print("Visiting solving grounded.")
 
-                        visit_solutions = list()
-                        solvable: bool = False
-                        with visit_solve_control.solve(yield_=True) as solve:
-                            for model in solve:
-                                visit_solutions.append(model.__str__())
-                                # print(model)
-                            satisfiable = str(solve.get())
-                            # print("satisfiable:", satisfiable)
-                            if satisfiable == "SAT":
-                                solvable = True
-                            elif satisfiable == "UNSAT":
-                                solvable = False
+                            visit_solutions = list()
+                            solvable: bool = False
+                            with visit_solve_control.solve(yield_=True) as solve:
+                                for model in solve:
+                                    visit_solutions.append(model.__str__())
+                                    # print(model)
+                                satisfiable = str(solve.get())
+                                # print("satisfiable:", satisfiable)
+                                if satisfiable == "SAT":
+                                    solvable = True
+                                elif satisfiable == "UNSAT":
+                                    solvable = False
 
-                        print("Visiting solving performed.")
+                            print("Visiting solving performed.")
 
-                        # skip this raw adventure if it is not solvable under the defined constraints:
-                        if not solvable:
-                            print("Visiting is NOT solvable.")
-                            continue
+                            # skip this raw adventure if it is not solvable under the defined constraints:
+                            if not solvable:
+                                print("Visiting is NOT solvable.")
+                                continue
 
-                        print("Visiting is solvable.")
-                        print()
+                            print("Visiting is solvable.")
+                            print()
 
-                        # last yielded model is optimal solution:
-                        visit_optimal_solution = visit_solutions[-1]
-                        # convert optimal solution:
-                        visiting_abstract, visiting_turns, visiting_cmds = self._convert_adventure_solution(
-                            visit_optimal_solution)
+                            # last yielded model is optimal solution:
+                            visit_optimal_solution = visit_solutions[-1]
+                            # convert optimal solution:
+                            visiting_abstract, visiting_turns, visiting_cmds = self._convert_adventure_solution(
+                                visit_optimal_solution)
 
-                        print("visiting_cmds:", visiting_cmds)
+                            print("visiting_cmds:", visiting_cmds)
 
                         # get tuple world state:
                         world_state: set = set()
@@ -1386,7 +1478,6 @@ class ClingoAdventureGenerator(object):
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit']
                             }
 
-
                         if task_config['task'] == 'new-word_states':
                             goal_strings: list = list()
                             for goal_tuple in goal_tuples:
@@ -1452,6 +1543,22 @@ class ClingoAdventureGenerator(object):
                                 'domain_definitions': [self.domain_def],
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit'],
                                 'prompt_template_set': self.adv_type_def['prompt_template_set']
+                            }
+
+                        if task_config['task'] == 'potion':
+                            goal_desc = "Brew the potion."
+
+                            # full raw adventure data:
+                            viable_adventure = {
+                                'adventure_type': self.adv_type,
+                                'goal': goal_desc, 'initial_state': initial_state, 'goal_state': goal_set,
+                                'optimal_turns': optimal_turns,
+                                'optimal_solution': cur_sol_abstract, 'optimal_commands': cur_sol_cmds,
+                                'action_definitions': self.adv_type_def['action_definitions'],
+                                'room_definitions': self.adv_type_def['room_definitions'],
+                                'entity_definitions': self.adv_type_def['entity_definitions'],
+                                'event_definitions': event_definitions,
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
                             }
 
                         generated_adventures.append(viable_adventure)
@@ -1745,12 +1852,16 @@ if __name__ == "__main__":
     adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
 
     # print(adventure_generator.domain_def)
-    print(adventure_generator.entity_definitions)
+    # print(adventure_generator.entity_definitions)
+
+    # adventure_generator._generate_room_layouts(limit=1)
 
     # generate adventure including metadata from manually edited source:
     # adventure_generator.generate_from_initial_goals_file("adv_source.json")
 
     # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, goal_set_picking="random")
+    adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, goal_set_picking="random")
+
     # adventure_generator.generate_adventures(initial_state_limit=1, initial_states_per_layout=1, save_to_file=False)
 
     # adventure_generator.augment_raw_adventures_pre_explore("curated_home_deliver_three_adventures_v2_2.json")

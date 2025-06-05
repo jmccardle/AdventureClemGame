@@ -20,12 +20,19 @@
     "traits": ["support", "receptacle"]
   },
   {
+    "type_name": "ceiling",
+    "repr_str": "ceiling",
+    "hidden": true,
+    "support": true,
+    "traits": ["support", "receptacle"]
+  },
+  {
     "type_name": "table",
     "repr_str": "table",
     "support": true,
     "traits": ["support", "receptacle"],
     "possible_adjs": ["wooden", "metal", "low", "high"],
-    "standard_locations": ["kitchen", "livingroom"]
+    "standard_locations": ["kitchen", "readingroom"]
   },
   {
     "type_name": "sidetable",
@@ -33,7 +40,7 @@
     "support": true,
     "traits": ["support", "receptacle"],
     "possible_adjs": ["wooden", "metal", "small"],
-    "standard_locations": ["livingroom", "bedroom"]
+    "standard_locations": ["readingroom", "bedroom"]
   },
   {
     "type_name": "counter",
@@ -76,7 +83,7 @@
     "support": true,
     "traits": ["support", "receptacle"],
     "possible_adjs": ["wooden", "metal", "low", "high"],
-    "standard_locations": ["kitchen", "pantry", "livingroom"]
+    "standard_locations": ["kitchen", "pantry", "readingroom"]
   },
   {
     "type_name": "chair",
@@ -306,7 +313,7 @@
     "supported": true,
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "possible_adjs": ["large", "small"],
-    "standard_locations": ["herbarium", "garden"]
+    "standard_locations": ["conservatory", "garden"]
   },
   {
     "type_name": "nightshade",
@@ -316,7 +323,7 @@
     "supported": true,
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "possible_adjs": ["large", "small"],
-    "standard_locations": ["herbarium", "garden"]
+    "standard_locations": ["conservatory", "garden"]
   },
   {
     "type_name": "pricklypear",
@@ -326,7 +333,7 @@
     "supported": true,
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
     "possible_adjs": ["large", "small"],
-    "standard_locations": ["herbarium"]
+    "standard_locations": ["conservatory"]
   },
   {
     "type_name": "waterbucket",
@@ -336,7 +343,7 @@
     "supported": true,
     "traits": ["takeable", "movable", "needs_support", "ingredient", "bucket"],
     "possible_adjs": ["large", "small"],
-    "standard_locations": ["herbarium", "garden"],
+    "standard_locations": ["conservatory", "garden"],
     "produced_entity_type": "water"
   },
   {

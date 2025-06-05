@@ -310,7 +310,7 @@
       ]
     },
     "success_feedback": "You wave the {{ w }} at the {{ t }}. {{ arg2_desc }}",
-    "asp": "",
+    "asp": "{ action_t(TURN,wave,THING,WAND):at_t(TURN,THING,ROOM),at_t(TURN,WAND,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nhot_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,firewand).\ncold_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,icewand).\nglittery_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,firewand).\nzulponated_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,firewand).\nhot_t(TURN+1,THING) :- turn(TURN), hot_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,icewand).\ncold_t(TURN+1,THING) :- turn(TURN), cold_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,firewand).\nglittery_t(TURN+1,THING) :- turn(TURN), glittery_t(TURN,THING).\nzulponated_t(TURN+1,THING) :- turn(TURN), zulponated_t(TURN,THING).",
     "epistemic": false,
     "pragmatic": true,
     "explanation": "To VERB is to cause (liquid, or liquid-like substance) to flow in a stream, either out of a container or into it."
@@ -339,7 +339,7 @@
       ]
     },
     "success_feedback": "You stir the {{ l }} with the {{ s }}.",
-    "asp": "",
+    "asp": "{ action_t(TURN,stir,THING,STIRRER):at_t(TURN,THING,ROOM),at_t(TURN,STIRRER,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nladlestirred_t(TURN+1,THING) :- action_t(TURN,stir,THING,STIRRER), type(STIRRER,ladle).\nwhisked_t(TURN+1,THING) :- action_t(TURN,stir,THING,STIRRER), type(STIRRER,whisk).\nspoonstirred_t(TURN+1,THING) :- action_t(TURN,stir,THING,STIRRER), type(STIRRER,spoon).\nborpulusstirred_t(TURN+1,THING) :- action_t(TURN,stir,THING,STIRRER), type(STIRRER,borpulus).\nladlestirred_t(TURN+1,THING) :- turn(TURN), ladlestirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,whisk).\nladlestirred_t(TURN+1,THING) :- turn(TURN), ladlestirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,spoon).\nladlestirred_t(TURN+1,THING) :- turn(TURN), ladlestirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,borpulus).\nwhisked_t(TURN+1,THING) :- turn(TURN), whisked_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,ladle).\nwhisked_t(TURN+1,THING) :- turn(TURN), whisked_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,spoon).\nwhisked_t(TURN+1,THING) :- turn(TURN), whisked_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,borpulus).\nspoonstirred_t(TURN+1,THING) :- turn(TURN), spoonstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,ladle).\nspoonstirred_t(TURN+1,THING) :- turn(TURN), spoonstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,spoon).\nspoonstirred_t(TURN+1,THING) :- turn(TURN), spoonstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,whisk).\nborpulusstirred_t(TURN+1,THING) :- turn(TURN), borpulusstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,ladle).\nborpulusstirred_t(TURN+1,THING) :- turn(TURN), borpulusstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,spoon).\nborpulusstirred_t(TURN+1,THING) :- turn(TURN), borpulusstirred_t(TURN,THING), not action_t(TURN,stir,THING,STIRRER), type(STIRRER,whisk).",
     "epistemic": false,
     "pragmatic": true,
     "explanation": "To VERB is to disturb the content of (a container) by passing an object through it."

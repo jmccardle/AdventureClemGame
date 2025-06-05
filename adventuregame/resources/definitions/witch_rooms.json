@@ -3,7 +3,7 @@
     "type_name": "kitchen",
     "repr_str": "kitchen",
     "standard_content": ["cauldron", "counter", "table"],
-    "exit_targets": ["pantry", "hallway"],
+    "exit_targets": ["pantry", "hallway", "garden", "conservatory"],
     "max_connections": 3
   },
   {
@@ -17,7 +17,7 @@
     "type_name": "hallway",
     "repr_str": "hallway",
     "standard_content": ["pottedplant"],
-    "exit_targets": ["kitchen", "pantry", "readingroom", "broomcloset"],
+    "exit_targets": ["kitchen", "pantry", "readingroom", "broomcloset", "conservatory", "garden", "storage", "bedroom", "workshop"],
     "max_connections": 4
   },
   {
@@ -31,28 +31,28 @@
     "type_name": "bedroom",
     "repr_str": "bedroom",
     "standard_content": ["bed", "wardrobe"],
-    "exit_targets": ["readingroom", "hallway"],
+    "exit_targets": ["readingroom", "hallway", "garden", "workshop"],
     "max_connections": 1
   },
   {
     "type_name": "storage",
     "repr_str": "storage room",
     "standard_content": ["bed", "wardrobe"],
-    "exit_targets": ["readingroom", "hallway", "kitchen", "cellar"],
+    "exit_targets": ["readingroom", "hallway", "kitchen", "cellar", "conservatory"],
     "max_connections": 2
   },
   {
     "type_name": "readingroom",
     "repr_str": "reading room",
     "standard_content": ["bed", "wardrobe"],
-    "exit_targets": ["hallway", "kitchen", "bedroom"],
+    "exit_targets": ["hallway", "kitchen", "bedroom", "conservatory", "garden"],
     "max_connections": 2
   },
   {
     "type_name": "workshop",
     "repr_str": "magic workshop",
     "standard_content": ["bed", "wardrobe"],
-    "exit_targets": ["hallway", "kitchen", "bedroom", "readingroom"],
+    "exit_targets": ["hallway", "kitchen", "bedroom", "readingroom", "conservatory", "garden"],
     "max_connections": 2
   },
   {
@@ -73,7 +73,7 @@
     "type_name": "garden",
     "repr_str": "garden",
     "standard_content": ["bed", "wardrobe"],
-    "exit_targets": ["hallway", "storage", "conservatory"],
+    "exit_targets": ["hallway", "storage", "conservatory", "outhouse"],
     "max_connections": 2
   },
   {
