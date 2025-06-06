@@ -281,7 +281,7 @@
       ]
     },
     "success_feedback": "You pour the contents of {{ b }} into the {{ t }}. The {{ b }} instantly refills itself.",
-    "asp": "{ action_t(TURN,dump,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),bucket(THING),container(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,water1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,waterbucket), container(TARGET).\nin_t(TURN+1,ectoplams1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,plasmbucket), container(TARGET).",
+    "asp": "{ action_t(TURN,dump,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),bucket(THING),container(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,water1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,waterbucket), container(TARGET).\nin_t(TURN+1,ectoplasm1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,plasmbucket), container(TARGET).",
     "epistemic": false,
     "pragmatic": true,
     "explanation": "To VERB is to cause (liquid, or liquid-like substance) to flow in a stream, either out of a container or into it."

@@ -1250,7 +1250,7 @@ class ClingoAdventureGenerator(object):
                         # solve current adventure ASP encoding:
                         solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
 
-                    # print("solve ASP:\n", solve_asp)
+                    print("solve ASP:\n", solve_asp)
                     # init fresh clingo controller:
                     cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
                     # add adventure solving asp encoding:

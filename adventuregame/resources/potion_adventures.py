@@ -251,7 +251,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     if verbose: print(asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
-                combined_asp_rules = " ".join(asp_rules)
+                combined_asp_rules = "\n".join(asp_rules)
 
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1:
@@ -337,7 +337,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     if verbose: print(asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
-                combined_asp_rules = " ".join(asp_rules)
+                combined_asp_rules = "\n".join(asp_rules)
             else:  # after first step event, before last
                 # iterate liquid:
                 event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
@@ -423,7 +423,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     if verbose: print(asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
-                combined_asp_rules = " ".join(asp_rules)
+                combined_asp_rules = "\n".join(asp_rules)
 
         elif step['step_type'] == 'use_tool':
             # swirl/puff/etc event
@@ -521,7 +521,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -603,7 +603,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
                 # create potion1
                 if tool_category == "wand":
@@ -683,7 +683,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -763,7 +763,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
             else:
                 # iterate liquid
                 if tool_category == "wand":
@@ -842,7 +842,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
                                   f"\t:parameters (l - liquid ?c - container ?r - room)\n"
@@ -923,7 +923,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         if verbose: print(asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
-                    combined_asp_rules = " ".join(asp_rules)
+                    combined_asp_rules = "\n".join(asp_rules)
 
         step_event_dict['pddl'] = event_pddl
         step_event_dict['event_feedback'] = feedback_str
