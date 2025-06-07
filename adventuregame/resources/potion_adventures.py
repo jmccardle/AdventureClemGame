@@ -216,12 +216,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # event effects ASP:
                 # added facts:
                 if verbose: print("add facts:")
-                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx+1}")
                 effect_add_asp_list = [f"type(liquid1,liquid)", f"at_t(TURN,liquid1,ROOM)",
                                        f"in_t(TURN,liquid1,cauldron1)", f"accessible_t(TURN,liquid1)"]
-                effect_add_asp_string = ", ".join(effect_add_asp_list)
-                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                effect_add_asp_rules_list = [f"type(liquid1,liquid){asp_next_turn_add}",
+                                       f"at_t(TURN,liquid1,ROOM){asp_next_turn_add}",
+                                       f"in_t(TURN,liquid1,cauldron1){asp_next_turn_add}",
+                                       f"accessible_t(TURN,liquid1){asp_next_turn_add}"]
+                # effect_add_asp_string = "\n".join(effect_add_asp_list)
+                asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose: print(asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
                 # persist added facts in ASP:
@@ -298,16 +304,21 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # event effects ASP:
                 # added facts:
                 if verbose: print("add facts:")
-                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                 effect_add_asp_list = [f"type(potion1,potion)", f"at_t(TURN,potion1,ROOM)",
                                        f"in_t(TURN,potion1,cauldron1)", f"accessible_t(TURN,potion1)"]
-                effect_add_asp_string = ", ".join(effect_add_asp_list)
-                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                effect_add_asp_rules_list = [f"type(potion1,potion){asp_next_turn_add}",
+                                       f"at_t(TURN,potion1,ROOM){asp_next_turn_add}",
+                                       f"in_t(TURN,potion1,cauldron1){asp_next_turn_add}",
+                                       f"accessible_t(TURN,potion1){asp_next_turn_add}"]
+                # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose: print(asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
 
-                # TODO: add persistence rules
                 # persist added facts in ASP:
                 asp_persistence_facts = [fact_str for fact_str in effect_add_asp_list if "_t" in fact_str]
                 if verbose: print("asp_persistence_facts:", asp_persistence_facts)
@@ -388,12 +399,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # event effects ASP:
                 # added facts:
                 if verbose: print("add facts:")
-                asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                 effect_add_asp_list = [f"type(liquid{step_idx + 1},liquid)", f"at_t(TURN,liquid{step_idx + 1},ROOM)",
                                        f"in_t(TURN,liquid{step_idx + 1},cauldron1)", f"accessible_t(TURN,liquid{step_idx + 1})"]
-                effect_add_asp_string = ", ".join(effect_add_asp_list)
-                asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                effect_add_asp_rules_list = [f"type(liquid{step_idx + 1},liquid){asp_next_turn_add}",
+                                       f"at_t(TURN,liquid{step_idx + 1},ROOM){asp_next_turn_add}",
+                                       f"in_t(TURN,liquid{step_idx + 1},cauldron1){asp_next_turn_add}",
+                                       f"accessible_t(TURN,liquid{step_idx + 1}){asp_next_turn_add}"]
+                # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose: print(asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
                 # persist added facts in ASP:
@@ -485,14 +502,16 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
-                    effect_add_asp_list = [f"type(liquid1,liquid)",
-                                           f"at_t(TURN,liquid1,ROOM)",
-                                           f"in_t(TURN,liquid1,cauldron1)",
-                                           f"accessible_t(TURN,liquid1)"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_list = [f"type(liquid1,liquid){asp_next_turn_add}",
+                                           f"at_t(TURN,liquid1,ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,liquid1,cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,liquid1){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
@@ -569,12 +588,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                     effect_add_asp_list = [f"type(liquid1,liquid)", f"at_t(TURN,liquid1,ROOM)",
                                            f"in_t(TURN,liquid1,cauldron1)", f"accessible_t(TURN,liquid1)"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_rules_list = [f"type(liquid1,liquid){asp_next_turn_add}",
+                                           f"at_t(TURN,liquid1,ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,liquid1,cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,liquid1){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
@@ -650,12 +675,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                     effect_add_asp_list = [f"type(potion1,potion)", f"at_t(TURN,potion1,ROOM)",
                                            f"in_t(TURN,potion1,cauldron1)", f"accessible_t(TURN,potion1)"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_rules_list = [f"type(potion1,potion){asp_next_turn_add}",
+                                           f"at_t(TURN,potion1,ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,potion1,cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,potion1){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
@@ -729,12 +760,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                     effect_add_asp_list = [f"type(potion1,potion)", f"at_t(TURN,potion1,ROOM)",
                                            f"in_t(TURN,potion1,cauldron1)", f"accessible_t(TURN,potion1)"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_rules_list = [f"type(potion1,potion){asp_next_turn_add}",
+                                           f"at_t(TURN,potion1,ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,potion1,cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,potion1){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
@@ -809,12 +846,18 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                     effect_add_asp_list = [f"type(liquid{step_idx +1 },liquid)", f"at_t(TURN,liquid{step_idx +1 },ROOM)",
                                            f"in_t(TURN,liquid{step_idx +1 },cauldron1)", f"accessible_t(TURN,liquid{step_idx +1 })"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_rules_list = [f"type(liquid{step_idx + 1},liquid){asp_next_turn_add}",
+                                           f"at_t(TURN,liquid{step_idx + 1},ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,liquid{step_idx + 1},cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,liquid{step_idx + 1}){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
@@ -887,14 +930,20 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # event effects ASP:
                     # added facts:
                     if verbose: print("add facts:")
-                    asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
+                    asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
                     effect_add_asp_list = [f"type(liquid{step_idx + 1},liquid)",
                                            f"at_t(TURN,liquid{step_idx + 1},ROOM)",
                                            f"in_t(TURN,liquid{step_idx + 1},cauldron1)",
                                            f"accessible_t(TURN,liquid{step_idx + 1})"]
-                    effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
+                    effect_add_asp_rules_list = [f"type(liquid{step_idx + 1},liquid){asp_next_turn_add}",
+                                           f"at_t(TURN,liquid{step_idx + 1},ROOM){asp_next_turn_add}",
+                                           f"in_t(TURN,liquid{step_idx + 1},cauldron1){asp_next_turn_add}",
+                                           f"accessible_t(TURN,liquid{step_idx + 1}){asp_next_turn_add}"]
+                    # effect_add_asp_string = ", ".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
+                    # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:

@@ -485,9 +485,12 @@ in_t(TURN+1,THING,TARGET) :- turn(TURN), in_t(TURN,THING,TARGET), not action_t(T
 on_t(TURN+1,THING,TARGET) :- turn(TURN), on_t(TURN,THING,TARGET), not action_t(TURN,take,THING).
 
 % { action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),support(TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),support(TARGET),movable(THING),on_t(TURN,THING,SOURCE),support(SOURCE);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),open_t(TURN,TARGET);action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),support(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
-{
-action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);
+{ action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);
+action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),not openable(TARGET);
+action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),container(TARGET),open_t(TURN,TARGET);
+action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),container(TARGET),not openable(TARGET);
 action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),support(TARGET);
+action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),support(TARGET);
 action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),support(TARGET),movable(THING),on_t(TURN,THING,SOURCE),support(SOURCE);
 action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),open_t(TURN,TARGET),openable(TARGET);
 action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),not openable(TARGET);
@@ -502,26 +505,41 @@ at_t(TURN+1,player1,ROOM) :- turn(TURN), at_t(TURN,player1,ROOM), not action_t(T
 at_t(TURN+1,THING,TARGET) :- action_t(TURN,go,TARGET), in_t(TURN,THING,inventory).
 at_t(TURN+1,THING,ROOM) :- turn(TURN), at_t(TURN,THING,ROOM), not in_t(TURN,THING,inventory), not turn_limit(TURN), THING != player1.
 
-{ action_t(TURN,dump,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),bucket(THING),container(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
-at_t(TURN+1,water1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,TARGET), at_t(TURN,player1,ROOM), type(THING,waterbucket), container(TARGET).
-at_t(TURN+1,ectoplasm1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,TARGET), at_t(TURN,player1,ROOM), type(THING,plasmbucket), container(TARGET).
+% { action_t(TURN,dump,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),bucket(THING),container(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
+{ action_t(TURN,dump,THING,cauldron1):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,cauldron1,ROOM),bucket(THING) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
+% at_t(TURN+1,water1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,TARGET), at_t(TURN,player1,ROOM), type(THING,waterbucket), container(TARGET).
+at_t(TURN+1,water1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,cauldron1), at_t(TURN,player1,ROOM), type(THING,waterbucket).
+% at_t(TURN+1,ectoplasm1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,TARGET), at_t(TURN,player1,ROOM), type(THING,plasmbucket), container(TARGET).
+at_t(TURN+1,ectoplasm1,ROOM) :- turn(TURN), action_t(TURN,dump,THING,cauldron1), at_t(TURN,player1,ROOM), type(THING,plasmbucket).
 at_t(TURN+1,water1,ROOM) :- turn(TURN), at_t(TURN,water1,ROOM).
 at_t(TURN+1,ectoplasm1,ROOM) :- turn(TURN), at_t(TURN,ectoplasm1,ROOM).
-in_t(TURN+1,water1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,waterbucket), container(TARGET).
-in_t(TURN+1,ectoplasm1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,plasmbucket), container(TARGET).
-in_t(TURN+1,water1,CONTAINER) :- turn(TURN), in_t(TURN,water1,CONTAINER), container(CONTAINER).
-in_t(TURN+1,ectoplasm1,CONTAINER) :- turn(TURN), in_t(TURN,ectoplams1,CONTAINER), container(CONTAINER).
+% in_t(TURN+1,water1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,waterbucket), container(TARGET).
+in_t(TURN+1,water1,cauldron1) :- turn(TURN), action_t(TURN,dump,THING,cauldron1), type(THING,waterbucket).
+% in_t(TURN+1,ectoplasm1,TARGET) :- turn(TURN), action_t(TURN,dump,THING,TARGET), type(THING,plasmbucket), container(TARGET).
+in_t(TURN+1,ectoplasm1,cauldron1) :- turn(TURN), action_t(TURN,dump,THING,cauldron1), type(THING,plasmbucket).
+% in_t(TURN+1,water1,CONTAINER) :- turn(TURN), in_t(TURN,water1,CONTAINER), container(CONTAINER).
+in_t(TURN+1,water1,cauldron1) :- turn(TURN), in_t(TURN,water1,cauldron1).
+% in_t(TURN+1,ectoplasm1,CONTAINER) :- turn(TURN), in_t(TURN,ectoplams1,CONTAINER), container(CONTAINER).
+in_t(TURN+1,ectoplasm1,cauldron1) :- turn(TURN), in_t(TURN,ectoplams1,cauldron1).
 
 % { action_t(TURN,wave,THING,WAND):at_t(TURN,THING,ROOM),at_t(TURN,WAND,ROOM),THING=cauldron1 } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
 { action_t(TURN,wave,cauldron1,WAND):at_t(TURN,cauldron1,ROOM),at_t(TURN,WAND,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
-hot_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,firewand).
-cold_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,icewand).
-glittery_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,fairywand).
-zulponated_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,zulpowand).
-hot_t(TURN+1,THING) :- turn(TURN), hot_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,icewand).
-cold_t(TURN+1,THING) :- turn(TURN), cold_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,firewand).
-glittery_t(TURN+1,THING) :- turn(TURN), glittery_t(TURN,THING).
-zulponated_t(TURN+1,THING) :- turn(TURN), zulponated_t(TURN,THING).
+% hot_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,firewand).
+hot_t(TURN+1,cauldron1) :- action_t(TURN,wave,cauldron1,WAND), type(WAND,firewand).
+% cold_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,icewand).
+cold_t(TURN+1,cauldron1) :- action_t(TURN,wave,cauldron1,WAND), type(WAND,icewand).
+% glittery_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,fairywand).
+glittery_t(TURN+1,cauldron1) :- action_t(TURN,wave,cauldron1,WAND), type(WAND,fairywand).
+% zulponated_t(TURN+1,THING) :- action_t(TURN,wave,THING,WAND), type(WAND,zulpowand).
+zulponated_t(TURN+1,cauldron1) :- action_t(TURN,wave,cauldron1,WAND), type(WAND,zulpowand).
+% hot_t(TURN+1,THING) :- turn(TURN), hot_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,icewand).
+hot_t(TURN+1,cauldron1) :- turn(TURN), hot_t(TURN,cauldron1), not action_t(TURN,wave,cauldron1,WAND), type(WAND,icewand).
+% cold_t(TURN+1,THING) :- turn(TURN), cold_t(TURN,THING), not action_t(TURN,wave,THING,WAND), type(WAND,firewand).
+cold_t(TURN+1,cauldron1) :- turn(TURN), cold_t(TURN,cauldron1), not action_t(TURN,wave,cauldron1,WAND), type(WAND,firewand).
+% glittery_t(TURN+1,THING) :- turn(TURN), glittery_t(TURN,THING).
+glittery_t(TURN+1,cauldron1) :- turn(TURN), glittery_t(TURN,cauldron1).
+% zulponated_t(TURN+1,THING) :- turn(TURN), zulponated_t(TURN,THING).
+zulponated_t(TURN+1,cauldron1) :- turn(TURN), zulponated_t(TURN,cauldron1).
 
 % { action_t(TURN,stir,THING,STIRRER):at_t(TURN,THING,ROOM),at_t(TURN,STIRRER,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
 { action_t(TURN,stir,THING,STIRRER):at_t(TURN,THING,ROOM),at_t(TURN,STIRRER,ROOM),in_t(TURN,THING,cauldron1) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).
@@ -545,10 +563,10 @@ borpulusstirred_t(TURN+1,THING) :- turn(TURN), borpulusstirred_t(TURN,THING), no
 :- { action_t(TURN,_,_);action_t(TURN,_,_,_) } > 1, turn(TURN).
 :- { action_t(TURN,_,_);action_t(TURN,_,_,_) } = 0, turn(TURN).
 
-% :- post_turn(POST), not at_t(POST,potion1,kitchen1).
+:- post_turn(POST), not at_t(POST,potion1,kitchen1).
 
 % works now: !!!
-:- post_turn(POST), not at_t(POST,potion1,_).
+% :- post_turn(POST), not at_t(POST,potion1,_).
 % :- not at_t(_,potion1,_).
 
 

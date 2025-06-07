@@ -829,7 +829,7 @@ class ClingoAdventureGenerator(object):
                     # print()
 
         elif task_config['task'] == "potion":
-            # potion brewing only requires the finished potion to exist
+            # potion brewing only requires the finished potion to be in the kitchen
             # goal_combos = [["at(potion1,_)"]]
             goal_combos = [["at(potion1,kitchen1)"]]
 
@@ -1207,7 +1207,7 @@ class ClingoAdventureGenerator(object):
 
             # iterate over initial states used:
             for initial_state in initial_states_used:
-                # print("initial state:", initial_state)
+                print("initial state:", initial_state)
 
                 cur_adventure_count = 0
                 keep_generating_adventures = True
@@ -1243,6 +1243,13 @@ class ClingoAdventureGenerator(object):
                                                                     self.domain_def, self.entity_definitions,
                                                                     rng_seed=self.rng.integers(9223372036854775808))
                         # print("potion events:\n", potion_events)
+                        # load event type definitions:
+                        event_definitions: list = list()
+                        for event_def_source in self.adv_type_def["event_definitions"]:
+                            with open(f"definitions/{event_def_source}", 'r', encoding='utf-8') as events_file:
+                                event_definitions += json.load(events_file)
+                        # add potion step events to event definitions list:
+                        event_definitions += potion_events
                         # solve current adventure ASP encoding:
                         solve_asp: str = self._solve_optimally_asp(initial_state, goal_set, events_list=potion_events)
                         # print(solve_asp)
@@ -1547,7 +1554,8 @@ class ClingoAdventureGenerator(object):
 
                         if task_config['task'] == 'potion':
                             goal_desc = "Brew the potion."
-
+                            # add recipe text fact:
+                            initial_state.append(f"text(potionrecipe1,{potion_recipe['text']})")
                             # full raw adventure data:
                             viable_adventure = {
                                 'adventure_type': self.adv_type,
@@ -1561,6 +1569,8 @@ class ClingoAdventureGenerator(object):
                                 'bench_turn_limit': self.adv_type_def['bench_turn_limit']
                             }
 
+                        print("viable_adventure:", viable_adventure)
+
                         generated_adventures.append(viable_adventure)
                         cur_adventure_count += 1
                         total_generated_adventure_count += 1
@@ -1570,7 +1580,6 @@ class ClingoAdventureGenerator(object):
                     else:  # optimal turns not within bounds, discard this raw adventure
                         continue
 
-        # TODO: potion brewing
         # TODO: 'pre-parsed' core events in potion raw adventures
 
         # adventures difficulty from adventure type definition:

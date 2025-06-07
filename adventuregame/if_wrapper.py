@@ -7,6 +7,7 @@ import lark
 from lark import Lark, Transformer
 import jinja2
 
+import numpy as np
 import os
 from copy import deepcopy
 from typing import List, Set, Union
@@ -579,8 +580,12 @@ class AdventureIFInterpreter(GameResourceLocator):
     IF interpreter for adventuregame.
     Holds game world state and handles all interaction and feedback.
     """
-    def __init__(self, game_path, game_instance: dict, name: str = GAME_NAME, verbose: bool = False):
+    def __init__(self, game_path, game_instance: dict, name: str = GAME_NAME, verbose: bool = False, rng_seed: int = 42):
         super().__init__(name, game_path)
+
+        self.rng_seed = rng_seed
+        self.rng = np.random.default_rng(seed=self.rng_seed)
+
         # game instance is the instance data as passed by the GameMaster class
         self.game_instance: dict = game_instance
         # surface strings (repr_str here) to spaceless internal identifiers:
@@ -2864,6 +2869,59 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     # print("feedback_str:", feedback_str)
 
+                    # randomize event effect after first trigger:
+                    # currently tailor-made for potion brewing adventures teleporting outhouse
+                    # would need to be made a lot more extensive and properly recursive to handle any possible event
+                    if 'randomize' in cur_event_def:
+                        if not hasattr(self, 'event_randomization'):
+                            self.event_randomization: dict = dict()
+                        if not cur_event_type in self.event_randomization:
+                            # set predefined initial value as prior value to replace next time:
+                            self.event_randomization[cur_event_type] = cur_event_def['initial_value']
+                        if 'replace_type' in cur_event_def['randomize']:
+                            replace_candidates: list = list()
+                            for fact in self.world_state:
+                                if fact[0] == cur_event_def['randomize']['replace_type']:
+                                    if fact[1] not in cur_event_def['randomize']['not_replacer']:
+                                        replace_candidates.append(fact[1])
+                            random_replacement = self.rng.choice(replace_candidates)
+                            # replace prior value with random replacement in effects:
+                            effects: list = cur_event_def['interaction']['effect']
+                            if 'and' in effects[0]:
+                                # handle multi-predicate effect, but allow non-and single predicate effect
+                                effects: list = cur_event_def['interaction']['effect'][0]['and']
+                            # print("effects:", effects)
+                            for effect in effects:
+                                # print("effect:", effect)
+                                if 'predicate' in effect:
+                                    if type(effect['arg1']) == str:
+                                        if effect['arg1'] == self.event_randomization[cur_event_type]:
+                                            effect['arg1'] = random_replacement
+                                    if type(effect['arg2']) == str:
+                                        if effect['arg2'] == self.event_randomization[cur_event_type]:
+                                            effect['arg2'] = random_replacement
+                                    if type(effect['arg3']) == str:
+                                        if effect['arg3'] == self.event_randomization[cur_event_type]:
+                                            effect['arg3'] = random_replacement
+                                if 'forall' in effect:
+                                    forall_body = effect['body']
+                                    for forall_effect in forall_body:
+                                        if 'when' in forall_effect:
+                                            when_effects = forall_effect[1]
+                                            for when_effect in when_effects:
+                                                if 'predicate' in when_effect:
+                                                    if type(when_effect['arg1']) == str:
+                                                        if when_effect['arg1'] == self.event_randomization[cur_event_type]:
+                                                            when_effect['arg1'] = random_replacement
+                                                    if type(when_effect['arg2']) == str:
+                                                        if when_effect['arg2'] == self.event_randomization[cur_event_type]:
+                                                            when_effect['arg2'] = random_replacement
+                                                    if type(when_effect['arg3']) == str:
+                                                        if when_effect['arg3'] == self.event_randomization[cur_event_type]:
+                                                            when_effect['arg3'] = random_replacement
+                            # store this randomization's random value for the next time to replace:
+                            self.event_randomization[cur_event_type] = random_replacement
+
                     return True, feedback_str, {'world_state_effects': world_state_effects}
 
 
@@ -3314,18 +3372,24 @@ if __name__ == "__main__":
           "room_definitions": ["witch_rooms.json"],
           "entity_definitions": ["witch_entities.json"],
           "domain_definitions": ["witch_domain_core.json"],
-          "event_definitions": ["witch_events.json"]
+          "event_definitions": ["witch_events_core.json"]
         }
     # initialize test interpreter:
     test_interpreter = AdventureIFInterpreter("D:/AdventureClemGame/adventuregame", game_instance_exmpl)
 
     # print("Intialized domain:", test_interpreter.domain)
     # print("Intialized domain mutable states:", test_interpreter.domain['mutable_states'])
-
+    """
+    for event_type in test_interpreter.event_types:
+        print(event_type)
+        print(test_interpreter.event_types[event_type])
+        print(test_interpreter.event_types[event_type]['interaction'])
+        print(test_interpreter.event_types[event_type]['interaction']['effect'])
+    """
     """
     for action_type in test_interpreter.action_types:
         print(action_type, test_interpreter.action_types[action_type])
     print()
     """
     # run optimal solution:
-    test_interpreter.execute_optimal_solution()
+    # test_interpreter.execute_optimal_solution()
