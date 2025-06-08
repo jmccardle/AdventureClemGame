@@ -1565,8 +1565,10 @@ class ClingoAdventureGenerator(object):
                                 'action_definitions': self.adv_type_def['action_definitions'],
                                 'room_definitions': self.adv_type_def['room_definitions'],
                                 'entity_definitions': self.adv_type_def['entity_definitions'],
+                                'domain_definitions': [self.domain_def],
                                 'event_definitions': event_definitions,
-                                'bench_turn_limit': self.adv_type_def['bench_turn_limit']
+                                'bench_turn_limit': self.adv_type_def['bench_turn_limit'],
+                                'prompt_template_set': self.adv_type_def['prompt_template_set']
                             }
 
                         print("viable_adventure:", viable_adventure)
@@ -1579,8 +1581,6 @@ class ClingoAdventureGenerator(object):
                             keep_generating_adventures = False
                     else:  # optimal turns not within bounds, discard this raw adventure
                         continue
-
-        # TODO: 'pre-parsed' core events in potion raw adventures
 
         # adventures difficulty from adventure type definition:
         if 'difficulty' in self.adv_type_def:

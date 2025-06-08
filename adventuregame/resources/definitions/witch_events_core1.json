@@ -7,7 +7,7 @@
   },
   {
     "type_name": "workshop_antigravity_player_float_start",
-    "pddl": "(:event ANTIGRAVPLAYERSTART\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?p ?r)\n        )\n    :effect (and\n        (floating ?p)\n        )\n    )",
+    "pddl": "(:event ANTIGRAVPLAYERSTART\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?p ?r)\n        (not (floating ?p))\n        )\n    :effect (and\n        (floating ?p)\n        )\n    )",
     "event_feedback": "Magical experiments have reversed and dampened gravity in this room. You begin to float in the air.",
     "asp": ""
   },

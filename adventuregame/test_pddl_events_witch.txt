@@ -49,6 +49,18 @@
         )
     )
 
+(:event ANTIGRAVPLAYERSTART
+    :parameters (?r - room ?p - player)
+    :precondition (and
+        (room ?r workshop)
+        (at ?p ?r)
+        )
+    :effect (and
+        (floating ?p)
+        )
+    )
+
+
 // antigravity not active in room, player stops floating
 (:event ANTIGRAVPLAYERSTOP
     :parameters (?r - room ?p - player)

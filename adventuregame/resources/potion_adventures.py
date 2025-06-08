@@ -192,7 +192,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t\t(in liquid1 ?c)\n"
                               f"\t\t(accessible liquid1)\n"
                               f"\t\t)\n"
-                              f"\t)\n"
+                              f"\t)"
                               )
                 feedback_str: str = (
                     f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
@@ -281,7 +281,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t\t(in potion1 ?c)\n"
                               f"\t\t(accessible potion1)\n"
                               f"\t\t)\n"
-                              f"\t)\n"
+                              f"\t)"
                               )
                 feedback_str: str = (
                     f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
@@ -375,7 +375,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                               f"\t\t(in liquid{step_idx+1}  ?c)\n"
                               f"\t\t(accessible liquid{step_idx+1} )\n"
                               f"\t\t)\n"
-                              f"\t)\n"
+                              f"\t)"
                               )
                 feedback_str: str = (
                     f"The {entity_defs[current_entity]['repr_str']} {rng.choice(['combines with', 'mingles with', 'absorbs into'])} "
@@ -458,7 +458,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # create liquid1
                 if tool_category == "wand":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -476,7 +476,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in liquid1 ?c)\n"
                                   f"\t\t(accessible liquid1)\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The {entity_defs[prior_ingredient]['repr_str']} in the {applied_predicate} cauldron "
@@ -505,12 +505,16 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace("EVENT_TYPE", f"potion_step_{step_idx + 1}")
-                    effect_add_asp_list = [f"type(liquid1,liquid){asp_next_turn_add}",
+                    effect_add_asp_list = [f"type(liquid1,liquid)",
+                                           f"at_t(TURN,liquid1,ROOM)",
+                                           f"in_t(TURN,liquid1,cauldron1)",
+                                           f"accessible_t(TURN,liquid1)"]
+                    effect_add_asp_rules_list = [f"type(liquid1,liquid){asp_next_turn_add}",
                                            f"at_t(TURN,liquid1,ROOM){asp_next_turn_add}",
                                            f"in_t(TURN,liquid1,cauldron1){asp_next_turn_add}",
                                            f"accessible_t(TURN,liquid1){asp_next_turn_add}"]
                     # effect_add_asp_string = ", ".join(effect_add_asp_list)
-                    asp_next_turn_add = "\n".join(effect_add_asp_list)
+                    asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose: print(asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
@@ -543,7 +547,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -562,7 +566,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in liquid1 ?c)\n"
                                   f"\t\t(accessible liquid1)\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The {entity_defs[prior_ingredient]['repr_str']} "
@@ -633,7 +637,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # create potion1
                 if tool_category == "wand":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -651,7 +655,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in potion1 ?c)\n"
                                   f"\t\t(accessible potion1)\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The liquid in the {applied_predicate} cauldron "
@@ -717,7 +721,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -736,7 +740,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in potion1 ?c)\n"
                                   f"\t\t(accessible potion1)\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The liquid in the {applied_predicate} cauldron "
@@ -805,7 +809,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                 # iterate liquid
                 if tool_category == "wand":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -823,7 +827,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in liquid{step_idx+1} ?c)\n"
                                   f"\t\t(accessible liquid{step_idx+1})\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The liquid in the {applied_predicate} cauldron "
@@ -888,7 +892,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     combined_asp_rules = "\n".join(asp_rules)
                 elif tool_category == "stirrer":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
-                                  f"\t:parameters (l - liquid ?c - container ?r - room)\n"
+                                  f"\t:parameters (?l - liquid ?c - container ?r - room)\n"
                                   f"\t:precondition (and\n"
                                   f"\t\t(at ?l ?r)\n"
                                   f"\t\t(at ?c ?r)\n"
@@ -907,7 +911,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                                   f"\t\t(in liquid{step_idx+1} ?c)\n"
                                   f"\t\t(accessible liquid{step_idx+1})\n"
                                   f"\t\t)\n"
-                                  f"\t)\n"
+                                  f"\t)"
                                   )
                     feedback_str: str = (
                         f"The liquid "

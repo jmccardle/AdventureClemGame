@@ -500,7 +500,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": [],
-    "traits": ["readable"],
+    "traits": ["readable", "needs_support"],
     "standard_locations": ["bedroom"]
   }
 ]

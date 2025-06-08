@@ -54,6 +54,8 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             basic_prompt = self.load_template("resources/initial_prompts/basic_prompt_done")
                         elif 'new-words' in adventures[difficulty][adventure_id]['prompt_template_set']:
                             basic_prompt = self.load_template("resources/initial_prompts/new-words_prompt_done")
+                        elif 'potion_brewing' in adventures[difficulty][adventure_id]['prompt_template_set']:
+                            basic_prompt = self.load_template("resources/initial_prompts/potion_brewing")
                         # Replace the goal in the templated initial prompt
                         instance_prompt = basic_prompt.replace("$GOAL$", goal_str)
                         # fill in new-words explanations:
@@ -127,6 +129,11 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
                                 'domain_definitions']  # game parameters
                             # TODO: de-hardcode the domain difference; just add full domain to home delivery too
+                        if adventure_type == "potion_brewing":
+                            game_instance["domain_definitions"] = adventures[difficulty][adventure_id][
+                                'domain_definitions']  # game parameters
+                            game_instance["event_definitions"] = adventures[difficulty][adventure_id][
+                                'event_definitions']
 
                 # BASIC with pre-exploration
 
@@ -389,10 +396,16 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
 if __name__ == '__main__':
     # The resulting instances.json is automatically saved to the "in" directory of the game folder
     # AdventureGameInstanceGenerator().generate(raw_adventures_files=["generated_new-words_created_adventures"])
+    """
     AdventureGameInstanceGenerator().generate(raw_adventures_files=[
         "curated_home_deliver_three_adventures_v2_2_a",
         "generated_new-words_home-delivery_easy_adventures",
         "generated_new-words_home-delivery_medium_adventures",
         "generated_new-words_created_adventures"],
         variants=["basic", "basic_preexplore", "planning", "planning_preexplore", "basic_invlimit", "planning_invlimit"]
+    )
+    """
+    AdventureGameInstanceGenerator().generate(raw_adventures_files=[
+        "generated_potion_brewing_adventures"],
+        variants=["basic"]
     )

@@ -864,6 +864,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         for event_type in self.event_types:
             cur_event_type = self.event_types[event_type]
             if 'pddl' in cur_event_type:
+                # logger.info(f"event pddl:\n{cur_event_type['pddl']}")
                 parsed_event_pddl = self.event_def_parser.parse(cur_event_type['pddl'])
                 processed_event_pddl = self.event_def_transformer.transform(parsed_event_pddl)
                 # print(processed_event_pddl)
@@ -1329,7 +1330,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             if fact[0] == 'type' and fact[2] == entity:
                 entity_id = fact[1]
                 break
-        print("entity ID found:", entity_id)
+        # print("entity ID found:", entity_id)
         entity_desc_list = list()
 
         # basic type description:
@@ -1770,7 +1771,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             # assume that action arguments that don't end in numbers or "floor" are type words:
             for tuple_idx, tuple_arg in enumerate(predicate_tuple[1:]):  # first tuple item is always a predicate
                 # print("tuple_arg:", tuple_arg)
-                logger.info(f"tuple_arg: {tuple_arg}")
+                # logger.info(f"tuple_arg: {tuple_arg}")
                 type_matched_instances = list()
                 if tuple_arg:
                     # logger.info(f"predicate_to_tuple tuple_arg intermediate: {tuple_arg}")
@@ -1786,7 +1787,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                                     type_matched_instances.append(fact[1])
                             # TODO?: fail if there is no type-fitting instance in world state?
 
-                        logger.info(f"type_matched_instances: {type_matched_instances}")
+                        # logger.info(f"type_matched_instances: {type_matched_instances}")
 
                         # NOTE: This assumes all room and entity types have only a single instance in the adventure!
 
@@ -1861,7 +1862,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 return False
 
         if 'predicate' in conditions:
-            logger.info(f"IF.check_conditions() bare predicate condition: {conditions}")
+            # logger.info(f"IF.check_conditions() bare predicate condition: {conditions}")
             # print(f"IF.check_conditions() bare predicate condition: {conditions}")
             predicate_tuple = self.predicate_to_tuple(conditions, variable_map)
             # print("predicate_tuple:", predicate_tuple)
@@ -2707,6 +2708,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         for cur_event_type in self.event_types:
             cur_event_def = self.event_types[cur_event_type]
             # print("cur_event_def:", cur_event_def)
+            # logger.info(f"cur_event_type: {cur_event_type}")
 
             # PARAMETERS
             variable_map = dict()
@@ -2728,6 +2730,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # go over variables in parameter:
                 for variable in parameter['items']:
                     # print("variable:", variable)
+                    # logger.info(f"variable: {variable}")
                     var_id = variable["variable"]
                     # print("var_id:", var_id)
 
@@ -2785,8 +2788,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                 # if checked_conditions:
                 if self.precon_trace[-1]['fulfilled']:
-                    logger.info("Event preconditions fulfilled!")
+                    logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
                     # print("Event preconditions fulfilled!")
+
 
                     # EFFECT
                     # IMPORTANT: Events MUST change their precondition to not be true (in the same way) after they have
