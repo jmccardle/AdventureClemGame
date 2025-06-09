@@ -405,10 +405,15 @@ class ClingoAdventureGenerator(object):
 
         for entity_type_name, entity_type_values in self.entity_definitions.items():
             # print(entity_type_name, entity_type_values)
+            # do not create type fact for entities to be omitted from initial states:
+            if "omit_from_initial_state" in entity_type_values:
+                if entity_type_values["omit_from_initial_state"]:
+                    continue
             if "standard_locations" in entity_type_values:
                 # entity definitions contain a list of rooms the entity type is allowed to be at
                 # basic atoms:
                 entity_id = f"{entity_type_name}1"  # default to 'apple1' etc
+                # create type fact atom for the single entity type instance:
                 type_atom = f"type({entity_id},{entity_type_name})."
                 # add type atom to asp encoding:
                 clingo_str += "\n" + type_atom

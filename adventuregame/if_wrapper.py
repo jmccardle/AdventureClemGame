@@ -1360,7 +1360,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             openable_state = fact2[0]
                             # print("openable_state:", openable_state)
                             break
-                    openable_desc = f"The {openable_entity} is openable and currently {openable_state}."
+                    openable_desc = f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
                     entity_desc_list.append(openable_desc)
                 # describe 'takeable' entities:
                 if fact[0] == "takeable":
@@ -1368,7 +1368,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     while takeable_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                         takeable_entity = takeable_entity[:-1]
                     # print("takeable_entity:", takeable_entity)
-                    takeable_desc = f"The {takeable_entity} is takeable."
+                    takeable_desc = f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
                     entity_desc_list.append(takeable_desc)
                 # describe the container or support state of 'needs_support' entities:
                 if fact[0] == "needs_support":
@@ -1390,9 +1390,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                     else:
                         while supporter_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                             supporter_entity = supporter_entity[:-1]
-                        supporter_entity = f"the {supporter_entity}"
+                        supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
 
-                    needs_support_desc = f"The {needs_support_entity} is {support_state} {supporter_entity}."
+                    needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} {self.entity_types[supporter_entity]['repr_str']}."
                     entity_desc_list.append(needs_support_desc)
 
                 if fact[0] == "container":
@@ -1418,19 +1418,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 while contained_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                                     contained_entity = contained_entity[:-1]
                                 # print("contained_entity:", contained_entity)
-                                contained_entities.append(f"a {contained_entity}")
+                                contained_entities.append(f"a {self.entity_types[contained_entity]['repr_str']}")
 
                     if ('closed', fact[1]) in self.world_state:
-                        container_content_desc = f"You can't see the {container_entity}'s contents because it is closed."
+                        container_content_desc = f"You can't see the {self.entity_types[container_entity]['repr_str']}'s contents because it is closed."
                     else:
                         if len(contained_entities) == 0:
-                            container_content_desc = f"The {container_entity} is empty."
+                            container_content_desc = f"The {self.entity_types[container_entity]['repr_str']} is empty."
                         elif len(contained_entities) == 1:
-                            container_content_desc = f"There is {contained_entities[0]} in the {container_entity}."
+                            container_content_desc = f"There is {contained_entities[0]} in the {self.entity_types[container_entity]['repr_str']}."
                         elif len(contained_entities) == 2:
-                            container_content_desc = f"There are {contained_entities[0]} and {contained_entities[1]} in the {container_entity}."
+                            container_content_desc = f"There are {contained_entities[0]} and {contained_entities[1]} in the {self.entity_types[container_entity]['repr_str']}."
                         elif len(contained_entities) >= 3:
-                            container_content_desc = f"There are {', '.join(contained_entities[:-1])} and {contained_entities[-1]} in the {container_entity}."
+                            container_content_desc = f"There are {', '.join(contained_entities[:-1])} and {contained_entities[-1]} in the {self.entity_types[container_entity]['repr_str']}."
 
                     entity_desc_list.append(container_content_desc)
 
@@ -1452,16 +1452,16 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 while supported_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                                     supported_entity = supported_entity[:-1]
                                 # print("supported_entity:", supported_entity)
-                                supported_entities.append(f"a {supported_entity}")
+                                supported_entities.append(f"a {self.entity_types[supported_entity]['repr_str']}")
 
                     if len(supported_entities) == 0:
-                        support_content_desc = f"There is nothing on the {support_entity}."
+                        support_content_desc = f"There is nothing on the {self.entity_types[support_entity]['repr_str']}."
                     elif len(supported_entities) == 1:
-                        support_content_desc = f"There is {supported_entities[0]} on the {support_entity}."
+                        support_content_desc = f"There is {supported_entities[0]} on the {self.entity_types[support_entity]['repr_str']}."
                     elif len(supported_entities) == 2:
-                        support_content_desc = f"There are {supported_entities[0]} and {supported_entities[1]} on the {support_entity}."
+                        support_content_desc = f"There are {supported_entities[0]} and {supported_entities[1]} on the {self.entity_types[support_entity]['repr_str']}."
                     elif len(supported_entities) >= 3:
-                        support_content_desc = f"There are {', '.join(supported_entities[:-1])} and {supported_entities[-1]} on the {support_entity}."
+                        support_content_desc = f"There are {', '.join(supported_entities[:-1])} and {supported_entities[-1]} on the {self.entity_types[support_entity]['repr_str']}."
 
                     entity_desc_list.append(support_content_desc)
 
@@ -1470,7 +1470,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         mutable_state_entity: str = fact[1]
                         while mutable_state_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                             mutable_state_entity = mutable_state_entity[:-1]
-                        mutable_state_desc = f"The {mutable_state_entity} is {fact[0]}."
+                        mutable_state_desc = f"The {self.entity_types[mutable_state_entity]['repr_str']} is {fact[0]}."
                         entity_desc_list.append(mutable_state_desc)
 
         return " ".join(entity_desc_list)
@@ -1767,7 +1767,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         # logger.info(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
         # print(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
 
-        if not predicate_type == "type":
+        # if not predicate_type == "type":
+        if predicate_type not in ["type", "room"]:
             # assume that action arguments that don't end in numbers or "floor" are type words:
             for tuple_idx, tuple_arg in enumerate(predicate_tuple[1:]):  # first tuple item is always a predicate
                 # print("tuple_arg:", tuple_arg)
@@ -2580,6 +2581,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             feedback_jinja = jinja2.Template(feedback_template)
             # fill feedback template:
             clean_feedback_variable_map = deepcopy(variable_map)
+            logger.info(f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}")
             for key in clean_feedback_variable_map:
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
@@ -2777,6 +2779,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # check event precondition:
                 # PRECONDITION
                 preconditions: list = cur_event_def['interaction']['precondition'][0]
+                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
+                #    logger.info(f"Event preconditions before check_preconditions: {preconditions}")
                 # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
                 self.precon_idx = -1
                 # self.precon_idx = 0
@@ -2784,11 +2788,15 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_trace = list()
                 checked_conditions = self.check_conditions(preconditions, variable_map)
                 # print("Event checked_conditions:",checked_conditions)
+                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
+                #    logger.info(f"Event checked_conditions: {checked_conditions}")
                 # print("Checked precon tuples:", self.precon_tuples)
+                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
+                #    logger.info(f"Checked precon tuples: {self.precon_tuples}")
 
                 # if checked_conditions:
                 if self.precon_trace[-1]['fulfilled']:
-                    logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
+                    # logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
                     # print("Event preconditions fulfilled!")
 
 
@@ -2927,7 +2935,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                             self.event_randomization[cur_event_type] = random_replacement
 
                     return True, feedback_str, {'world_state_effects': world_state_effects}
-
+                else:
+                    # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
+                    #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
+                    pass
 
         # since no event triggered, return[0] = False:
         return False, "", {}

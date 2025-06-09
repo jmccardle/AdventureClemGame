@@ -354,7 +354,8 @@
     "supported": true,
     "traits": ["needs_support", "ingredient"],
     "possible_adjs": ["clear", "fresh"],
-    "standard_locations": []
+    "standard_locations": [],
+    "omit_from_initial_state": true
   },
   {
     "type_name": "plasmbucket",
@@ -375,13 +376,14 @@
     "supported": true,
     "traits": ["needs_support", "ingredient"],
     "possible_adjs": ["gooey", "fresh"],
-    "standard_locations": []
+    "standard_locations": [],
+    "omit_from_initial_state": true
   },
   {
     "type_name": "cauldron",
     "repr_str": "cauldron",
     "container": true,
-    "traits": ["container", "receptacle"],
+    "traits": ["needs_support", "container", "receptacle"],
     "possible_adjs": ["copper", "iron", "earthen"],
     "standard_locations": ["kitchen"]
   },
@@ -500,7 +502,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": [],
-    "traits": ["readable", "needs_support"],
+    "traits": ["takeable","readable", "needs_support"],
     "standard_locations": ["bedroom"]
   }
 ]
