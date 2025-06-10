@@ -388,7 +388,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Corvidae potion\nIngredients: Water, banana, peach, eye of newt.\n1. Pour water into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the eye of newt into your cauldron.\n4. Swirl a zulpo's wand over your cauldron.\n5. Drop the banana into your cauldron.\n6. Drop the peach into your cauldron.\n)"
+            "text(potionrecipe1,Corvidae potion\nIngredients: Water, banana, peach, eye of newt.\n1. Pour water into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the eye of newt into your cauldron.\n4. Swirl a zulpowand over your cauldron.\n5. Drop the banana into your cauldron.\n6. Drop the peach into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -508,9 +508,9 @@
             "take borpulus",
             "go hallway",
             "go magic workshop",
-            "take zulpo's wand",
+            "take zulpowand",
             "go kitchen",
-            "wave cauldron zulpo's wand",
+            "wave cauldron zulpowand",
             "go pantry",
             "open ice box",
             "take peach",
@@ -3387,7 +3387,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,That odd potion\nIngredients: Ectoplasm, spiderweb, nightshade, lily of the valley.\n1. Pour ectoplasm into your cauldron.\n2. Add the lily of the valley into your cauldron.\n3. Drop the spiderweb into your cauldron.\n4. Wiggle a zulpo's wand at your cauldron.\n5. Wiggle a ice wand on your cauldron.\n6. Drop the nightshade into your cauldron.\n)"
+            "text(potionrecipe1,That odd potion\nIngredients: Ectoplasm, spiderweb, nightshade, lily of the valley.\n1. Pour ectoplasm into your cauldron.\n2. Add the lily of the valley into your cauldron.\n3. Drop the spiderweb into your cauldron.\n4. Wiggle a zulpowand at your cauldron.\n5. Wiggle a ice wand on your cauldron.\n6. Drop the nightshade into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -3506,7 +3506,7 @@
             "go hallway",
             "go magic workshop",
             "take ice wand",
-            "take zulpo's wand",
+            "take zulpowand",
             "go kitchen",
             "wave cauldron ice wand",
             "put nightshade in cauldron",
@@ -3514,7 +3514,7 @@
             "put spiderweb in cauldron",
             "go pantry",
             "go kitchen",
-            "wave cauldron zulpo's wand",
+            "wave cauldron zulpowand",
             "go pantry",
             "go kitchen",
             "dump bucket of ectoplasm cauldron",
@@ -3979,7 +3979,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Floorboard potion\nIngredients: Ectoplasm, eye of newt, peach, spider egg.\n1. Pour ectoplasm into your cauldron.\n2. Add the peach into your cauldron.\n3. Wiggle a zulpo's wand over your cauldron.\n4. Use a fairy wand over your cauldron.\n5. Add the eye of newt into your cauldron.\n6. Put the spider egg into your cauldron.\n)"
+            "text(potionrecipe1,Floorboard potion\nIngredients: Ectoplasm, eye of newt, peach, spider egg.\n1. Pour ectoplasm into your cauldron.\n2. Add the peach into your cauldron.\n3. Wiggle a zulpowand over your cauldron.\n4. Use a fairy wand over your cauldron.\n5. Add the eye of newt into your cauldron.\n6. Put the spider egg into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -4104,7 +4104,7 @@
             "go hallway",
             "go magic workshop",
             "take fairy wand",
-            "take zulpo's wand",
+            "take zulpowand",
             "go kitchen",
             "wave cauldron fairy wand",
             "go pantry",
@@ -4115,7 +4115,7 @@
             "take peach",
             "take eye of newt",
             "go kitchen",
-            "wave cauldron zulpo's wand",
+            "wave cauldron zulpowand",
             "put peach in cauldron",
             "put eye of newt in cauldron",
             "put spider egg in cauldron",
@@ -6375,7 +6375,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Granny Weatherwax's potion\nIngredients: Ectoplasm, apple, plunkle crystal, prickly pear.\n1. Pour ectoplasm into your cauldron.\n2. Drop the prickly pear into your cauldron.\n3. Add the apple into your cauldron.\n4. Put the plunkle crystal into your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Wiggle a zulpo's wand on your cauldron.\n)"
+            "text(potionrecipe1,Granny Weatherwax's potion\nIngredients: Ectoplasm, apple, plunkle crystal, prickly pear.\n1. Pour ectoplasm into your cauldron.\n2. Drop the prickly pear into your cauldron.\n3. Add the apple into your cauldron.\n4. Put the plunkle crystal into your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Wiggle a zulpowand on your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -6502,7 +6502,7 @@
             "take plunkle crystal",
             "go hallway",
             "go magic workshop",
-            "take zulpo's wand",
+            "take zulpowand",
             "take fairy wand",
             "go kitchen",
             "dump bucket of ectoplasm cauldron",
@@ -6518,7 +6518,7 @@
             "open ice box",
             "take apple",
             "go kitchen",
-            "wave cauldron zulpo's wand",
+            "wave cauldron zulpowand",
             "put apple in cauldron",
             "go conservatory"
           ],

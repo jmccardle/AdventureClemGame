@@ -514,7 +514,7 @@
   },
   {
     "type_name": "zulpowand",
-    "repr_str": "zulpo's wand",
+    "repr_str": "zulpowand",
     "takeable": true,
     "movable": true,
     "supported": true,
