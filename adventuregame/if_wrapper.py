@@ -2583,6 +2583,15 @@ class AdventureIFInterpreter(GameResourceLocator):
             clean_feedback_variable_map = deepcopy(variable_map)
             logger.info(f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}")
             for key in clean_feedback_variable_map:
+                # erroneous non-supported/non-contained TAKE hotfix:
+                if cur_action_def['type_name'] == "take" and key == 's' and clean_feedback_variable_map[key] is None:
+                    feedback_str = "You can not take this."
+                    failed_action_info = {'failed_action_type': action_dict['type'],
+                                          'failed_precon_predicate': "?s - receptacle"}
+                    # use action def feedback fail type:
+                    fail_dict: dict = {'phase': "resolution", 'fail_type': "take_unprepositioned_object", 'arg': failed_action_info}
+                    return False, feedback_str, fail_dict
+                    # TODO: handle this more generically in parameter handling instead
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
             jinja_args = clean_feedback_variable_map
