@@ -86,6 +86,54 @@
     "standard_locations": ["kitchen", "pantry", "readingroom"]
   },
   {
+    "type_name": "workbench",
+    "repr_str": "workbench",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["workshop"]
+  },
+  {
+    "type_name": "gardenbench",
+    "repr_str": "garden bench",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["garden"]
+  },
+  {
+    "type_name": "plantingtable",
+    "repr_str": "planting table",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["conservatory"]
+  },
+  {
+    "type_name": "utilityshelf",
+    "repr_str": "utility shelf",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["broomcloset"]
+  },
+  {
+    "type_name": "ingredientrack",
+    "repr_str": "ingredient rack",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["pantry"]
+  },
+  {
+    "type_name": "orrery",
+    "repr_str": "orrery",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["workshop"]
+  },
+  {
     "type_name": "chair",
     "repr_str": "chair",
     "support": true,
@@ -283,7 +331,7 @@
     "supported": true,
     "possible_adjs": ["smelly", "fresh"],
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
-    "standard_locations": ["storage", "cellar"]
+    "standard_locations": ["cellar"]
   },
   {
     "type_name": "spiderweb",
@@ -293,7 +341,7 @@
     "supported": true,
     "possible_adjs": ["smelly", "fresh"],
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
-    "standard_locations": ["storage", "cellar"]
+    "standard_locations": ["cellar"]
   },
   {
     "type_name": "spideregg",
@@ -303,7 +351,7 @@
     "supported": true,
     "possible_adjs": ["smelly", "fresh"],
     "traits": ["takeable", "movable", "needs_support", "ingredient"],
-    "standard_locations": ["storage", "cellar"]
+    "standard_locations": ["cellar"]
   },
   {
     "type_name": "lilyofthevalley",
@@ -365,7 +413,7 @@
     "supported": true,
     "traits": ["takeable", "movable", "needs_support", "ingredient", "bucket"],
     "possible_adjs": ["large", "small"],
-    "standard_locations": ["storage", "garden"],
+    "standard_locations": ["cellar", "broomcloset"],
     "produced_entity_type": "ectoplasm"
   },
   {
