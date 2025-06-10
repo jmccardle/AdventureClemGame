@@ -2584,7 +2584,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             logger.info(f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}")
             for key in clean_feedback_variable_map:
                 # erroneous non-supported/non-contained TAKE hotfix:
-                if cur_action_def['type_name'] == "take" and key == 's' and clean_feedback_variable_map[key] is None:
+                if key == 's' and clean_feedback_variable_map[key] is None:
                     feedback_str = "You can not take this."
                     failed_action_info = {'failed_action_type': action_dict['type'],
                                           'failed_precon_predicate': "?s - receptacle"}
