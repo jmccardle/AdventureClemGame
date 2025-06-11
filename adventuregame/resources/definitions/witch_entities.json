@@ -558,7 +558,7 @@
     "movable": true,
     "supported": true,
     "possible_adjs": [],
-    "traits": ["takeable","readable", "needs_support"],
+    "traits": ["takeable", "movable", "readable", "needs_support"],
     "standard_locations": ["bedroom"]
   }
 ]
