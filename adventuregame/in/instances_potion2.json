@@ -8,9 +8,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -608,9 +605,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -1213,9 +1207,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -1818,9 +1809,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -2418,9 +2406,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -3022,9 +3007,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -3617,9 +3599,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -4221,9 +4200,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -4826,9 +4802,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -5426,9 +5399,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -6025,9 +5995,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -6634,9 +6601,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -7229,9 +7193,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -7844,9 +7805,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -8449,9 +8407,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
@@ -9064,9 +9019,6 @@
           "variant": "basic",
           "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
           "initial_state": [
-		    "type(crate1,crate)",
-            "at(crate1,storage1)",
-            "support(crate1)",
 		    "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",

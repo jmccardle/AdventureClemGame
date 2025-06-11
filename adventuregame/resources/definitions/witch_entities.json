@@ -134,6 +134,14 @@
     "standard_locations": ["workshop"]
   },
   {
+    "type_name": "crate",
+    "repr_str": "crate",
+    "support": true,
+    "traits": ["support", "receptacle"],
+    "possible_adjs": ["wooden", "metal", "low", "high"],
+    "standard_locations": ["storage"]
+  },
+  {
     "type_name": "chair",
     "repr_str": "chair",
     "support": true,
