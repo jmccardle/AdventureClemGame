@@ -391,7 +391,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Corvidae potion\nIngredients: Water, banana, peach, eye of newt.\n1. Pour water into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the eye of newt into your cauldron.\n4. Swirl a zulpowand over your cauldron.\n5. Put the banana into your cauldron.\n6. Put the peach into your cauldron.\n)"
+            "text(potionrecipe1,Corvidae potion\nIngredients: Water, banana, peach, eye of newt.\n1. Pour water into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the eye of newt into your cauldron.\n4. Swirl a zulpowand over your cauldron.\n5. Drop the banana into your cauldron.\n6. Drop the peach into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -991,7 +991,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Espeldertatarum potion\nIngredients: Water, red beetle, spiderweb, sandwich.\n1. Pour water into your cauldron.\n2. Add the red beetle into your cauldron.\n3. Wiggle a fairy wand on your cauldron.\n4. Wiggle a ice wand over your cauldron.\n5. Put the spiderweb into your cauldron.\n6. Put the sandwich into your cauldron.\n)"
+            "text(potionrecipe1,Espeldertatarum potion\nIngredients: Water, red beetle, spiderweb, sandwich.\n1. Pour water into your cauldron.\n2. Add the red beetle into your cauldron.\n3. Wiggle a fairy wand on your cauldron.\n4. Wiggle a ice wand over your cauldron.\n5. Drop the spiderweb into your cauldron.\n6. Put the sandwich into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -2201,7 +2201,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Very tasty potion\nIngredients: Ectoplasm, plonkle crystal, peach, plunkle crystal.\n1. Pour ectoplasm into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the plonkle crystal into your cauldron.\n4. Put the peach into your cauldron.\n5. Swirl a fire wand at your cauldron.\n6. Put the plunkle crystal into your cauldron.\n)"
+            "text(potionrecipe1,Very tasty potion\nIngredients: Ectoplasm, plonkle crystal, peach, plunkle crystal.\n1. Pour ectoplasm into your cauldron.\n2. Mix the liquid using a borpulus.\n3. Add the plonkle crystal into your cauldron.\n4. Drop the peach into your cauldron.\n5. Swirl a fire wand at your cauldron.\n6. Put the plunkle crystal into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -2801,7 +2801,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Rincewind's potion\nIngredients: Ectoplasm, apple, peach, spider egg.\n1. Pour ectoplasm into your cauldron.\n2. Stir the liquid using a borpulus.\n3. Add the apple into your cauldron.\n4. Wave a ice wand on your cauldron.\n5. Put the spider egg into your cauldron.\n6. Put the peach into your cauldron.\n)"
+            "text(potionrecipe1,Rincewind's potion\nIngredients: Ectoplasm, apple, peach, spider egg.\n1. Pour ectoplasm into your cauldron.\n2. Stir the liquid using a borpulus.\n3. Add the apple into your cauldron.\n4. Wave a ice wand on your cauldron.\n5. Put the spider egg into your cauldron.\n6. Drop the peach into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -3405,7 +3405,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,That odd potion\nIngredients: Ectoplasm, spiderweb, nightshade, lily of the valley.\n1. Pour ectoplasm into your cauldron.\n2. Add the lily of the valley into your cauldron.\n3. Put the spiderweb into your cauldron.\n4. Wiggle a zulpowand at your cauldron.\n5. Wiggle a ice wand on your cauldron.\n6. Put the nightshade into your cauldron.\n)"
+            "text(potionrecipe1,That odd potion\nIngredients: Ectoplasm, spiderweb, nightshade, lily of the valley.\n1. Pour ectoplasm into your cauldron.\n2. Add the lily of the valley into your cauldron.\n3. Drop the spiderweb into your cauldron.\n4. Wiggle a zulpowand at your cauldron.\n5. Wiggle a ice wand on your cauldron.\n6. Drop the nightshade into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -5209,7 +5209,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Absolutely incredulous potion\nIngredients: Water, red beetle, eye of newt, plonkle crystal.\n1. Pour water into your cauldron.\n2. Put the eye of newt into your cauldron.\n3. Swirl a ice wand over your cauldron.\n4. Add the red beetle into your cauldron.\n5. Add the plonkle crystal into your cauldron.\n6. Swirl a fire wand at your cauldron.\n)"
+            "text(potionrecipe1,Absolutely incredulous potion\nIngredients: Water, red beetle, eye of newt, plonkle crystal.\n1. Pour water into your cauldron.\n2. Drop the eye of newt into your cauldron.\n3. Swirl a ice wand over your cauldron.\n4. Add the red beetle into your cauldron.\n5. Add the plonkle crystal into your cauldron.\n6. Swirl a fire wand at your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -5809,7 +5809,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Jingle potion\nIngredients: Ectoplasm, banana, sandwich, peach.\n1. Pour ectoplasm into your cauldron.\n2. Agitate the liquid using a borpulus.\n3. Swirl a fire wand on your cauldron.\n4. Add the sandwich into your cauldron.\n5. Put the peach into your cauldron.\n6. Put the banana into your cauldron.\n)"
+            "text(potionrecipe1,Jingle potion\nIngredients: Ectoplasm, banana, sandwich, peach.\n1. Pour ectoplasm into your cauldron.\n2. Agitate the liquid using a borpulus.\n3. Swirl a fire wand on your cauldron.\n4. Add the sandwich into your cauldron.\n5. Put the peach into your cauldron.\n6. Drop the banana into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -6408,7 +6408,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Granny Weatherwax's potion\nIngredients: Ectoplasm, apple, plunkle crystal, prickly pear.\n1. Pour ectoplasm into your cauldron.\n2. Put the prickly pear into your cauldron.\n3. Add the apple into your cauldron.\n4. Put the plunkle crystal into your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Wiggle a zulpowand on your cauldron.\n)"
+            "text(potionrecipe1,Granny Weatherwax's potion\nIngredients: Ectoplasm, apple, plunkle crystal, prickly pear.\n1. Pour ectoplasm into your cauldron.\n2. Drop the prickly pear into your cauldron.\n3. Add the apple into your cauldron.\n4. Put the plunkle crystal into your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Wiggle a zulpowand on your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -7017,7 +7017,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Kawummio potion\nIngredients: Ectoplasm, plinkle crystal, eye of newt, nightshade.\n1. Pour ectoplasm into your cauldron.\n2. Agitate the liquid using a borpulus.\n3. Put the nightshade into your cauldron.\n4. Put the plinkle crystal into your cauldron.\n5. Put the eye of newt into your cauldron.\n6. Use a fire wand on your cauldron.\n)"
+            "text(potionrecipe1,Kawummio potion\nIngredients: Ectoplasm, plinkle crystal, eye of newt, nightshade.\n1. Pour ectoplasm into your cauldron.\n2. Agitate the liquid using a borpulus.\n3. Drop the nightshade into your cauldron.\n4. Put the plinkle crystal into your cauldron.\n5. Put the eye of newt into your cauldron.\n6. Use a fire wand on your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -8227,7 +8227,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Satisfying potion\nIngredients: Water, orange, spider, sandwich.\n1. Pour water into your cauldron.\n2. Put the sandwich into your cauldron.\n3. Put the spider into your cauldron.\n4. Use a ice wand at your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Add the orange into your cauldron.\n)"
+            "text(potionrecipe1,Satisfying potion\nIngredients: Water, orange, spider, sandwich.\n1. Pour water into your cauldron.\n2. Drop the sandwich into your cauldron.\n3. Drop the spider into your cauldron.\n4. Use a ice wand at your cauldron.\n5. Wave a fairy wand over your cauldron.\n6. Add the orange into your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
@@ -9447,7 +9447,7 @@
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Kawummio potion\nIngredients: Ectoplasm, peach, lily of the valley, spider.\n1. Pour ectoplasm into your cauldron.\n2. Mix the liquid using a whisk.\n3. Put the lily of the valley into your cauldron.\n4. Put the peach into your cauldron.\n5. Put the spider into your cauldron.\n6. Swirl a ice wand over your cauldron.\n)"
+            "text(potionrecipe1,Kawummio potion\nIngredients: Ectoplasm, peach, lily of the valley, spider.\n1. Pour ectoplasm into your cauldron.\n2. Mix the liquid using a whisk.\n3. Put the lily of the valley into your cauldron.\n4. Drop the peach into your cauldron.\n5. Put the spider into your cauldron.\n6. Swirl a ice wand over your cauldron.\n)"
           ],
           "goal_state": [
             "at(potion1,kitchen1)"
