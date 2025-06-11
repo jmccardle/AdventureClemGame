@@ -2729,6 +2729,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             cur_event_def = self.event_types[cur_event_type]
             # print("cur_event_def:", cur_event_def)
             # logger.info(f"cur_event_type: {cur_event_type}")
+            # print(f"cur_event_type: {cur_event_type}")
 
             # PARAMETERS
             variable_map = dict()
@@ -2741,6 +2742,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             # get parameters list:
             parameters = parameters_base['type_list']
             # print("parameters:", parameters)
+            # logger.info(f"parameters: {parameters}")
             cur_var_type_map: dict = dict()
             for parameter in parameters:
                 # print("\nparameter:", parameter)
@@ -2783,9 +2785,16 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             # print("cur_var_candidates:", cur_var_candidates)
             candidates_lists = list(cur_var_candidates.values())
+            # logger.info(f"candidates_lists before cleanup: {candidates_lists}")
+            for candidates_list_idx, candidates_list in enumerate(candidates_lists):
+                if not candidates_list:
+                    candidates_lists.pop(candidates_list_idx)
+            # logger.info(f"candidates_lists after cleanup: {candidates_lists}")
+
             # print(candidates_lists)
             candidate_combos = list(itertools.product(*candidates_lists))
             # print("candidate_combos:", candidate_combos)
+            # logger.info(f"candidate_combos: {candidate_combos}")
             # iterate over candidate combos:
             for candidate_combo in candidate_combos:
                 variable_map = deepcopy(cur_var_type_map)
@@ -2806,16 +2815,16 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_trace = list()
                 checked_conditions = self.check_conditions(preconditions, variable_map)
                 # print("Event checked_conditions:",checked_conditions)
-                if cur_event_type in ["outhouse_teleport"]:
-                    logger.info(f"Event checked_conditions: {checked_conditions}")
+                # if cur_event_type in ["outhouse_teleport"]:
+                #    logger.info(f"Event checked_conditions: {checked_conditions}")
                 # print("Checked precon tuples:", self.precon_tuples)
-                if cur_event_type in ["outhouse_teleport"]:
-                    logger.info(f"Checked precon tuples: {self.precon_tuples}")
+                # if cur_event_type in ["outhouse_teleport"]:
+                #    logger.info(f"Checked precon tuples: {self.precon_tuples}")
 
                 # if checked_conditions:
                 if self.precon_trace[-1]['fulfilled']:
-                    if cur_event_type in ["outhouse_teleport"]:
-                        logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
+                    # if cur_event_type in ["outhouse_teleport"]:
+                    #     logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
                     # print("Event preconditions fulfilled!")
 
 
@@ -2955,8 +2964,8 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     return True, feedback_str, {'world_state_effects': world_state_effects}
                 else:
-                    if cur_event_type in ["outhouse_teleport"]:
-                        logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
+                    # if cur_event_type in ["outhouse_teleport"]:
+                    #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
                     pass
 
         # since no event triggered, return[0] = False:
