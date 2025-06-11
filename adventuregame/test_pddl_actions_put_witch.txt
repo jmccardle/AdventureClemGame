@@ -13,6 +13,10 @@
             )
         )
     :effect (and
+        (when
+            (in ?e ?i)
+            (decrease (itemcount ?i) 1)
+            )
         (not (in ?e ?i))
         (when
             (support ?t)

@@ -95,7 +95,7 @@
   {
     "type_name": "put",
     "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\") WS",
-    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (not (closed ?t))\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
+    "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (not (closed ?t))\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (when\n            (in ?e ?i)\n            (decrease (itemcount ?i) 1)\n            )\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?t": ["arg2"],
@@ -232,7 +232,7 @@
   {
     "type_name": "drop",
     "lark": "drop: DROP thing (\"away\")*\nDROP.1: (\"leave\" | \"drop\" | \"discard\" | \"throw\") WS",
-    "pddl": "(:action DROP\n    :parameters (?e - takeable ?p - player ?i - inventory ?r - room ?f - floor)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (in ?e ?i)\n        (at ?f ?r)\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (on ?e ?f)\n        )\n)",
+    "pddl": "(:action DROP\n    :parameters (?e - takeable ?p - player ?i - inventory ?r - room ?f - floor)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (in ?e ?i)\n        (at ?f ?r)\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (on ?e ?f)\n        (decrease (itemcount ?i) 1)\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
       "?p": ["player"],

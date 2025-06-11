@@ -9,5 +9,6 @@
     :effect (and
         (not (in ?e ?i))
         (on ?e ?f)
+        (decrease (itemcount ?i) 1)
         )
 )
