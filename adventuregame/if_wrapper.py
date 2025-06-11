@@ -1771,7 +1771,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("when_condition_tuple:", when_condition_tuple)
 
         # logger.info(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
-        # print(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
+        #rint(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
 
         # if not predicate_type == "type":
         if predicate_type not in ["type", "room"]:
@@ -1792,9 +1792,16 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 if fact[2] == tuple_arg:
                                     # print(f"{fact[0]} predicate fact found:", fact)
                                     type_matched_instances.append(fact[1])
-                            # TODO?: fail if there is no type-fitting instance in world state?
 
                         # logger.info(f"type_matched_instances: {type_matched_instances}")
+
+                        # fallback to prevent list index out-of-range exceptions:
+                        if not type_matched_instances:
+                            logger.info(f"Empty type_matched_instances for predicate_to_tuple tuple_arg intermediate: {tuple_arg}")
+                            type_matched_instances = [None]
+                            # there will be no matching facts for the condition check, since none were found
+                            # so the check result will be negative as intended
+                            # TODO?: cascade fail with proper missing type if there is no type-fitting instance in world state?
 
                         # NOTE: This assumes all room and entity types have only a single instance in the adventure!
 
@@ -2593,12 +2600,13 @@ class AdventureIFInterpreter(GameResourceLocator):
             logger.info(f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}")
             for key in clean_feedback_variable_map:
                 # erroneous non-supported/non-contained TAKE hotfix:
-                if key == 's' and clean_feedback_variable_map[key] is None:
-                    feedback_str = "You can not take this."
+                # if key == 's' and clean_feedback_variable_map[key] is None:
+                if clean_feedback_variable_map[key] is None:
+                    feedback_str = "You can't do that."
                     failed_action_info = {'failed_action_type': action_dict['type'],
                                           'failed_precon_predicate': "?s - receptacle"}
                     # use action def feedback fail type:
-                    fail_dict: dict = {'phase': "resolution", 'fail_type': "take_unprepositioned_object", 'arg': failed_action_info}
+                    fail_dict: dict = {'phase': "resolution", 'fail_type': "take_non_takeable_object", 'arg': failed_action_info}
                     return False, feedback_str, fail_dict
                     # TODO: handle this more generically in parameter handling instead
                 if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
@@ -2806,8 +2814,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # check event precondition:
                 # PRECONDITION
                 preconditions: list = cur_event_def['interaction']['precondition'][0]
-                if cur_event_type in ["outhouse_teleport"]:
-                    logger.info(f"Event preconditions before check_preconditions: {preconditions}")
+                # if cur_event_type in ["outhouse_teleport"]:
+                #     logger.info(f"Event preconditions before check_preconditions: {preconditions}")
                 # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
                 self.precon_idx = -1
                 # self.precon_idx = 0
