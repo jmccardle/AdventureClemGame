@@ -1392,13 +1392,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                     else:
                         while supporter_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                             supporter_entity = supporter_entity[:-1]
-                        supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
+                        # supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
                     if supporter_entity.endswith("floor"):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
                     elif supporter_entity.endswith("ceiling"):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
                     else:
-                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} {self.entity_types[supporter_entity]['repr_str']}."
+                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the {self.entity_types[supporter_entity]['repr_str']}."
                     entity_desc_list.append(needs_support_desc)
 
                 if fact[0] == "container":
