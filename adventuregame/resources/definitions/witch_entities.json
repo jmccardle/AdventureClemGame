@@ -7,7 +7,7 @@
   },
   {
     "type_name": "inventory",
-    "repr_str": "inventory",
+    "repr_str": "your inventory",
     "hidden": true,
     "container": true,
     "traits": ["container", "receptacle"]

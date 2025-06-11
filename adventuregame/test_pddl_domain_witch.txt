@@ -5,6 +5,7 @@
         player inventory floor table sidetable counter icebox cupboard wardrobe shelf chair bed couch broom mop sandwich apple banana orange peach plate book pillow toad greenbeetle redbeetle eyeofnewt plinklecrystal plonklecrystal plunklecrystal spider spiderweb spideregg lilyofthevalley nightshade pricklypear waterbucket water plasmbucket ectoplasm cauldron ladle whisk spoon borpulus firewand icewand fairywand zulpowand liquid potion potionrecipe ceiling workbench gardenbench plantingtable utilityshelf ingredientrack orrery - entity
         inventory floor table sidetable counter icebox cupboard wardrobe shelf chair bed couch cauldron ceiling workbench gardenbench plantingtable utilityshelf ingredientrack orrery - receptacle
         inventory icebox cauldron wardrobe - container
+        floor - floor
         greenbeetle redbeetle - beetle
         toad - toad
         sandwich apple banana orange peach greenbeetle redbeetle eyeofnewt plinklecrystal plonklecrystal plunklecrystal spider spiderweb spideregg lilyofthevalley nightshade pricklypear - ingredient

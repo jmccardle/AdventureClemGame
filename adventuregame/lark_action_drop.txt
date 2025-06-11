@@ -1,0 +1,2 @@
+drop: DROP thing ("away")*
+DROP.1: ("leave" | "drop" | "discard" | "throw") WS

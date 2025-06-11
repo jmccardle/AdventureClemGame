@@ -1002,6 +1002,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             if fact[0] == 'type' and ('needs_support', fact[1]) not in self.world_state and fact[2] not in (
             "floor", "player"):
                 facts_to_add.add(('accessible', fact[1]))
+        # make inventory 'accessible' from the start:
+        facts_to_add.add(('accessible', 'inventory'))
 
         self.world_state = self.world_state.union(facts_to_add)
 
@@ -1386,13 +1388,17 @@ class AdventureIFInterpreter(GameResourceLocator):
                             break
 
                     if supporter_entity == "inventory":
-                        supporter_entity = "your inventory"
+                        supporter_entity = "inventory"
                     else:
                         while supporter_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                             supporter_entity = supporter_entity[:-1]
                         supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
-
-                    needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} {self.entity_types[supporter_entity]['repr_str']}."
+                    if supporter_entity.endswith("floor"):
+                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
+                    elif supporter_entity.endswith("ceiling"):
+                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
+                    else:
+                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} {self.entity_types[supporter_entity]['repr_str']}."
                     entity_desc_list.append(needs_support_desc)
 
                 if fact[0] == "container":
@@ -2435,6 +2441,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                     case 'inventory':
                         # for now only single-player, so the current player inventory is always 'inventory':
                         variable_map[var_id] = "inventory"
+                    case 'current_room_floor':
+                        # floors are always room ID + floor1
+                        variable_map[var_id] = self.get_player_room() + "floor1"
 
                 # check type match:
                 # assume all world state instance IDs end in numbers:
@@ -2788,8 +2797,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # check event precondition:
                 # PRECONDITION
                 preconditions: list = cur_event_def['interaction']['precondition'][0]
-                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
-                #    logger.info(f"Event preconditions before check_preconditions: {preconditions}")
+                if cur_event_type in ["outhouse_teleport"]:
+                    logger.info(f"Event preconditions before check_preconditions: {preconditions}")
                 # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
                 self.precon_idx = -1
                 # self.precon_idx = 0
@@ -2797,15 +2806,16 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_trace = list()
                 checked_conditions = self.check_conditions(preconditions, variable_map)
                 # print("Event checked_conditions:",checked_conditions)
-                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
-                #    logger.info(f"Event checked_conditions: {checked_conditions}")
+                if cur_event_type in ["outhouse_teleport"]:
+                    logger.info(f"Event checked_conditions: {checked_conditions}")
                 # print("Checked precon tuples:", self.precon_tuples)
-                # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
-                #    logger.info(f"Checked precon tuples: {self.precon_tuples}")
+                if cur_event_type in ["outhouse_teleport"]:
+                    logger.info(f"Checked precon tuples: {self.precon_tuples}")
 
                 # if checked_conditions:
                 if self.precon_trace[-1]['fulfilled']:
-                    # logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
+                    if cur_event_type in ["outhouse_teleport"]:
+                        logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
                     # print("Event preconditions fulfilled!")
 
 
@@ -2945,8 +2955,8 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     return True, feedback_str, {'world_state_effects': world_state_effects}
                 else:
-                    # if cur_event_type in ["workshop_antigravity_player_float_start", "outhouse_teleport"]:
-                    #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
+                    if cur_event_type in ["outhouse_teleport"]:
+                        logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
                     pass
 
         # since no event triggered, return[0] = False:

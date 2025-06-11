@@ -1,0 +1,2 @@
+put: PUT thing ("back" WS)* PREP* thing
+PUT.1: ("put" | "leave" | "place") WS

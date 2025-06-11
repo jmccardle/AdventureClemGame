@@ -75,7 +75,7 @@ def generate_potion_recipe(
                     if step_entity in domain_def['types']['liquid']:
                         step_instruction = f"pour {entity_defs[steps[0]['entity_type']]['repr_str']} into your cauldron"
                     else:
-                        step_instruction = (f"{rng.choice(['add', 'drop', 'put'])} the "
+                        step_instruction = (f"{rng.choice(['add', 'put'])} the "
                                             f"{entity_defs[step_entity]['repr_str']} into your cauldron")
                 elif entity_category in tool_categories:
                     step_type = "use_tool"

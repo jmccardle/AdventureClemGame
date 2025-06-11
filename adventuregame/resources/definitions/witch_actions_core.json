@@ -94,7 +94,7 @@
   },
   {
     "type_name": "put",
-    "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\" | \"drop\") WS",
+    "lark": "put: PUT thing (\"back\" WS)* PREP* thing\nPUT.1: (\"put\" | \"leave\" | \"place\") WS",
     "pddl": "(:action PUT\n    :parameters (?e - movable ?t - receptacle ?p - player ?i - inventory ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (at ?t ?r)\n        (or\n            (and\n                (container ?t)\n                (not (closed ?t))\n                )\n            (support ?t)\n            )\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (when\n            (support ?t)\n            (on ?e ?t)\n            )\n        (when\n            (container ?t)\n            (in ?e ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?e": ["arg1"],
@@ -228,6 +228,38 @@
     "epistemic": true,
     "pragmatic": false,
     "explanation": "To VERB is to inspect a room."
+  },
+  {
+    "type_name": "drop",
+    "lark": "drop: DROP thing (\"away\")*\nDROP.1: (\"leave\" | \"drop\" | \"discard\" | \"throw\") WS",
+    "pddl": "(:action DROP\n    :parameters (?e - takeable ?p - player ?i - inventory ?r - room ?f - floor)\n    :precondition (and\n        (at ?p ?r)\n        (at ?e ?r)\n        (in ?e ?i)\n        (at ?f ?r)\n        )\n    :effect (and\n        (not (in ?e ?i))\n        (on ?e ?f)\n        )\n)",
+    "pddl_parameter_mapping": {
+      "?e": ["arg1"],
+      "?p": ["player"],
+      "?i": ["inventory"],
+      "?r": ["current_player_room"],
+      "?f": ["current_room_floor"]
+    },
+    "failure_feedback": {
+      "parameters": [
+        ["{{ e }} is not takeable.", "domain_trait_type_mismatch"],
+        ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ i }} is not an inventory. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ f }} is not a floor. (This should not occur.)", "domain_type_discrepancy"]
+      ],
+      "precondition": [
+        ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
+        ["You can't see a {{ e }} here.", "entity_not_accessible"],
+        ["You don't have a {{ t }} in your inventory.", "entity_not_accessible"],
+        ["There is no floor here! (This should not occur.)", "entity_trait_mismatch"]
+      ]
+    },
+    "success_feedback": "You drop the {{ e }} on the floor.",
+    "asp": "{ action_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),open_t(TURN,TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),container(TARGET),not openable(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),container(TARGET),open_t(TURN,TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),container(TARGET),not openable(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),open_t(TURN,SOURCE),support(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),at_t(TURN,SOURCE,ROOM),movable(THING),container(SOURCE),in_t(TURN,THING,SOURCE),not openable(SOURCE),support(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),support(TARGET),movable(THING),on_t(TURN,THING,SOURCE),support(SOURCE);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),open_t(TURN,TARGET),openable(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),container(TARGET),not openable(TARGET);\naction_t(TURN,put,THING,TARGET):at_t(TURN,THING,ROOM),at_t(TURN,player1,ROOM),at_t(TURN,TARGET,ROOM),movable(THING),in_t(TURN,THING,inventory),support(TARGET) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nin_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), container(TARGET).\non_t(TURN+1,THING,TARGET) :- turn(TURN), action_t(TURN,put,THING,TARGET), support(TARGET).\nin_t(TURN+1,THING,inventory) :- turn(TURN), in_t(TURN,THING,inventory), not action_t(TURN,put,THING,_).",
+    "epistemic": false,
+    "pragmatic": true,
+    "explanation": "To VERB is to dispose or get rid of (something); to lose, to remove."
   },
   {
     "type_name": "read",
