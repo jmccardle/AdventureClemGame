@@ -396,7 +396,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 24,
           "optimal_solution": [
             [
@@ -996,7 +996,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -1601,7 +1601,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -2206,7 +2206,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 24,
           "optimal_solution": [
             [
@@ -2806,7 +2806,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -3410,7 +3410,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 23,
           "optimal_solution": [
             [
@@ -4005,7 +4005,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -4609,7 +4609,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -5214,7 +5214,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 24,
           "optimal_solution": [
             [
@@ -5814,7 +5814,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 24,
           "optimal_solution": [
             [
@@ -6413,7 +6413,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 26,
           "optimal_solution": [
             [
@@ -7022,7 +7022,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 23,
           "optimal_solution": [
             [
@@ -7617,7 +7617,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 27,
           "optimal_solution": [
             [
@@ -7827,7 +7827,7 @@
             },
             {
               "type_name": "potion_step_4",
-              "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l liquid3)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4 ?r)\n\t\t(in liquid4 ?c)\n\t\t(accessible liquid4)\n\t\t)\n\t)",
+              "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid3 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid3 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid3 liquid)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid3 ?r))\n\t\t(not (in liquid3 ?c))\n\t\t(not (accessible liquid3))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4 ?r)\n\t\t(in liquid4 ?c)\n\t\t(accessible liquid4)\n\t\t)\n\t)",
               "event_feedback": "The liquid in the hot cauldron sloshes with a pop.",
               "asp": "event_t(TURN,potion_step_4,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid3,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid3,cauldron1), hot_t(TURN,cauldron1).\ntype(liquid4,liquid) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN,liquid4,ROOM) :- event_t(TURN,potion_step_4,ROOM).\nin_t(TURN,liquid4,cauldron1) :- event_t(TURN,potion_step_4,ROOM).\naccessible_t(TURN,liquid4) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN+1,liquid4,ROOM) :- at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid3,ROOM) :- turn(TURN), at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- turn(TURN), in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- turn(TURN), accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_)."
             },
@@ -8232,7 +8232,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -8426,13 +8426,13 @@
             },
             {
               "type_name": "potion_step_3",
-              "pddl": "(:event POTIONSTEP3\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l liquid2)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid3 liquid)\n\t\t(at liquid3 ?r)\n\t\t(in liquid3 ?c)\n\t\t(accessible liquid3)\n\t\t)\n\t)",
+              "pddl": "(:event POTIONSTEP3\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid2 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid2 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid2 liquid)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid2 ?r))\n\t\t(not (in liquid2 ?c))\n\t\t(not (accessible liquid2))\n\t\t(type liquid3 liquid)\n\t\t(at liquid3 ?r)\n\t\t(in liquid3 ?c)\n\t\t(accessible liquid3)\n\t\t)\n\t)",
               "event_feedback": "The liquid in the cold cauldron churgulates with a puff of vapor.",
               "asp": "event_t(TURN,potion_step_3,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid2,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid2,cauldron1), cold_t(TURN,cauldron1).\ntype(liquid3,liquid) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN,liquid3,ROOM) :- event_t(TURN,potion_step_3,ROOM).\nin_t(TURN,liquid3,cauldron1) :- event_t(TURN,potion_step_3,ROOM).\naccessible_t(TURN,liquid3) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN+1,liquid3,ROOM) :- at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid2,ROOM) :- turn(TURN), at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- turn(TURN), in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- turn(TURN), accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_)."
             },
             {
               "type_name": "potion_step_4",
-              "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l liquid3)\n\t\t(glittery ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4 ?r)\n\t\t(in liquid4 ?c)\n\t\t(accessible liquid4)\n\t\t)\n\t)",
+              "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid3 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid3 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid3 liquid)\n\t\t(glittery ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid3 ?r))\n\t\t(not (in liquid3 ?c))\n\t\t(not (accessible liquid3))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4 ?r)\n\t\t(in liquid4 ?c)\n\t\t(accessible liquid4)\n\t\t)\n\t)",
               "event_feedback": "The liquid in the glittery cauldron dances with a puff of vapor.",
               "asp": "event_t(TURN,potion_step_4,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid3,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid3,cauldron1), glittery_t(TURN,cauldron1).\ntype(liquid4,liquid) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN,liquid4,ROOM) :- event_t(TURN,potion_step_4,ROOM).\nin_t(TURN,liquid4,cauldron1) :- event_t(TURN,potion_step_4,ROOM).\naccessible_t(TURN,liquid4) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN+1,liquid4,ROOM) :- at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid3,ROOM) :- turn(TURN), at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- turn(TURN), in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- turn(TURN), accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_)."
             },
@@ -8837,7 +8837,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 27,
           "optimal_solution": [
             [
@@ -9035,7 +9035,7 @@
             },
             {
               "type_name": "potion_step_2",
-              "pddl": "(:event POTIONSTEP2\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l liquid1)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid2 liquid)\n\t\t(at liquid2 ?r)\n\t\t(in liquid2 ?c)\n\t\t(accessible liquid2)\n\t\t)\n\t)",
+              "pddl": "(:event POTIONSTEP2\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid1 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid1 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid1 liquid)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid1 ?r))\n\t\t(not (in liquid1 ?c))\n\t\t(not (accessible liquid1))\n\t\t(type liquid2 liquid)\n\t\t(at liquid2 ?r)\n\t\t(in liquid2 ?c)\n\t\t(accessible liquid2)\n\t\t)\n\t)",
               "event_feedback": "The liquid in the hot cauldron rectangulates with a puff of vapor.",
               "asp": "event_t(TURN,potion_step_2,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid1,cauldron1), hot_t(TURN,cauldron1).\ntype(liquid2,liquid) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN,liquid2,ROOM) :- event_t(TURN,potion_step_2,ROOM).\nin_t(TURN,liquid2,cauldron1) :- event_t(TURN,potion_step_2,ROOM).\naccessible_t(TURN,liquid2) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN+1,liquid2,ROOM) :- at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid1,ROOM) :- turn(TURN), at_t(TURN,liquid1,ROOM), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid1,cauldron1) :- turn(TURN), in_t(TURN,liquid1,cauldron1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid1) :- turn(TURN), accessible_t(TURN,liquid1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_)."
             },
@@ -9452,7 +9452,7 @@
           "goal_state": [
             "at(potion1,kitchen1)"
           ],
-          "max_turns": 50,
+          "max_turns": 100,
           "optimal_turns": 25,
           "optimal_solution": [
             [
@@ -9658,7 +9658,7 @@
             },
             {
               "type_name": "potion_step_5",
-              "pddl": "(:event POTIONSTEP5\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l spider)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type potion1 potion)\n\t\t(at potion1 ?r)\n\t\t(in potion1 ?c)\n\t\t(accessible potion1)\n\t\t)\n\t)",
+              "pddl": "(:event POTIONSTEP5\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid4 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid4 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid4 liquid)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid4 ?r))\n\t\t(not (in liquid4 ?c))\n\t\t(not (accessible liquid4))\n\t\t(type potion1 potion)\n\t\t(at potion1 ?r)\n\t\t(in potion1 ?c)\n\t\t(accessible potion1)\n\t\t)\n\t)",
               "event_feedback": "The liquid in the cold cauldron undulates with a phase shift leaving the finished potion.",
               "asp": "event_t(TURN,potion_step_5,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid4,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid4,cauldron1), cold_t(TURN,cauldron1).\ntype(potion1,potion) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN,potion1,ROOM) :- event_t(TURN,potion_step_5,ROOM).\nin_t(TURN,potion1,cauldron1) :- event_t(TURN,potion_step_5,ROOM).\naccessible_t(TURN,potion1) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN+1,potion1,ROOM) :- at_t(TURN,potion1,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,potion1,cauldron1) :- in_t(TURN,potion1,cauldron1), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,potion1) :- accessible_t(TURN,potion1), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid4,ROOM) :- turn(TURN), at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- turn(TURN), in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- turn(TURN), accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_)."
             }
