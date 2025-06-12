@@ -341,7 +341,7 @@
         ["You can't see a {{ t }} here.", "entity_not_accessible"]
       ]
     },
-    "success_feedback": "You wave the {{ w }} at the {{ t }}. {{ arg2_desc }}",
+    "success_feedback": "You wave the {{ w }} at the {{ t }}.",
     "asp": "{ action_t(TURN,wave,WAND,cauldron1):at_t(TURN,cauldron1,ROOM),at_t(TURN,WAND,ROOM) } 1 :- turn(TURN), at_t(TURN,player1,ROOM), not turn_limit(TURN).\nhot_t(TURN+1,cauldron1) :- action_t(TURN,wave,WAND,cauldron1), type(WAND,firewand).\ncold_t(TURN+1,cauldron1) :- action_t(TURN,wave,WAND,cauldron1), type(WAND,icewand).\nglittery_t(TURN+1,cauldron1) :- action_t(TURN,wave,WAND,cauldron1), type(WAND,fairywand).\nzulponated_t(TURN+1,cauldron1) :- action_t(TURN,wave,WAND,cauldron1), type(WAND,zulpowand).\nhot_t(TURN+1,cauldron1) :- turn(TURN), hot_t(TURN,cauldron1), not action_t(TURN,wave,WAND,cauldron1), type(WAND,icewand).\ncold_t(TURN+1,cauldron1) :- turn(TURN), cold_t(TURN,cauldron1), not action_t(TURN,wave,WAND,cauldron1), type(WAND,firewand).\nglittery_t(TURN+1,cauldron1) :- turn(TURN), glittery_t(TURN,cauldron1).\nzulponated_t(TURN+1,cauldron1) :- turn(TURN), zulponated_t(TURN,cauldron1).",
     "epistemic": false,
     "pragmatic": true,

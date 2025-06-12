@@ -454,6 +454,7 @@ def create_potion_recipe_events(potion_recipe: dict,
             # get applied predicate:
             applied_predicate = entity_defs[current_entity]['applied_predicate']
             if verbose: print(f"{current_entity} applies {applied_predicate}")
+            # TODO: fix intermediate liquid preconditions (liquid2 directly instead of (type ?l liquid2)
             if step_idx == 0:
                 # create liquid1
                 if tool_category == "wand":
@@ -482,7 +483,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"The {entity_defs[prior_ingredient]['repr_str']} in the {applied_predicate} cauldron "
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
-                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])} "
                         f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
                     # ASP
                     asp_rules: list = list()
@@ -572,7 +573,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"The {entity_defs[prior_ingredient]['repr_str']} "
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
-                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])} "
                         f"{rng.choice(['leaving', 'producing', 'creating'])} a liquid.")
                     # ASP
                     asp_rules: list = list()
@@ -634,6 +635,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
             elif step_idx == len(potion_recipe['steps'][step_start:]) - 1:  # last step
+                # TODO: fix prior ingredient instead of prior liquid
                 # create potion1
                 if tool_category == "wand":
                     event_pddl = (f"(:event POTIONSTEP{step_idx + 1}\n"
@@ -661,7 +663,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"The liquid in the {applied_predicate} cauldron "
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
-                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])} "
                         f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
                     # ASP
                     asp_rules: list = list()
@@ -746,7 +748,7 @@ def create_potion_recipe_events(potion_recipe: dict,
                         f"The liquid in the {applied_predicate} cauldron "
                         f"{rng.choice(['bubbles', 'undulates', 'sloshes', 'swirls', 'dances', 'whistles', 'churgulates', 'rectangulates'])} "
                         f"with a "
-                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])}"
+                        f"{rng.choice(['puff of vapor', 'gloopy sound', 'pop', 'phase shift'])} "
                         f"{rng.choice(['leaving', 'producing', 'creating'])} the finished potion.")
                     # ASP
                     asp_rules: list = list()
