@@ -301,7 +301,7 @@
     },
     "failure_feedback": {
       "parameters": [
-        ["{{ b }} is not a bucket. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ b }} is not a bucket.", "domain_type_discrepancy"],
         ["{{ t }} is not a container.", "domain_trait_type_mismatch"],
         ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
         ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
@@ -330,7 +330,7 @@
     },
     "failure_feedback": {
       "parameters": [
-        ["{{ b }} is not a bucket. (This should not occur.)", "domain_type_discrepancy"],
+        ["{{ b }} is not a wand.", "domain_type_discrepancy"],
         ["{{ t }} is not a container.", "domain_trait_type_mismatch"],
         ["{{ p }} is not a player. (This should not occur.)", "domain_type_discrepancy"],
         ["{{ r }} is not a room. (This should not occur.)", "domain_type_discrepancy"]
