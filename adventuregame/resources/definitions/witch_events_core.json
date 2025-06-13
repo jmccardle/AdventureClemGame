@@ -19,7 +19,7 @@
   },
   {
     "type_name": "outhouse_teleport",
-    "pddl": "(:event OUTHOUSETELEPORT\n    :parameters (?r - room ?p - player ?i - inventory)\n    :precondition (and\n        (room ?r outhouse)\n        (at ?p ?r)\n        )\n    :effect (and\n        (at ?p kitchen1)\n        (not (at ?p ?r))\n        (forall (?e - takeable)\n            (when\n                (in ?e ?i)\n                (and\n                    (at ?e kitchen1)\n                    (not (at ?e ?r))\n                )\n            )\n        )\n    )\n)",
+    "pddl": "(:event OUTHOUSETELEPORT\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (room ?r outhouse)\n        (at ?p ?r)\n        )\n    :effect (and\n        (at ?p kitchen1)\n        (not (at ?p ?r))\n        (forall (?e - takeable)\n            (when\n                (in ?e inventory)\n                (and\n                    (at ?e kitchen1)\n                    (not (at ?e ?r))\n                )\n            )\n        )\n    )\n)",
     "event_feedback": "The world twists around you, and you suddenly find yourself elsewhere. {{ room_desc }}",
     "asp": "",
     "randomize": {

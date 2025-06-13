@@ -1782,6 +1782,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                 type_matched_instances = list()
                 if tuple_arg:
                     # logger.info(f"predicate_to_tuple tuple_arg intermediate: {tuple_arg}")
+                    # hotfix for witch outhouse teleport:
+                    # if type(tuple_arg) == list and len(tuple_arg) == 1 and tuple_arg[0] == "inventory":
+                    #    tuple_arg = tuple_arg[0]
+
                     # if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                     if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "inventory")):
                         # print(f"{tuple_arg} is not a type instance ID!")
@@ -2831,10 +2835,10 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                 # if checked_conditions:
                 if self.precon_trace[-1]['fulfilled']:
-                    if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
-                                              "workshop_antigravity_player_float_start",
-                                              "workshop_antigravity_player_float_stop"]:
-                         logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
+                    # if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
+                    #                          "workshop_antigravity_player_float_start",
+                    #                          "workshop_antigravity_player_float_stop"]:
+                    #     logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
                     # print("Event preconditions fulfilled!")
                     # logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
 
@@ -2849,6 +2853,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                     world_state_effects = {'added': [], 'removed': []}
 
                     for effect in effects:
+                        # if cur_event_type in ["outhouse_teleport"]:
+                        #    logger.info(f"{cur_event_type} event effect: {effect}")
                         # print("effect:", effect)
                         if 'forall' in effect:
                             forall_results = self.resolve_forall(effect, variable_map)
@@ -2877,7 +2883,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     post_resolution_changes = post_world_state.difference(prior_world_state)
                     if prior_world_state == self.world_state_history[-2]:
                         logger.info(f"Prior world state matches second to last world state in history")
-                    logger.info(f"Resolution world state changes: {post_resolution_changes}")
+                    logger.info(f"Event world state changes: {post_resolution_changes}")
 
                     # EVENT FEEDBACK
 
@@ -2927,7 +2933,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             self.event_randomization: dict = dict()
                         if not cur_event_type in self.event_randomization:
                             # set predefined initial value as prior value to replace next time:
-                            self.event_randomization[cur_event_type] = cur_event_def['initial_value']
+                            self.event_randomization[cur_event_type] = cur_event_def['randomize']['initial_value']
                         if 'replace_type' in cur_event_def['randomize']:
                             replace_candidates: list = list()
                             for fact in self.world_state:
@@ -2955,9 +2961,12 @@ class AdventureIFInterpreter(GameResourceLocator):
                                             effect['arg3'] = random_replacement
                                 if 'forall' in effect:
                                     forall_body = effect['body']
+                                    # logger.info(f"forall_body: {forall_body}")
                                     for forall_effect in forall_body:
                                         if 'when' in forall_effect:
-                                            when_effects = forall_effect[1]
+                                            # logger.info(f"when forall_effect: {forall_effect}")
+                                            # when_effects = forall_effect[1]
+                                            when_effects = forall_effect['when']
                                             for when_effect in when_effects:
                                                 if 'predicate' in when_effect:
                                                     if type(when_effect['arg1']) == str:
@@ -2977,10 +2986,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # if cur_event_type in ["outhouse_teleport"]:
                     #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
                     # logger.info(f"{cur_event_type}: Event preconditions not fulfilled!")
-                    if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
-                                              "workshop_antigravity_player_float_start",
-                                              "workshop_antigravity_player_float_stop"]:
-                         logger.info(f"{cur_event_type}: Event preconditions not fulfilled!")
+                    # if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
+                    #                          "workshop_antigravity_player_float_start",
+                    #                          "workshop_antigravity_player_float_stop"]:
+                    #     logger.info(f"{cur_event_type}: Event preconditions not fulfilled!")
                     pass
 
         # since no event triggered, return[0] = False:

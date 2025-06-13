@@ -96,6 +96,27 @@
     )
 )
 
+(:event OUTHOUSETELEPORT
+    :parameters (?r - room ?p - player)
+    :precondition (and
+        (room ?r outhouse)
+        (at ?p ?r)
+        )
+    :effect (and
+        (at ?p kitchen1)
+        (not (at ?p ?r))
+        (forall (?e - takeable)
+            (when
+                (in ?e inventory)
+                (and
+                    (at ?e kitchen1)
+                    (not (at ?e ?r))
+                )
+            )
+        )
+    )
+)
+
 
  (:action GO
     :parameters (?c ?d - room ?p - player ?i - inventory)
