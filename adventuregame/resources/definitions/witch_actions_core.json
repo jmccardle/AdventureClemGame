@@ -321,7 +321,7 @@
   {
     "type_name": "wave",
     "lark": "wave: WAVE thing ((\"at\" | \"over\" | \"on\") WS)* thing\nWAVE.1: (\"wave\" | \"wiggle\" | \"swirl\" | \"use\" ) WS",
-    "pddl": "(:action WAVE\n    :parameters (?w - wand ?t - container ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?w ?r)\n        (at ?t ?r)\n        )\n    :effect (and\n        (when\n            (type ?w firewand)\n            (and\n                (not (cold ?t))\n                (hot ?t)\n                )\n            )\n        (when\n            (type ?w icewand)\n            (and\n                (not (hot ?t))\n                (cold ?t)\n                )\n            )\n        (when\n            (type ?w fairywand)\n            (glittery ?t)\n            )\n        (when\n            (type ?w zulpowand)\n            (sproinkly ?t)\n            )\n        )\n)",
+    "pddl": "(:action WAVE\n    :parameters (?w - wand ?t - container ?p - player ?r - room)\n    :precondition (and\n        (at ?p ?r)\n        (at ?w ?r)\n        (at ?t ?r)\n        )\n    :effect (and\n        (when\n            (type ?w firewand)\n            (and\n                (not (cold ?t))\n                (hot ?t)\n                )\n            )\n        (when\n            (type ?w icewand)\n            (and\n                (not (hot ?t))\n                (cold ?t)\n                )\n            )\n        (when\n            (type ?w fairywand)\n            (glittery ?t)\n            )\n        (when\n            (type ?w zulpowand)\n            (zulponated ?t)\n            )\n        )\n)",
     "pddl_parameter_mapping": {
       "?w": ["arg1"],
       "?t": ["arg2"],
@@ -337,7 +337,7 @@
       ],
       "precondition": [
         ["You are not where you are! (This should not occur.)", "world_state_discrepancy"],
-        ["You can't see a {{ b }} here.", "entity_not_accessible"],
+        ["You can't see a {{ w }} here.", "entity_not_accessible"],
         ["You can't see a {{ t }} here.", "entity_not_accessible"]
       ]
     },

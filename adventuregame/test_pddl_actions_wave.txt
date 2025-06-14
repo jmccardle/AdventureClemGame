@@ -26,7 +26,7 @@
             )
         (when
             (type ?w zulpowand)
-            (sproinkly ?t)
+            (zulponated ?t)
             )
         )
 )
