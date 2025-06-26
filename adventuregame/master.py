@@ -528,7 +528,7 @@ class AdventureGameScorer(GameScorer):
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_PARSED, parsed_request_count)
         request_count = sum([turn["request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT, request_count)
-        self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS, parsed_request_count / request_count)
+        self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count)
 
         # sum up and record episode-level action hallucination values:
         hallucination_count = sum(turn_hallucinations)
