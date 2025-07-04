@@ -28,6 +28,27 @@ class AdventurePlayer(Player):
     def _custom_response(self, context: Dict) -> str:
         return "Go"
 
+    def _terminal_response(self, context: Dict) -> str:
+        """Response for human interaction via terminal.
+        Adds the '> ' prefix required by the GM to prevent participant fatigue leading to aborted episodes.
+        Since the prefix requirement is used to check continuous instruction following *by LLMs*, it is not important
+        for human players. This also makes AdventureGame play like classic IF games for human players, since the '>'
+        present in gameplay logs from these games are a feature of vintage terminal UIs and did not need to be typed in
+        for each command input.
+        Args:
+            context: The dialogue context to which the player should respond.
+        Returns:
+            The human response as text.
+        """
+        latest_response = "Nothing has been said yet."
+        if context is not None:
+            latest_response = context["content"]
+        print(f"\n{latest_response}")
+        user_input = input(f"Type in your action, > will be automatically added if missing:\n")
+        if not user_input.startswith(">"):
+            user_input = "> " + user_input.strip()
+        return user_input
+
 
 class AdventureGameMaster(DialogueGameMaster):
     """
