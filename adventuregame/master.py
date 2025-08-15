@@ -426,6 +426,7 @@ class AdventureGameScorer(GameScorer):
 
                 # check for looping:
                 if action["type"] == "loop_detected":
+                    # print("found loop_detected!")
                     loop_abort = True
 
                 # handle DONE as hallucinated finish if the adventure is not finished:
@@ -500,6 +501,10 @@ class AdventureGameScorer(GameScorer):
                 self.log_round_score(turn_idx, 'next_actions_missing', 0)
             # record hallucinated finish:
             self.log_round_score(turn_idx, 'hallucination', hallucination)
+            # record loop abort:
+            if loop_abort:
+                # print("loop abort is True!")
+                self.log_round_score(turn_idx, 'loop_detected', 1)
             # record IF interaction fail values by phase:
             self.log_round_score(turn_idx, 'action_parsing_fail', turn_fail["parsing"])
             self.log_round_score(turn_idx, 'action_resolution_fail', turn_fail["resolution"])
