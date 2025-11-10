@@ -543,6 +543,26 @@ class ClingoAdventureGenerator(object):
                         holders[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
                         holders[fact[1]]['holder_type'] = fact[0]
 
+            # hard difficulty goal object filter:
+            if task_config['difficulty'] == "hard":
+                # check for closed state of holders:
+                for fact in initial_facts:
+                    if fact[0] == "closed":
+                        holders[fact[1]]['closed'] = True
+                takeables_to_remove: list = list()
+                # candidate takeables must be in closed containers:
+                for takeable, takeable_values in takeables.items():
+                    if takeable_values['state'] == "in":
+                        if 'closed' not in holders[takeable_values['holder']]:
+                            # del takeables[takeable]
+                            takeables_to_remove.append(takeable)
+                    elif takeable_values['state'] == "on":
+                        # del takeables[takeable]
+                        takeables_to_remove.append(takeable)
+                for bad_takeable in takeables_to_remove:
+                    del takeables[bad_takeable]
+
+            # check for unwanted target receptacles:
             if not task_config['deliver_to_floor']:
                 bad_holders: list = list()
                 for holder, holder_values in holders.items():
@@ -551,11 +571,27 @@ class ClingoAdventureGenerator(object):
                 for bad_holder in bad_holders:
                     del holders[bad_holder]
 
-            possible_destinations: dict = dict()
+            # add room locations for hard difficulty checks:
+            if task_config['difficulty'] == "hard":
+                for fact in initial_facts:
+                    for takeable, takeable_values in takeables.items():
+                        if fact[0] == "at" and fact[1] == takeable:
+                            takeables[takeable]['location'] = fact[2]
+                    for holder, holder_values in holders.items():
+                        if fact[0] == "at" and fact[1] == holder:
+                            holders[holder]['location'] = fact[2]
 
+            # get possible destinations for takeables:
+            possible_destinations: dict = dict()
             for takeable, takeable_values in takeables.items():
                 for holder, holder_values in holders.items():
                     if not takeable_values['holder'] == holder:
+
+                        # hard difficulty non-same room source and target:
+                        if task_config['difficulty'] == "hard":
+                            if holder_values['location'] == takeable_values['location']:
+                                continue
+
                         if takeable not in possible_destinations:
                             possible_destinations[takeable] = [holder]
                         else:
@@ -576,14 +612,23 @@ class ClingoAdventureGenerator(object):
             goal_combos = list()
             for goal_combo in goal_permutations:
                 duplicate = False
-                goal_objects = list()
-                goal_strs = list()
+                goal_objects: list = list()
+                goal_targets: list = list()
+                goal_strs: list = list()
                 for goal in goal_combo:
                     if goal[1] not in goal_objects:
                         goal_objects.append(goal[1])
-                        goal_strs.append(f"{goal[0]}({goal[1]},{goal[2]})")
+                        # goal_strs.append(f"{goal[0]}({goal[1]},{goal[2]})")
                     else:
                         duplicate = True
+                    if task_config['difficulty'] == "hard":
+                        if goal[2] not in goal_targets:
+                            goal_targets.append(goal[2])
+                        else:
+                            duplicate = True
+                    if not duplicate:
+                        goal_strs.append(f"{goal[0]}({goal[1]},{goal[2]})")
+
                 if not duplicate:
                     goal_combos.append(goal_strs)
 
@@ -1863,7 +1908,8 @@ if __name__ == "__main__":
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_created")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_easy")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
-    adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
+    # adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
+    adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three_hard")
 
     # print(adventure_generator.domain_def)
     # print(adventure_generator.entity_definitions)
