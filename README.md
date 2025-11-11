@@ -1,7 +1,7 @@
 # AdventureGame
 
 [![CI](https://github.com/YOUR_USERNAME/AdventureClemGame/workflows/CI/badge.svg)](https://github.com/YOUR_USERNAME/AdventureClemGame/actions)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -170,7 +170,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## Key Technologies
 
-- **Python 3.8+**: Core language
+- **Python 3.10+**: Core language (requires match/case statement support)
 - **Lark**: PDDL parsing
 - **Clingo 5.7.1**: Answer Set Programming solver for adventure generation
 - **clemcore 3.1.0**: Benchmarking framework
