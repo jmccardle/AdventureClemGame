@@ -26,8 +26,6 @@ def fact_tuple_to_str(
     Convert fact tuple to string version.
     """
     values = fact_tuple[1:]
-    # print(values)
     values_str = value_separator.join(values)
-    # print(values_str)
     fact_str = f"{fact_tuple[0]}{value_delimiter_l}{values_str}{value_delimiter_r}"
     return fact_str

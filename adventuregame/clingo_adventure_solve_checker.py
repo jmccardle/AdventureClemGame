@@ -32,7 +32,6 @@ logger.info("Grounded!")
 models = list()
 with ctl.solve(yield_=True) as solve:
     for model in solve:
-        # print("model:", model)
         model_split = model.__str__().split()
         models.append(model_split)
     satisfiable = solve.get()

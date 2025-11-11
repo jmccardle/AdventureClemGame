@@ -219,7 +219,6 @@ class ClingoAdventureGenerator(object):
             domain_definition = json.load(domain_file)
 
         # currently hardcoded to only use the first listed domain
-        # print(domain_definition)
         domain_definition_pddl = domain_definition[config.keys["pddl"]]
         parsed_domain_definition_pddl = self.domain_def_parser.parse(domain_definition_pddl)
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
@@ -327,7 +326,6 @@ class ClingoAdventureGenerator(object):
                     type_def_dict[type_key] = type_value
             self.entity_definitions[type_def[config.keys["type_name"]]] = type_def_dict
 
-        # print("self.entity_definitions:", self.entity_definitions)
 
         # add ASP from PDDL to created action definitions:
         # new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
@@ -389,15 +387,11 @@ class ClingoAdventureGenerator(object):
 
             # add ceilings to defined room types:
             if "add_ceiling_rooms" in self.adv_type_def["initial_state_config"]:
-                # print("add ceilings key in adv_type_def")
                 if self.adv_type_def["initial_state_config"]["add_ceiling_rooms"]:
-                    # print("add ceilings value in adv_type_def is truthy")
-                    # print(self.adv_type_def['initial_state_config']['add_ceiling_rooms'])
                     if (
                         room_type_name
                         in self.adv_type_def["initial_state_config"]["add_ceiling_rooms"]
                     ):
-                        # print(f"{room_type_name} in ceiling add list!")
                         # add ceiling to room:
                         ceiling_id = f"{room_id}ceiling1"
                         ceiling_atom = f"type({ceiling_id},ceiling)."
@@ -466,13 +460,10 @@ class ClingoAdventureGenerator(object):
         if "constant_start_room" in self.adv_type_def["initial_state_config"]:
             if self.adv_type_def["initial_state_config"]["constant_start_room"]:
                 player_location_rule = f"at(player1,{self.adv_type_def['initial_state_config']['constant_start_room']})."
-        # print("player_location_rule:", player_location_rule)
         clingo_str += "\n" + player_location_rule
 
-        # print(self.entity_definitions)
 
         for entity_type_name, entity_type_values in self.entity_definitions.items():
-            # print(entity_type_name, entity_type_values)
             # do not create type fact for entities to be omitted from initial states:
             if "omit_from_initial_state" in entity_type_values:
                 if entity_type_values["omit_from_initial_state"]:
@@ -533,14 +524,11 @@ class ClingoAdventureGenerator(object):
                             # get entity mutability sets:
                             possible_mutable_lists = list()
                             for trait in entity_type_values["traits"]:
-                                # print(entity_type_values['repr_str'], ":", trait)
                                 mutability_mutables = [
                                     predicate["predicate_id"]
                                     for predicate in self.domain_def["predicates"]
                                     if predicate["mutability"] == trait
                                 ]
-                                # print(mutability_mutables)
-                                # print()
                                 # don't add single mutable fact of irreversible-singular mutability, entity has no initial fact tied to this type of mutability
                                 if self.interaction_traits[trait]["mutable_set_type"] == "singular":
                                     continue
@@ -597,7 +585,6 @@ class ClingoAdventureGenerator(object):
         # iterate over initial world state, add fixed basic facts, add turn facts for changeable facts
         for fact in initial_facts:
             if fact[0] == "type":
-                # print("goal fact gen current type fact:", fact)
                 id_to_type_dict[fact[1]] = {
                     "type": fact[2],
                     "repr_str": self.entity_definitions[fact[2]]["repr_str"],
@@ -613,7 +600,6 @@ class ClingoAdventureGenerator(object):
                     id_to_type_dict[fact[1]]["traits"] = self.room_definitions[fact[2]]["traits"]
 
         task_config = self.adv_type_def["task_config"]
-        # print("task_config:", task_config)
         goal_count = self.adv_type_def["goal_count"]
 
         if task_config["task"] == config.generation_settings["task_types"]["deliver"]:
@@ -741,7 +727,6 @@ class ClingoAdventureGenerator(object):
                     goal_combos.append(goal_strs)
 
         elif task_config["task"] == "new-words_deliver":
-            # print("task is new-words_deliver")
             # get initial in/on of takeables:
             takeables: dict = dict()
             holders: dict = dict()
@@ -788,20 +773,16 @@ class ClingoAdventureGenerator(object):
                         else:
                             possible_destinations[takeable].append(holder)
 
-            # print("possible_destinations:", possible_destinations)
 
             all_possible_goals: list = list()
             goal_takeable_count: int = 0
             goal_in_count: int = 0
             goal_on_count: int = 0
             for takeable, destinations in possible_destinations.items():
-                # print("takeable:", takeable)
                 for destination in destinations:
-                    # print("destination:", destination)
                     takeable_replaced: bool = False
 
                     if takeable[:-1] in self.replacement_dict["entities"].values():
-                        # print(f"takeable goal item {takeable} is replaced new-word!")
                         takeable_replaced = True
                         goal_takeable_count += 1
 
@@ -815,7 +796,6 @@ class ClingoAdventureGenerator(object):
                         destination[:-1] in self.replacement_dict["entities"].values()
                         and goal_takeable_count > 1
                     ):
-                        # print(f"destination goal item {destination} is replaced new-word!")
 
                         # make sure there's at least one 'in' and 'on' goal each if fitting receptacles are assured:
                         # replacing sufficient amount of receptacles is assured by new-word definition creation
@@ -823,23 +803,19 @@ class ClingoAdventureGenerator(object):
                             self.adv_type_def["replace_counts"]["entities"]
                             > config.thresholds["entity_replacement_threshold"]
                         ):
-                            # print("more than four entity replacement, splitting targets")
                             if (
                                 goal_in_count == 0
                                 and pred_type == config.predicates["predicate_in"]
                             ):
-                                # print("goal_in_count == 0 and pred_type == 'in'")
                                 receptacle_replaced = True
                                 goal_in_count += 1
                             if (
                                 goal_on_count == 0
                                 and pred_type == config.predicates["predicate_on"]
                             ):
-                                # print("goal_on_count == 0 and pred_type == 'on'")
                                 receptacle_replaced = True
                                 goal_on_count += 1
                             if goal_in_count >= 1 and goal_on_count >= 1:
-                                # print(f"more than one new-word destination each assigned case: {goal_in_count} 'in', {goal_on_count} 'on'")
                                 receptacle_replaced = True
                         else:
                             receptacle_replaced = True
@@ -853,18 +829,13 @@ class ClingoAdventureGenerator(object):
                         ):
                             if goal_in_count >= 1 and goal_on_count >= 1:
                                 all_possible_goals.append(goal_tuple)
-                                # print(f"added goal tuple: {goal_tuple}")
                         else:
                             all_possible_goals.append(goal_tuple)
-                            # print(f"added goal tuple: {goal_tuple}")
                     # all_possible_goals.append(goal_tuple)
 
-                    # print()
 
-            # print("all_possible_goals:", all_possible_goals)
 
             goal_permutations = list(permutations(all_possible_goals, goal_count))
-            # print("goal_permutations:", goal_permutations)
 
             good_goal_permutations: list = list()
             # make sure there's at least one 'in' and 'on' goal with new-word destination in goal set:
@@ -883,7 +854,6 @@ class ClingoAdventureGenerator(object):
             else:
                 good_goal_permutations = goal_permutations
 
-            # print("good_goal_permutations:", good_goal_permutations)
 
             # prevent goal combos with same object at different locations:
             goal_combos = list()
@@ -905,18 +875,14 @@ class ClingoAdventureGenerator(object):
 
             # get mutable predicates from domain:
 
-            # print(self.domain_def['predicates'])
 
             mutables = [predicate["predicate_id"] for predicate in self.domain_def["predicates"]]
-            # print(mutables)
             mutabilities = dict()
             for predicate in self.domain_def["predicates"]:
-                # print("predicate:", predicate)
                 if predicate["mutability"] not in mutabilities:
                     mutabilities[predicate["mutability"]] = [predicate["predicate_id"]]
                 else:
                     mutabilities[predicate["mutability"]].append(predicate["predicate_id"])
-            # print(mutabilities)
 
             # TODO: convert underscore mutabilities to dashed for surface
 
@@ -924,7 +890,6 @@ class ClingoAdventureGenerator(object):
             mutable_state_entities: dict = dict()
             for fact in initial_facts:
                 if fact[0] in mutabilities:
-                    # print(fact)
                     if fact[1] not in mutable_state_entities:
                         mutable_state_entities[fact[1]] = {
                             "type": id_to_type_dict[fact[1]]["type"],
@@ -936,14 +901,10 @@ class ClingoAdventureGenerator(object):
 
             for fact in initial_facts:
                 if fact[1] in mutable_state_entities:
-                    # print("fact:", fact)
                     mutable_fact_dict = dict()
                     for mutability in mutable_state_entities[fact[1]]["mutabilities"]:
-                        # print(f"checked mutability of {fact[1]}:", mutability)
                         if fact[0] in mutabilities[mutability]:
-                            # print(f"checked {mutability}:", mutabilities[mutability])
                             mutable_fact_dict[mutability] = fact[0]
-                    # print(mutable_fact_dict)
                     if "mutable_facts" not in mutable_state_entities[fact[1]]:
                         mutable_state_entities[fact[1]]["mutable_facts"] = mutable_fact_dict
                     else:
@@ -956,7 +917,6 @@ class ClingoAdventureGenerator(object):
                 mutable_state_entity_id,
                 mutable_state_entity_values,
             ) in mutable_state_entities.items():
-                # print("mutable entity:", mutable_state_entity_id, mutable_state_entity_values)
                 possible_target_states = list()
                 cur_mut_facts = mutable_state_entity_values["mutable_facts"]
                 for mutability, cur_mut_fact in cur_mut_facts.items():
@@ -966,30 +926,24 @@ class ClingoAdventureGenerator(object):
                         for mutable in mutabilities[mutability]
                         if not mutable == cur_mut_fact
                     ]
-                    # print(f"possible target states for {mutability}:", [mutable for mutable in mutabilities[mutability] if not mutable == cur_mut_fact])
                 # handle irreversible-singular mutability:
                 for mutability in mutable_state_entity_values["mutabilities"]:
                     if self.interaction_traits[mutability]["mutable_set_type"] == "singular":
                         possible_target_states += self.interaction_traits[mutability][
                             "mutable_states"
                         ]  # must be single
-                        # print(f"possible target states for {mutability}:", self.interaction_traits[mutability]['mutable_states'])
-                # print(f"all possible target states for {mutable_state_entity_id}:", possible_target_states)
                 for possible_target_state in possible_target_states:
                     goal_tuple: tuple = (possible_target_state, mutable_state_entity_id)
                     all_possible_goals.append(goal_tuple)
-            # print("all_possible_goals:", all_possible_goals)
 
             goal_permutations = list(permutations(all_possible_goals, goal_count))
             # prevent goal combos with same object and same mutability:
             goal_combos = list()
             for goal_combo in goal_permutations:
-                # print("goal combo:", goal_combo)
                 duplicate = False
                 goal_mutabilities = list()
                 goal_strs = list()
                 for goal in goal_combo:
-                    # print("goal in goal_combo:", goal)
                     goal_object_mutabilities = mutable_state_entities[goal[1]]["mutabilities"]
                     for mutability in goal_object_mutabilities:
                         mutable_states = self.interaction_traits[mutability]["mutable_states"]
@@ -1014,10 +968,7 @@ class ClingoAdventureGenerator(object):
                     else:
                         duplicate = True
                 if not duplicate:
-                    # print("added goal combo strs:", goal_strs)
                     goal_combos.append(goal_strs)
-                    # print("goal_mutabilities:", goal_mutabilities)
-                    # print()
 
         elif task_config["task"] == "potion":
             # potion brewing only requires the finished potion to be in the kitchen
@@ -1037,7 +988,6 @@ class ClingoAdventureGenerator(object):
         elif self.adv_type_def["initial_state_config"]["assign_mutable_states_from_set"]:
             mutable_fact_types = ["at"]
             for mutability in self.interaction_traits.values():
-                # print("mutability:", mutability)
                 mutable_fact_types += mutability["mutable_states"]
         else:
             raise ValueError(
@@ -1297,7 +1247,6 @@ class ClingoAdventureGenerator(object):
         )  # ["0"] argument to return all models
         # generate room layout ASP encoding:
         room_layout_asp: str = self._generate_room_layouts_asp()
-        # print(room_layout_asp)
         # add room layout ASP encoding to clingo:
         room_layout_clingo.add(room_layout_asp)
         # ground controller:
@@ -1320,7 +1269,6 @@ class ClingoAdventureGenerator(object):
             room_layout_fact_list = [
                 fact for fact in room_layout_fact_list if "reachable" not in fact
             ]
-            # print(room_layout_fact_list)
             result_layouts.append(room_layout_fact_list)
 
         return result_layouts
@@ -1335,8 +1283,6 @@ class ClingoAdventureGenerator(object):
             )  # ["0"] argument to return all models
             # generate initial state ASP encoding:
             cur_initial_states_asp = self._generate_initial_states_asp(room_layout)
-            # print("cur_initial_states_asp:", cur_initial_states_asp)
-            # print()
             # add initial state ASP encoding to clingo:
             initial_states_clingo.add(cur_initial_states_asp)
             # ground controller:
@@ -1346,15 +1292,10 @@ class ClingoAdventureGenerator(object):
             with initial_states_clingo.solve(yield_=True) as solve:
                 satisfiable = str(solve.get())
                 if satisfiable == config.clingo_settings["status_sat"]:
-                    # print("intial state generation clingo solvable")
                     pass
                 else:
-                    # print("!!! intial state generation clingo NOT solvable !!!")
                     pass
                 for model in solve:
-                    # print("initial state solve model:\n", model)
-                    # print("initial_states_per_layout_count:", initial_states_per_layout_count)
-                    # print()
                     if initial_states_per_layout_count <= initial_states_per_layout:
                         initial_states.append(model.__str__().split())
                         initial_states_per_layout_count += 1
@@ -1516,15 +1457,12 @@ class ClingoAdventureGenerator(object):
                             self.entity_definitions,
                             rng_seed=self.rng.integers(config.random_seeds["max_seed"]),
                         )
-                        # print("potion recipe:\n", potion_recipe)
-                        # print("potion recipe text:\n", potion_recipe['text'])
                         potion_events = create_potion_recipe_events(
                             potion_recipe,
                             self.domain_def,
                             self.entity_definitions,
                             rng_seed=self.rng.integers(config.random_seeds["max_seed"]),
                         )
-                        # print("potion events:\n", potion_events)
                         # load event type definitions:
                         event_definitions: list = list()
                         for event_def_source in self.adv_type_def["event_definitions"]:
@@ -1540,7 +1478,6 @@ class ClingoAdventureGenerator(object):
                         solve_asp: str = self._solve_optimally_asp(
                             initial_state, goal_set, events_list=potion_events
                         )
-                        # print(solve_asp)
                     else:
                         # solve current adventure ASP encoding:
                         solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
@@ -1596,7 +1533,6 @@ class ClingoAdventureGenerator(object):
                             # pre-explore rooms:
                             # solve current adventure:
                             visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
-                            # print("visit ASP:\n", visit_asp)
                             # init fresh clingo controller:
                             visit_solve_control: Control = Control(
                                 config.clingo_settings["control_all_models"]
@@ -1773,7 +1709,6 @@ class ClingoAdventureGenerator(object):
                                 action_def_type,
                                 action_def_content,
                             ) in self.action_definitions.items():
-                                # print(action_def_type, action_def_content)
                                 final_action_def = action_def_content
                                 action_def_content["type_name"] = action_def_type
                                 final_action_definitions.append(final_action_def)
@@ -1833,13 +1768,11 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             # shuffle goal strings to mitigate first goal and new-word verb matching:
-                            # print("goal strings before shuffling:", goal_strings)
                             goal_strings_remap = np.arange(len(goal_strings))
                             self.rng.shuffle(goal_strings_remap)
                             goal_strings = [
                                 goal_strings[remap_idx] for remap_idx in goal_strings_remap
                             ]
-                            # print("goal strings after shuffling:", goal_strings)
 
                             if len(goal_strings) == 1:
                                 goal_desc: str = f"Make {goal_strings[0]}."
@@ -1855,7 +1788,6 @@ class ClingoAdventureGenerator(object):
                                 action_def_type,
                                 action_def_content,
                             ) in self.action_definitions.items():
-                                # print(action_def_type, action_def_content)
                                 final_action_def = action_def_content
                                 action_def_content["type_name"] = action_def_type
                                 final_action_definitions.append(final_action_def)
@@ -1997,7 +1929,6 @@ class ClingoAdventureGenerator(object):
             # pre-explore rooms:
             # solve current adventure pre-exploration:
             visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
-            # print("visit ASP:\n", visit_asp)
             # init fresh clingo controller:
             visit_solve_control: Control = Control(
                 config.clingo_settings["control_all_models"]
@@ -2163,7 +2094,6 @@ class ClingoAdventureGenerator(object):
                 # pre-explore rooms:
                 # solve current adventure pre-exploration:
                 visit_asp: str = self._pre_explore_asp(cur_initial_state, cur_goal_set)
-                # print("visit ASP:\n", visit_asp)
                 # init fresh clingo controller:
                 visit_solve_control: Control = Control(
                     config.clingo_settings["control_all_models"]
@@ -2205,13 +2135,11 @@ class ClingoAdventureGenerator(object):
                     visit_optimal_solution
                 )
 
-                # print("visiting_cmds:", visiting_cmds)
 
                 raw_adv["visiting_turns"] = visiting_turns
                 raw_adv["visiting_solution"] = visiting_abstract
                 raw_adv["visiting_commands"] = visiting_cmds
 
-                # print(raw_adv)
 
                 # break
             # break
@@ -2231,8 +2159,6 @@ if __name__ == "__main__":
     # adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
     adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three_hard")
 
-    # print(adventure_generator.domain_def)
-    # print(adventure_generator.entity_definitions)
 
     # adventure_generator._generate_room_layouts(limit=1)
 

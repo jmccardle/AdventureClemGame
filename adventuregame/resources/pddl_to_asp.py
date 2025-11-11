@@ -48,13 +48,11 @@ def action_to_asp(action_def: dict, trait_dict: dict):
     # important parameters are mutability trait predicates/facts
 
     action_mutabilities = [mutability["type_list_element"] for mutability in important_params]
-    # print(f"action mutabilities for {action_def['type_name']}:", action_mutabilities)
 
     mutability_asp_strings = [
         f"{mutability['type_list_element']}(THING)" for mutability in important_params
     ]
 
-    # print(f"action to ASP mutabilities for {action_def['type_name']}:", mutability_asp_strings)
 
     # TODO: make mutability type facts in base ASP solver script
 
@@ -118,7 +116,6 @@ def action_to_asp(action_def: dict, trait_dict: dict):
 
     # persist irreversible end mutable state:
     if trait_dict[action_mutabilities[0]]["interaction"] == "irreversible":
-        # print(trait_dict[action_mutabilities[0]]) # template for irreversible mutables:
         asp_next_turn_irreversible = (
             "MUTABLE_FACT_t(TURN+1,THING) :- turn(TURN), MUTABLE_FACT_t(TURN,THING)."
         )

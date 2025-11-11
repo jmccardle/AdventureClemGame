@@ -75,6 +75,5 @@ for goal in split_goals:
     if goal[0] == "in":
         dot.edge(goal[1], goal[2], "in")
 
-# print(dot)
 
 dot.render(format="pdf")
