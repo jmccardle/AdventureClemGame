@@ -6,7 +6,7 @@ ctl = Control(["0"])
 tested_asp_file = "test_adv_solve_asp8.txt"
 
 # load ASP encoding:
-with open(tested_asp_file, 'r', encoding='utf-8') as lp_file:
+with open(tested_asp_file, "r", encoding="utf-8") as lp_file:
     example_lp = lp_file.read()
 
 # print(example_lp)

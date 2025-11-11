@@ -46,8 +46,62 @@ Parsing phase failures are `lark_exception`, `malformed_command`, `undefined_act
 `undefined_repr_str`, `manipulating_room` (due to action type not allowing room as argument), `undefined_argument_type`, 
 `taking_from_inventory` (due to 'inventory' argument) and `other_room_argument` (due to other room than current location as 
 second argument; ie '> take plate from kitchen' while not in kitchen).  
-Resolution phase failures are `not_room_type` ('go' action with undefined/non-existing room argument), 
-`going_to_current_room`, `no_exit_to` (no passage to argument room present), `entity_already_inventory` ('take'-ing 
-entity that is already in inventory), `thing_arg1_room` (ie '> take kitchen'), `entity_not_accessible`, 
-`thing_arg2_room` (ie '> put plate in kitchen') and `pre_state_mismatch` (fallback; unfulfilled conditions and edge 
+Resolution phase failures are `not_room_type` ('go' action with undefined/non-existing room argument),
+`going_to_current_room`, `no_exit_to` (no passage to argument room present), `entity_already_inventory` ('take'-ing
+entity that is already in inventory), `thing_arg1_room` (ie '> take kitchen'), `entity_not_accessible`,
+`thing_arg2_room` (ie '> put plate in kitchen') and `pre_state_mismatch` (fallback; unfulfilled conditions and edge
 cases).
+
+## Development
+
+### Running Tests
+
+The project uses pytest for testing. To run tests:
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run all tests
+pytest
+
+# Run with coverage report
+pytest --cov=adventuregame --cov-report=html
+
+# Run specific test file
+pytest tests/test_config_loader.py
+
+# Run with verbose output
+pytest -v
+```
+
+Coverage reports are generated in HTML format in the `htmlcov/` directory.
+
+### Code Quality
+
+The project uses several tools to maintain code quality:
+
+- **Black**: Code formatting (line length: 100)
+- **isort**: Import sorting
+- **flake8**: Linting
+- **mypy**: Type checking
+- **pre-commit**: Git hooks for automated checks
+
+To run code quality checks:
+
+```bash
+# Format code
+black adventuregame/
+isort adventuregame/
+
+# Run linter
+flake8 adventuregame/
+
+# Run type checker
+mypy adventuregame/
+
+# Run all pre-commit hooks
+pre-commit run --all-files
+```
+
+Pre-commit hooks are automatically run before each commit to ensure code quality.

@@ -1,6 +1,7 @@
 """
-    Utility functions for adventuregame.
+Utility functions for adventuregame.
 """
+
 
 def fact_str_to_tuple(fact_string: str, value_delimiter_l: str = "(", value_separator: str = ","):
     """
@@ -15,8 +16,12 @@ def fact_str_to_tuple(fact_string: str, value_delimiter_l: str = "(", value_sepa
         return fact_type, first_split[1][:-1]
 
 
-def fact_tuple_to_str(fact_tuple: tuple, value_delimiter_l: str = "(", value_separator: str = ",",
-                      value_delimiter_r: str = ")", ):
+def fact_tuple_to_str(
+    fact_tuple: tuple,
+    value_delimiter_l: str = "(",
+    value_separator: str = ",",
+    value_delimiter_r: str = ")",
+):
     """
     Convert fact tuple to string version.
     """

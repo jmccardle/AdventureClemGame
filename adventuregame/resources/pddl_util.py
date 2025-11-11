@@ -9,11 +9,12 @@ class PDDLActionTransformer(Transformer):
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
     """
+
     def action(self, content):
         # print("action cont:", content)
 
         # action_def_dict = {'action_name': content[1].value, 'content': content[3:]}
-        action_def_dict = {'action_name': content[1].value.lower()}
+        action_def_dict = {"action_name": content[1].value.lower()}
 
         for cont in content:
             # print(type(cont))
@@ -22,13 +23,12 @@ class PDDLActionTransformer(Transformer):
                 pass
             else:
                 # print("non-Token", cont)
-                if 'parameters' in cont:
-                    action_def_dict['parameters'] = cont['parameters']
-                elif 'precondition' in cont:
-                    action_def_dict['precondition'] = cont['precondition']
-                elif 'effect' in cont:
-                    action_def_dict['effect'] = cont['effect']
-
+                if "parameters" in cont:
+                    action_def_dict["parameters"] = cont["parameters"]
+                elif "precondition" in cont:
+                    action_def_dict["precondition"] = cont["precondition"]
+                elif "effect" in cont:
+                    action_def_dict["effect"] = cont["effect"]
 
         # action: lark.Tree = content[0]
         # action_type = action.data  # main grammar rule the input was parsed as
@@ -45,16 +45,16 @@ class PDDLActionTransformer(Transformer):
             parameter_list = content[1]
         # print("parameters:", parameter_list)
 
-        return {'parameters': parameter_list}
+        return {"parameters": parameter_list}
 
     def precondition(self, content):
         # print("precond cont:", content)
         # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
+        return {"precondition": content[1:-1]}
 
     def effect(self, content):
         # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
+        effect_dict = {"effect": content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
 
@@ -65,7 +65,7 @@ class PDDLActionTransformer(Transformer):
         forall_body = content[4:]
         # print("forall body:", forall_body)
 
-        forall_dict = {'forall': iterated_object, 'body': forall_body}
+        forall_dict = {"forall": iterated_object, "body": forall_body}
         # print("forall returns:", forall_dict)
         return forall_dict
 
@@ -78,7 +78,7 @@ class PDDLActionTransformer(Transformer):
                 pass
             else:
                 when_items.append(when_item)
-        when_dict = {'when': when_items}
+        when_dict = {"when": when_items}
         # print("when returns:", when_dict)
         return when_dict
 
@@ -91,7 +91,7 @@ class PDDLActionTransformer(Transformer):
                 pass
             else:
                 and_items.append(and_item)
-        and_dict = {'and': and_items}
+        and_dict = {"and": and_items}
         # print("andp returns:", and_dict, "\n")
         return and_dict
 
@@ -104,24 +104,24 @@ class PDDLActionTransformer(Transformer):
                 pass
             else:
                 or_items.append(or_item)
-        or_dict = {'or': or_items}
+        or_dict = {"or": or_items}
         # print("orp returns:", or_dict, "\n")
         return or_dict
 
     def notp(self, content):
         # print("notp cont:", content)
         # (not X) always wraps only one item, hence:
-        return {'not': content[2]}
+        return {"not": content[2]}
 
     def type_list(self, content):
         # print(content)
-        return {'type_list': content}
+        return {"type_list": content}
 
     def type_list_element(self, content):
         # print("type_list_item cont:", content)
         type_list_items = list()
         for item_element in content:
-            if 'variable' in item_element:
+            if "variable" in item_element:
                 type_list_items.append(item_element)
             elif type(item_element) == lark.Token:
                 if item_element.type == "WORDP":
@@ -134,7 +134,7 @@ class PDDLActionTransformer(Transformer):
         else:
             cat_name = content[-1].value
 
-        return {'type_list_element': cat_name, 'items': type_list_items}
+        return {"type_list_element": cat_name, "items": type_list_items}
 
     def pred(self, content):
         # print("pred content:", content)
@@ -164,26 +164,31 @@ class PDDLActionTransformer(Transformer):
             else:
                 pred_arg3 = content[6]
 
-        pred_dict = {'predicate': pred_type, 'arg1': pred_arg1, 'arg2': pred_arg2, 'arg3': pred_arg3}
+        pred_dict = {
+            "predicate": pred_type,
+            "arg1": pred_arg1,
+            "arg2": pred_arg2,
+            "arg3": pred_arg3,
+        }
         # print(pred_dict, "\n")
 
         return pred_dict
 
     def var(self, content):
         # print(content[0])
-        return {'variable': content[0].value}
+        return {"variable": content[0].value}
 
     def function(self, content):
         # print("function content:", content)
 
         function_dict = dict()
 
-        if content[0].type == 'NUMBER':
+        if content[0].type == "NUMBER":
             # print("function NUMBER:", content[0].value)
-            function_dict['function_number'] = content[0].value
+            function_dict["function_number"] = content[0].value
         else:
-            function_dict['function_id'] = content[0].value
-            function_dict['function_variable'] = content[2]
+            function_dict["function_id"] = content[0].value
+            function_dict["function_variable"] = content[2]
 
         # print("function_dict:", function_dict)
 
@@ -192,10 +197,10 @@ class PDDLActionTransformer(Transformer):
     def equal(self, content):
         # print("greq content:", content)
 
-        equal_dict = {'num_comp': "equal"}
+        equal_dict = {"num_comp": "equal"}
 
-        equal_dict['arg1'] = content[2]
-        equal_dict['arg2'] = content[4]
+        equal_dict["arg1"] = content[2]
+        equal_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -204,10 +209,10 @@ class PDDLActionTransformer(Transformer):
     def greater(self, content):
         # print("greq content:", content)
 
-        greater_dict = {'num_comp': "greater"}
+        greater_dict = {"num_comp": "greater"}
 
-        greater_dict['arg1'] = content[2]
-        greater_dict['arg2'] = content[4]
+        greater_dict["arg1"] = content[2]
+        greater_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -216,10 +221,10 @@ class PDDLActionTransformer(Transformer):
     def greq(self, content):
         # print("greq content:", content)
 
-        greq_dict = {'num_comp': "greq"}
+        greq_dict = {"num_comp": "greq"}
 
-        greq_dict['arg1'] = content[2]
-        greq_dict['arg2'] = content[4]
+        greq_dict["arg1"] = content[2]
+        greq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -228,10 +233,10 @@ class PDDLActionTransformer(Transformer):
     def less(self, content):
         # print("greq content:", content)
 
-        less_dict = {'num_comp': "less"}
+        less_dict = {"num_comp": "less"}
 
-        less_dict['arg1'] = content[2]
-        less_dict['arg2'] = content[4]
+        less_dict["arg1"] = content[2]
+        less_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -240,10 +245,10 @@ class PDDLActionTransformer(Transformer):
     def leq(self, content):
         # print("greq content:", content)
 
-        leq_dict = {'num_comp': "leq"}
+        leq_dict = {"num_comp": "leq"}
 
-        leq_dict['arg1'] = content[2]
-        leq_dict['arg2'] = content[4]
+        leq_dict["arg1"] = content[2]
+        leq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -252,10 +257,10 @@ class PDDLActionTransformer(Transformer):
     def assign(self, content):
         # print("greq content:", content)
 
-        assign_dict = {'function_change': "assign"}
+        assign_dict = {"function_change": "assign"}
 
-        assign_dict['arg1'] = content[2]
-        assign_dict['arg2'] = content[4]
+        assign_dict["arg1"] = content[2]
+        assign_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -264,10 +269,10 @@ class PDDLActionTransformer(Transformer):
     def increase(self, content):
         # print("greq content:", content)
 
-        increase_dict = {'function_change': "increase"}
+        increase_dict = {"function_change": "increase"}
 
-        increase_dict['arg1'] = content[2]
-        increase_dict['arg2'] = content[4]
+        increase_dict["arg1"] = content[2]
+        increase_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -276,10 +281,10 @@ class PDDLActionTransformer(Transformer):
     def decrease(self, content):
         # print("greq content:", content)
 
-        decrease_dict = {'function_change': "decrease"}
+        decrease_dict = {"function_change": "decrease"}
 
-        decrease_dict['arg1'] = content[2]
-        decrease_dict['arg2'] = content[4]
+        decrease_dict["arg1"] = content[2]
+        decrease_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -291,6 +296,7 @@ class PDDLDomainTransformer(Transformer):
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
     """
+
     def define(self, content):
         # print("define cont:", content)
 
@@ -305,20 +311,20 @@ class PDDLDomainTransformer(Transformer):
                 pass
             else:
                 # print("non-Token:", cont)
-                if 'domain_id' in cont:
-                    domain_def_dict['domain_id'] = cont['domain_id']
-                if 'types' in cont:
-                    domain_def_dict['types'] = cont['types']
-                if 'predicates' in cont:
+                if "domain_id" in cont:
+                    domain_def_dict["domain_id"] = cont["domain_id"]
+                if "types" in cont:
+                    domain_def_dict["types"] = cont["types"]
+                if "predicates" in cont:
                     # print("predicates found!")
-                    domain_def_dict['predicates'] = cont['predicates']
-                if 'functions' in cont:
-                    domain_def_dict['functions'] = cont['functions']
-                if 'event_id' in cont:
-                    if not 'events' in domain_def_dict:
-                        domain_def_dict['events'] = [cont]
+                    domain_def_dict["predicates"] = cont["predicates"]
+                if "functions" in cont:
+                    domain_def_dict["functions"] = cont["functions"]
+                if "event_id" in cont:
+                    if not "events" in domain_def_dict:
+                        domain_def_dict["events"] = [cont]
                     else:
-                        domain_def_dict['events'].append(cont)
+                        domain_def_dict["events"].append(cont)
 
         # action: lark.Tree = content[0]
         # action_type = action.data  # main grammar rule the input was parsed as
@@ -332,30 +338,30 @@ class PDDLDomainTransformer(Transformer):
     def domain_id(self, content):
         # print("domain_id cont:", content)
         # print("domain_id return:", {'domain_id': content[-1].value})
-        return {'domain_id': content[-1].value}
+        return {"domain_id": content[-1].value}
 
     def types(self, content):
         # print("types cont:", content)
         types_list = list()
         for cont in content:
-            if 'type_list_element' in cont:
+            if "type_list_element" in cont:
                 types_list.append(cont)
         types_dict = dict()
         for type_list in types_list:
             # print(type_list)
-            types_dict[f'{type_list["type_list_element"]}'] = type_list['items']
+            types_dict[f'{type_list["type_list_element"]}'] = type_list["items"]
         # print("types return:", {'types': types_list})
-        return {'types': types_dict}
+        return {"types": types_dict}
 
     def type_list(self, content):
         # print(content)
-        return {'type_list': content}
+        return {"type_list": content}
 
     def type_list_element(self, content):
         # print("type_list_item cont:", content)
         type_list_items = list()
         for item_element in content:
-            if 'variable' in item_element:
+            if "variable" in item_element:
                 type_list_items.append(item_element)
             elif type(item_element) == lark.Token:
                 if item_element.type == "WORDP":
@@ -368,22 +374,22 @@ class PDDLDomainTransformer(Transformer):
         else:
             cat_name = content[-1].value
         # print("type_list_item return:", {'type_list_item': cat_name, 'items': type_list_items})
-        return {'type_list_element': cat_name, 'items': type_list_items}
+        return {"type_list_element": cat_name, "items": type_list_items}
 
     def predicates(self, content):
         predicate_list = list()
         for predicate in content:
-            if 'predicate_id' in predicate:
+            if "predicate_id" in predicate:
                 predicate_list.append(predicate)
-        return {'predicates': predicate_list}
+        return {"predicates": predicate_list}
 
     def predicate(self, content):
         predicate_dict = dict()
-        predicate_dict['predicate_id'] = content[0].value
+        predicate_dict["predicate_id"] = content[0].value
         for predicate_element in content:
             if "variable" in predicate_element:
-                predicate_dict['variable'] = predicate_element['variable']
-        predicate_dict['mutability'] = content[-1].value
+                predicate_dict["variable"] = predicate_element["variable"]
+        predicate_dict["mutability"] = content[-1].value
         return predicate_dict
 
     def parameters(self, content):
@@ -392,16 +398,16 @@ class PDDLDomainTransformer(Transformer):
             parameter_list = content[1]
         # print("parameters:", parameter_list)
 
-        return {'parameters': parameter_list}
+        return {"parameters": parameter_list}
 
     def precondition(self, content):
         # print("precond cont:", content)
         # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
+        return {"precondition": content[1:-1]}
 
     def effect(self, content):
         # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
+        effect_dict = {"effect": content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
 
@@ -412,7 +418,7 @@ class PDDLDomainTransformer(Transformer):
         forall_body = content[4:]
         # print("forall body:", forall_body)
 
-        forall_dict = {'forall': iterated_object, 'body': forall_body}
+        forall_dict = {"forall": iterated_object, "body": forall_body}
         # print("forall returns:", forall_dict)
         return forall_dict
 
@@ -425,7 +431,7 @@ class PDDLDomainTransformer(Transformer):
                 pass
             else:
                 when_items.append(when_item)
-        when_dict = {'when': when_items}
+        when_dict = {"when": when_items}
         # print("when returns:", when_dict)
         return when_dict
 
@@ -438,7 +444,7 @@ class PDDLDomainTransformer(Transformer):
                 pass
             else:
                 and_items.append(and_item)
-        and_dict = {'and': and_items}
+        and_dict = {"and": and_items}
         # print("andp returns:", and_dict, "\n")
         return and_dict
 
@@ -451,14 +457,14 @@ class PDDLDomainTransformer(Transformer):
                 pass
             else:
                 or_items.append(or_item)
-        or_dict = {'or': or_items}
+        or_dict = {"or": or_items}
         # print("orp returns:", or_dict, "\n")
         return or_dict
 
     def notp(self, content):
         # print("notp cont:", content)
         # (not X) always wraps only one item, hence:
-        return {'not': content[2]}
+        return {"not": content[2]}
 
     def pred(self, content):
         # print("pred content:", content)
@@ -488,21 +494,26 @@ class PDDLDomainTransformer(Transformer):
             else:
                 pred_arg3 = content[6]
 
-        pred_dict = {'predicate': pred_type, 'arg1': pred_arg1, 'arg2': pred_arg2, 'arg3': pred_arg3}
+        pred_dict = {
+            "predicate": pred_type,
+            "arg1": pred_arg1,
+            "arg2": pred_arg2,
+            "arg3": pred_arg3,
+        }
         # print(pred_dict, "\n")
 
         return pred_dict
 
     def var(self, content):
         # print(content[0])
-        return {'variable': content[0].value}
+        return {"variable": content[0].value}
 
     def functions(self, content):
         # print("functions content:", content)
-        functions_dict = {'functions': list()}
+        functions_dict = {"functions": list()}
         for functions_item in content:
-            if 'function_def_predicate' in functions_item:
-                functions_dict['functions'].append(functions_item)
+            if "function_def_predicate" in functions_item:
+                functions_dict["functions"].append(functions_item)
 
         return functions_dict
 
@@ -521,9 +532,11 @@ class PDDLDomainTransformer(Transformer):
         function_def_type = content[6].value
         # print("function_type:", function_type)
 
-        function_dict = {'function_def_predicate': function_def_predicate,
-                         'function_def_variable': function_def_variable,
-                         "function_def_type": function_def_type}
+        function_dict = {
+            "function_def_predicate": function_def_predicate,
+            "function_def_variable": function_def_variable,
+            "function_def_type": function_def_type,
+        }
 
         return function_dict
 
@@ -532,12 +545,12 @@ class PDDLDomainTransformer(Transformer):
 
         function_dict = dict()
 
-        if content[0].type == 'NUMBER':
+        if content[0].type == "NUMBER":
             # print("function NUMBER:", content[0].value)
-            function_dict['function_number'] = content[0].value
+            function_dict["function_number"] = content[0].value
         else:
-            function_dict['function_id'] = content[0].value
-            function_dict['function_variable'] = content[2]
+            function_dict["function_id"] = content[0].value
+            function_dict["function_variable"] = content[2]
 
         # print("function_dict:", function_dict)
 
@@ -549,16 +562,16 @@ class PDDLDomainTransformer(Transformer):
         event_id = content[2].value
         # print("event_id:", event_id)
 
-        event_dict = {'event_id': content[2].value}
+        event_dict = {"event_id": content[2].value}
 
         for event_item in content[4:]:
             # print("event_item:", event_item)
-            if 'parameters' in event_item:
-                event_dict['event_parameters'] = event_item['parameters']
-            if 'precondition' in event_item:
-                event_dict['event_precondition'] = event_item['precondition']
-            if 'effect' in event_item:
-                event_dict['event_effect'] = event_item['effect']
+            if "parameters" in event_item:
+                event_dict["event_parameters"] = event_item["parameters"]
+            if "precondition" in event_item:
+                event_dict["event_precondition"] = event_item["precondition"]
+            if "effect" in event_item:
+                event_dict["event_effect"] = event_item["effect"]
 
         # print("event_dict:", event_dict)
 
@@ -567,10 +580,10 @@ class PDDLDomainTransformer(Transformer):
     def equal(self, content):
         # print("greq content:", content)
 
-        equal_dict = {'num_comp': "equal"}
+        equal_dict = {"num_comp": "equal"}
 
-        equal_dict['arg1'] = content[2]
-        equal_dict['arg2'] = content[4]
+        equal_dict["arg1"] = content[2]
+        equal_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -579,10 +592,10 @@ class PDDLDomainTransformer(Transformer):
     def greater(self, content):
         # print("greq content:", content)
 
-        greater_dict = {'num_comp': "greater"}
+        greater_dict = {"num_comp": "greater"}
 
-        greater_dict['arg1'] = content[2]
-        greater_dict['arg2'] = content[4]
+        greater_dict["arg1"] = content[2]
+        greater_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -591,10 +604,10 @@ class PDDLDomainTransformer(Transformer):
     def greq(self, content):
         # print("greq content:", content)
 
-        greq_dict = {'num_comp': "greq"}
+        greq_dict = {"num_comp": "greq"}
 
-        greq_dict['arg1'] = content[2]
-        greq_dict['arg2'] = content[4]
+        greq_dict["arg1"] = content[2]
+        greq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -603,10 +616,10 @@ class PDDLDomainTransformer(Transformer):
     def less(self, content):
         # print("greq content:", content)
 
-        less_dict = {'num_comp': "less"}
+        less_dict = {"num_comp": "less"}
 
-        less_dict['arg1'] = content[2]
-        less_dict['arg2'] = content[4]
+        less_dict["arg1"] = content[2]
+        less_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -615,10 +628,10 @@ class PDDLDomainTransformer(Transformer):
     def leq(self, content):
         # print("greq content:", content)
 
-        leq_dict = {'num_comp': "leq"}
+        leq_dict = {"num_comp": "leq"}
 
-        leq_dict['arg1'] = content[2]
-        leq_dict['arg2'] = content[4]
+        leq_dict["arg1"] = content[2]
+        leq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -627,10 +640,10 @@ class PDDLDomainTransformer(Transformer):
     def assign(self, content):
         # print("greq content:", content)
 
-        assign_dict = {'function_change': "assign"}
+        assign_dict = {"function_change": "assign"}
 
-        assign_dict['arg1'] = content[2]
-        assign_dict['arg2'] = content[4]
+        assign_dict["arg1"] = content[2]
+        assign_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -639,10 +652,10 @@ class PDDLDomainTransformer(Transformer):
     def increase(self, content):
         # print("greq content:", content)
 
-        increase_dict = {'function_change': "increase"}
+        increase_dict = {"function_change": "increase"}
 
-        increase_dict['arg1'] = content[2]
-        increase_dict['arg2'] = content[4]
+        increase_dict["arg1"] = content[2]
+        increase_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -651,10 +664,10 @@ class PDDLDomainTransformer(Transformer):
     def decrease(self, content):
         # print("greq content:", content)
 
-        decrease_dict = {'function_change': "decrease"}
+        decrease_dict = {"function_change": "decrease"}
 
-        decrease_dict['arg1'] = content[2]
-        decrease_dict['arg2'] = content[4]
+        decrease_dict["arg1"] = content[2]
+        decrease_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -662,13 +675,13 @@ class PDDLDomainTransformer(Transformer):
 
 
 if __name__ == "__main__":
-    with open("pddl_actions.lark", 'r', encoding='utf-8') as actions_grammar_file:
+    with open("pddl_actions.lark", "r", encoding="utf-8") as actions_grammar_file:
         action_def_grammar = actions_grammar_file.read()
     action_def_parser = Lark(action_def_grammar, start="action")
 
     action_def_transformer = PDDLActionTransformer()
 
-    with open("pddl_domain.lark", 'r', encoding='utf-8') as domain_grammar_file:
+    with open("pddl_domain.lark", "r", encoding="utf-8") as domain_grammar_file:
         domain_def_grammar = domain_grammar_file.read()
     domain_def_parser = Lark(domain_def_grammar, start="define")
 
@@ -701,7 +714,6 @@ if __name__ == "__main__":
     # processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
 
     # print(processed_action_pddl)
-
 
     """
     (define\n

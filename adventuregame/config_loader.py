@@ -26,7 +26,7 @@ class ConfigLoader:
             # Default to config.json in the same directory as this module
             config_path = Path(__file__).parent / "config.json"
 
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             self._config: Dict[str, Any] = json.load(f)
 
     def get(self, *keys: str, default: Any = None) -> Any:
@@ -56,137 +56,137 @@ class ConfigLoader:
     @property
     def paths(self) -> Dict[str, Any]:
         """Get all path configurations."""
-        return self._config.get('paths', {})
+        return self._config.get("paths", {})
 
     @property
     def game_constants(self) -> Dict[str, Any]:
         """Get game constants."""
-        return self._config.get('game_constants', {})
+        return self._config.get("game_constants", {})
 
     @property
     def variants(self) -> Dict[str, Any]:
         """Get variant configurations."""
-        return self._config.get('variants', {})
+        return self._config.get("variants", {})
 
     @property
     def adventure_types(self) -> Dict[str, str]:
         """Get adventure type identifiers."""
-        return self._config.get('adventure_types', {})
+        return self._config.get("adventure_types", {})
 
     @property
     def actions(self) -> Dict[str, Any]:
         """Get action configurations."""
-        return self._config.get('actions', {})
+        return self._config.get("actions", {})
 
     @property
     def entities(self) -> Dict[str, Any]:
         """Get entity configurations."""
-        return self._config.get('entities', {})
+        return self._config.get("entities", {})
 
     @property
     def predicates(self) -> Dict[str, Any]:
         """Get predicate definitions."""
-        return self._config.get('predicates', {})
+        return self._config.get("predicates", {})
 
     @property
     def keys(self) -> Dict[str, str]:
         """Get dictionary key constants."""
-        return self._config.get('keys', {})
+        return self._config.get("keys", {})
 
     @property
     def delimiters(self) -> Dict[str, str]:
         """Get delimiter strings."""
-        return self._config.get('delimiters', {})
+        return self._config.get("delimiters", {})
 
     @property
     def template_placeholders(self) -> Dict[str, str]:
         """Get template placeholder strings."""
-        return self._config.get('template_placeholders', {})
+        return self._config.get("template_placeholders", {})
 
     @property
     def event_types(self) -> Dict[str, str]:
         """Get event type identifiers."""
-        return self._config.get('event_types', {})
+        return self._config.get("event_types", {})
 
     @property
     def log_keys(self) -> Dict[str, str]:
         """Get log key constants."""
-        return self._config.get('log_keys', {})
+        return self._config.get("log_keys", {})
 
     @property
     def parse_errors(self) -> Dict[str, str]:
         """Get parse error type identifiers."""
-        return self._config.get('parse_errors', {})
+        return self._config.get("parse_errors", {})
 
     @property
     def fail_types(self) -> List[str]:
         """Get list of all action failure types."""
-        return self._config.get('fail_types', [])
+        return self._config.get("fail_types", [])
 
     @property
     def plan_metrics(self) -> List[str]:
         """Get list of plan metrics to track."""
-        return self._config.get('plan_metrics', [])
+        return self._config.get("plan_metrics", [])
 
     @property
     def hallucination_keywords(self) -> List[str]:
         """Get list of hallucination indicator keywords."""
-        return self._config.get('hallucination_keywords', [])
+        return self._config.get("hallucination_keywords", [])
 
     @property
     def thresholds(self) -> Dict[str, Any]:
         """Get threshold values."""
-        return self._config.get('thresholds', {})
+        return self._config.get("thresholds", {})
 
     @property
     def array_indices(self) -> Dict[str, int]:
         """Get array index constants."""
-        return self._config.get('array_indices', {})
+        return self._config.get("array_indices", {})
 
     @property
     def scores(self) -> Dict[str, int]:
         """Get scoring values."""
-        return self._config.get('scores', {})
+        return self._config.get("scores", {})
 
     @property
     def messages(self) -> Dict[str, str]:
         """Get user-facing message templates."""
-        return self._config.get('messages', {})
+        return self._config.get("messages", {})
 
     @property
     def parser_settings(self) -> Dict[str, str]:
         """Get parser configuration."""
-        return self._config.get('parser_settings', {})
+        return self._config.get("parser_settings", {})
 
     @property
     def clingo_settings(self) -> Dict[str, Any]:
         """Get Clingo solver settings."""
-        return self._config.get('clingo_settings', {})
+        return self._config.get("clingo_settings", {})
 
     @property
     def generation_settings(self) -> Dict[str, Any]:
         """Get instance generation settings."""
-        return self._config.get('generation_settings', {})
+        return self._config.get("generation_settings", {})
 
     @property
     def goal_settings(self) -> Dict[str, str]:
         """Get goal-related settings."""
-        return self._config.get('goal_settings', {})
+        return self._config.get("goal_settings", {})
 
     @property
     def output_settings(self) -> Dict[str, Any]:
         """Get output formatting settings."""
-        return self._config.get('output_settings', {})
+        return self._config.get("output_settings", {})
 
     @property
     def random_seeds(self) -> Dict[str, int]:
         """Get random seed configurations."""
-        return self._config.get('random_seeds', {})
+        return self._config.get("random_seeds", {})
 
     @property
     def initial_counts(self) -> Dict[str, int]:
         """Get initial count values."""
-        return self._config.get('initial_counts', {})
+        return self._config.get("initial_counts", {})
 
 
 # Global singleton instance

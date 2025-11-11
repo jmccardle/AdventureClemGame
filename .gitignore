@@ -78,3 +78,11 @@ Thumbs.db
 # Results and logs
 *.log
 results/
+
+# Experiments directory
+adventuregame/experiments/__pycache__/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
