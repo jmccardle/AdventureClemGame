@@ -1,12 +1,15 @@
 """Functions to create AdventureGame definitions (actions, domains, entities, rooms) with generated new-words."""
 
 import json
+import logging
 import re
 from copy import deepcopy
 
 import numpy as np
 
 from adventuregame.resources.new_word_generation.new_word_util import read_new_words_file
+
+logger = logging.getLogger(__name__)
 
 # ROOMS
 """
@@ -1284,13 +1287,14 @@ def create_new_words_definitions_set(
             for mutable in mutability_values["mutable_states"]:
                 mutables_created.append(mutable)
 
-        print(
-            f"{last_new_word_idx+1} new-words used to create {num_defs_created} definitions "
-            f"({len(new_room_definitions)} room types, {len(new_entity_definitions)} entity types, "
-            f"{len(new_action_definitions)} action types) with {len(mutables_created)} mutable predicates under "
-            f"{len(mutabilities_created)} mutability traits."
+        logger.info(
+            "%s new-words used to create %s definitions (%s room types, %s entity types, "
+            "%s action types) with %s mutable predicates under %s mutability traits.",
+            last_new_word_idx+1, num_defs_created, len(new_room_definitions),
+            len(new_entity_definitions), len(new_action_definitions),
+            len(mutables_created), len(mutabilities_created)
         )
-        print(f"Mutable predicates: {mutables_created}; mutability traits: {mutabilities_created}")
+        logger.info("Mutable predicates: %s; mutability traits: %s", mutables_created, mutabilities_created)
 
     new_domain_definition = process_to_pddl_domain(
         "new_words", new_room_definitions, new_entity_definitions, trait_dict
@@ -1379,14 +1383,15 @@ def replace_new_words_definitions_set(
     }
 
     if verbose:
-        print(
-            f"{last_new_word_idx+1} new-words used to replace definitions "
-            f"({len(new_room_definitions)} room types, {len(new_entity_definitions)} entity types, "
-            f"{len(new_action_definitions)} action types."
+        logger.info(
+            "%s new-words used to replace definitions (%s room types, %s entity types, "
+            "%s action types).",
+            last_new_word_idx+1, len(new_room_definitions),
+            len(new_entity_definitions), len(new_action_definitions)
         )
-        print("Rooms replaced:", rooms_replaced)
-        print("Entities replaced:", entities_replaced)
-        print("Actions replaced:", actions_replaced)
+        logger.info("Rooms replaced: %s", rooms_replaced)
+        logger.info("Entities replaced: %s", entities_replaced)
+        logger.info("Actions replaced: %s", actions_replaced)
 
     new_domain_definition = process_to_pddl_domain(
         "partial_new_words", new_room_definitions, new_entity_definitions, trait_dict
@@ -1424,9 +1429,9 @@ if __name__ == "__main__":
         replacement_dict,
         last_new_word_idx,
     ) = replace_new_words_definitions_set(verbose=True)
-    print(new_rooms)
-    print(new_domain)
-    print(trait_dict)
+    logger.debug("New rooms: %s", new_rooms)
+    logger.debug("New domain: %s", new_domain)
+    logger.debug("Trait dict: %s", trait_dict)
     """
     # save created definitions to JSON:
     with open("new_rooms_test.json", 'w', encoding='utf-8') as rooms_out_file:

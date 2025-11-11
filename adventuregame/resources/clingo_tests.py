@@ -1,4 +1,8 @@
+import logging
+
 from clingo.control import Control
+
+logger = logging.getLogger(__name__)
 
 # init clingo controller in 'all model output' mode:
 ctl = Control(["0"])
@@ -14,14 +18,14 @@ with open(tested_asp_file, "r", encoding="utf-8") as lp_file:
 # add encoding to clingo controller:
 ctl.add(example_lp)
 
-print("Encoding added.")
+logger.info("Encoding added.")
 
-print("Grounding...")
+logger.info("Grounding...")
 # ground the encoding:
 ctl.ground()
 
 # report successful grounding:
-print("Grounded!")
+logger.info("Grounded!")
 # for the complexity of these text adventures, even extensive ones, grounding should be finished in under a minute
 # if it does, the encoding likely needs improvements - some early versions took more than a minute, while the current
 # version, as used for adventure solving and shown in adventure_solve_asp_example.lp, takes milliseconds
@@ -30,7 +34,7 @@ print("Grounded!")
 models = list()
 with ctl.solve(yield_=True) as solve:
     for model in solve:
-        print("model:", model)
+        logger.debug("model: %s", model)
         model_split = model.__str__().split()
         models.append(model_split)
         # if model_split:
@@ -38,7 +42,7 @@ with ctl.solve(yield_=True) as solve:
         # break
     satisfiable = str(solve.get())
     if satisfiable == "SAT":
-        print("Adventure can be solved.")
+        logger.info("Adventure can be solved.")
     elif satisfiable == "UNSAT":
-        print("Adventure can NOT be solved.")
+        logger.warning("Adventure can NOT be solved.")
 # the last model in the models list is the optimal solution

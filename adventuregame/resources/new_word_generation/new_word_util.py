@@ -2,6 +2,7 @@
 Utilities for handling WinoDict-generated new-words.
 """
 
+import logging
 from typing import Dict, List, Optional, Sequence, Set
 
 import nltk
@@ -13,6 +14,8 @@ from adventuregame.resources.new_word_generation.wino_dict.create_new_words impo
     generate_ngram_examples,
     read_morph_rules,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def read_new_words_file(file_path: str) -> Dict:
@@ -67,18 +70,18 @@ def generate_winodict_words(
     Returns:
         A list of winodict new word objects.
     """
-    print("Winodict word generation: Started.")
+    logger.info("Winodict word generation: Started.")
     nltk.download("words")
     generator = NGramGenerator(num_characters, set(corpus.words.words()))
-    print("Winodict word generation: Finished training model with nltk vocab.")
+    logger.info("Winodict word generation: Finished training model with nltk vocab.")
     examples = generate_ngram_examples(
         generator, min_length, max_length, num_buckets, min_score, num_iterations, seed
     )
-    print(f"Winodict word generation: Generated {len(examples)} initial examples.")
-    print(f"Winodict word generation: Reading morphology from {morph_rule_path}")
+    logger.info("Winodict word generation: Generated %s initial examples.", len(examples))
+    logger.info("Winodict word generation: Reading morphology from %s", morph_rule_path)
     morph_rules = read_morph_rules(morph_rule_path)
     morphed_examples = add_morphology_to_examples(examples, morph_rules)
-    print(f"Winodict word generation: Successfully created {len(morphed_examples)} final examples")
+    logger.info("Winodict word generation: Successfully created %s final examples", len(morphed_examples))
 
     return morphed_examples
 
@@ -99,4 +102,4 @@ def get_winodict_words(seed: int = 42) -> Dict:
 
 if __name__ == "__main__":
     new_words_dict = get_winodict_words()
-    print(new_words_dict)
+    logger.debug("New words dict: %s", new_words_dict)
