@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 with open("curated_home_deliver_three_adventures_v2.json") as infile:
     curated_adventures = json.load(infile)
 
-# print(curated_adventures)
 
 for difficulty in curated_adventures:
     logger.info("Processing difficulty: %s", difficulty)

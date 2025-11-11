@@ -13,7 +13,6 @@ tested_asp_file = "test_adv_solve_asp8.txt"
 with open(tested_asp_file, "r", encoding="utf-8") as lp_file:
     example_lp = lp_file.read()
 
-# print(example_lp)
 
 # add encoding to clingo controller:
 ctl.add(example_lp)
@@ -38,7 +37,6 @@ with ctl.solve(yield_=True) as solve:
         model_split = model.__str__().split()
         models.append(model_split)
         # if model_split:
-        #    print(model)
         # break
     satisfiable = str(solve.get())
     if satisfiable == "SAT":

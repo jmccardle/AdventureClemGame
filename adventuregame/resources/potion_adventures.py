@@ -229,7 +229,6 @@ def create_potion_recipe_events(
         current_entity = step["entity_type"]
 
         current_entity_id = f"{step['entity_type']}1"
-        # print(f"current entity ID is {current_entity_id}")
 
         if step["step_type"] == "add_ingredient":
             # absorb into liquid event
@@ -1316,10 +1315,6 @@ def create_potion_recipe_events(
     if verbose:
         logger.debug("")
     for step_event in step_events:
-        # print(step_event)
-        # print(step_event['pddl'])
-        # print(step_event['event_feedback'])
-        # print()
         pass
 
     return step_events

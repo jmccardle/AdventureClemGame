@@ -53,7 +53,6 @@ def new_word_rooms_replace(
         def_idx_to_replace = rng.choice(
             range(len(source_definitions)), size=num_replace, replace=False
         ).tolist()
-        # print("room def_idx_to_replace:", def_idx_to_replace)
     else:
         def_idx_to_replace = list(range(len(source_definitions)))
 
@@ -174,74 +173,53 @@ def new_word_entities_replace(
         source_definitions = json.load(source_definition_file)
 
     if num_replace > 0:
-        # print(f"entity num_replace: {num_replace}")
-        # print(source_definitions[2:])
         takeables: list = [
             entity_idx
             for entity_idx, entity_def in enumerate(source_definitions)
             if "takeable" in entity_def["traits"]
         ]
-        # print("takeables:", takeables)
-        # print(source_definitions[takeables[0]])
 
         supports: list = [
             entity_idx
             for entity_idx, entity_def in enumerate(source_definitions)
             if "support" in entity_def["traits"] and entity_def["type_name"] not in ["floor"]
         ]
-        # print("supports:", supports)
         containers: list = [
             entity_idx
             for entity_idx, entity_def in enumerate(source_definitions)
             if "container" in entity_def["traits"] and entity_def["type_name"] not in ["inventory"]
         ]
-        # print("containers:", containers)
         receptacles: list = supports + containers
 
-        # print("receptacles:", receptacles)
-        # print(source_definitions[receptacles[0]])
         if num_replace == 1:
             # replace one takeable:
             def_idx_to_replace: list = rng.choice(takeables, 1).tolist()
-            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
         if num_replace == 2:
             # replace one takeable and one receptacle:
             def_idx_to_replace: list = rng.choice(takeables, 1).tolist()
-            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
             def_idx_to_replace.append(rng.choice(receptacles))
-            # print("def_idx_to_replace with receptacles:", def_idx_to_replace)
         elif num_replace == 3:
             # replace two takeables and one receptacle:
             def_idx_to_replace: list = rng.choice(takeables, 2, replace=False).tolist()
-            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
             def_idx_to_replace.append(rng.choice(receptacles))
-            # print("def_idx_to_replace with receptacles:", def_idx_to_replace)
         elif num_replace > 3:
             # replace at least one container and one support receptacle, and at least two takeables:
             def_idx_to_replace: list = rng.choice(takeables, 2, replace=False).tolist()
-            # print("def_idx_to_replace with takeables:", def_idx_to_replace)
             def_idx_to_replace.append(rng.choice(containers))
-            # print("def_idx_to_replace with container:", def_idx_to_replace)
             def_idx_to_replace.append(rng.choice(supports))
-            # print("def_idx_to_replace with support:", def_idx_to_replace)
             if num_replace > 4:
                 # replace random remaining entities up to target new-word entity number:
                 used_idx_set = set(def_idx_to_replace)
-                # print("used_idx_set:", used_idx_set)
                 all_idx_set = set(range(3, len(source_definitions)))
-                # print("all_idx_set:", all_idx_set)
                 remaining_idx_set = all_idx_set - used_idx_set
                 remaining_idx = list(remaining_idx_set)
-                # print("remaining_idx:", remaining_idx)
                 def_idx_to_replace += rng.choice(
                     remaining_idx, num_replace - 4, replace=False
                 ).tolist()
-                # print("def_idx_to_replace with remaining:", def_idx_to_replace)
 
         # get random list of entity def indices to replace:
         # range offset by three to prevent replacement of player, floor and inventory entities
         # def_idx_to_replace = rng.choice(range(2, len(source_definitions)), size=num_replace).tolist()
-        # print("entity def_idx_to_replace:", def_idx_to_replace)
     else:
         def_idx_to_replace = list(range(2, len(source_definitions)))
 
@@ -537,7 +515,6 @@ def new_word_actions_create(
     # new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
-    # print("entities:", entity_definitions)
 
     # get mutable state applicability traits and create mutable state sets:
     mutable_state_sets = dict()
@@ -550,7 +527,6 @@ def new_word_actions_create(
                         traits.append(trait)
     else:
         traits = trait_pool
-    # print(traits)
     trait_dict = dict()
     mutable_state_interaction_idx = 0
     for trait in traits:
@@ -602,7 +578,6 @@ def new_word_actions_create(
 
         trait_dict[trait] = cur_trait_dict
 
-    # print(trait_dict)
 
     # TODO?: single-action pair/chain progression?
 
@@ -625,7 +600,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -654,7 +628,6 @@ def new_word_actions_create(
 
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -750,7 +723,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -767,7 +739,6 @@ def new_word_actions_create(
             pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -837,7 +808,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -854,7 +824,6 @@ def new_word_actions_create(
             pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e)\n        (not ({trait_features['mutable_states'][1]} ?e))\n    )"
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -929,7 +898,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -946,7 +914,6 @@ def new_word_actions_create(
             pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][1]} ?e)\n        (not ({trait_features['mutable_states'][0]} ?e))\n    )"
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -1016,7 +983,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -1033,7 +999,6 @@ def new_word_actions_create(
             pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][2]} ?e)\n        (not ({trait_features['mutable_states'][1]} ?e))\n    )"
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -1103,7 +1068,6 @@ def new_word_actions_create(
             new_action["type_name"] = new_word
             # lark grammar snippet:
             lark_string = f'{new_word}: {action_tag} thing\n{action_tag}.1: "{new_word}" WS'
-            # print(lark_string)
             new_action["lark"] = lark_string
 
             # PDDL
@@ -1120,7 +1084,6 @@ def new_word_actions_create(
             pddl_effect = f":effect (and\n        ({trait_features['mutable_states'][0]} ?e)\n        (not ({trait_features['mutable_states'][2]} ?e))\n    )"
             # full PDDL action string:
             pddl_action = f"(:action {action_tag}\n    {pddl_parameters}\n    {pddl_precondition}\n    {pddl_effect}\n)"
-            # print(pddl_action)
             new_action["pddl"] = pddl_action
 
             # PDDL parameter mapping:
@@ -1229,7 +1192,6 @@ def process_to_pddl_domain(
         trait_lines.append(trait_line)
 
     # PREDICATES
-    # print(trait_dict)
     predicate_lines = list()
     for mutability_name, mutability_values in trait_dict.items():
         for mutable in mutability_values["mutable_states"]:
@@ -1275,7 +1237,6 @@ def create_new_words_definitions_set(
         new_entity_definitions, last_new_words_idx=last_new_word_idx, seed=seed
     )
 
-    # print("trait_dict:", trait_dict)
 
     if verbose:
         num_defs_created = (
@@ -1359,10 +1320,8 @@ def replace_new_words_definitions_set(
             "mutable_set_type": "paired",
         }
     }
-    # print("trait_dict:", trait_dict)
 
     for room_def in new_room_definitions:
-        # print(room_def['standard_content'])
         for entity_idx, std_entity in enumerate(room_def["standard_content"]):
             if std_entity in entities_replaced:
                 room_def["standard_content"][entity_idx] = entities_replaced[std_entity]
