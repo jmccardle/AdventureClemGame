@@ -456,156 +456,164 @@ class AdventureGameScorer(GameScorer):
     def __init__(self, game_name: str, experiment: Dict, game_instance: Dict):
         super().__init__(game_name, experiment, game_instance)
 
-    def compute_scores(self, episode_interactions: Dict) -> None:
+    def _extract_turn_metrics(
+        self, episode_interactions: Dict
+    ) -> Tuple[List[Dict], List[Dict], List[int], List[Dict], List[Dict], bool, List, bool, str]:
         """
-        Episode level scores.
-        Writes to score file in the episode directory.
-        :param episode_interactions: Dict containing episode records for entire episode and turns.
+        Extract and aggregate turn-level metrics from episode interactions.
+
+        Args:
+            episode_interactions: Episode interaction data
+
+        Returns:
+            Tuple of (turn_scores, turn_fails, turn_hallucinations, turn_explorations,
+                     plan_records, successfully_finished, final_goals_achieved, loop_abort, invalid_format)
         """
-
-        # TODO: update scoring to clemcore 3.0.2
-
-        # get adventure/episode-level info:
-        adventure_info: dict = episode_interactions[config.log_keys["adventure_info"]]
-        turn_scores = []
-        # IF interpreter interaction fail phases/types; first two must be 'parsing' and 'resolution' phases:
         fail_types = config.fail_types
-        turn_fails = []  # list eventually containing failure counts for each turn
-        turn_hallucinations = (
-            []
-        )  # list eventually containing hallucinated finish counts for each turn
-        turn_explorations = []
-
-        invalid_format: str = (
-            ""  # there can be only one invalid format or none, missing > or missing plan
-        )
-        turn_limit_loss: bool = False
-        successfully_finished = False
-        final_goals_achieved: list = list()
-        loop_abort = False
-        # planning variant:
         plan_types = config.plan_metrics
-        plan_records = []  # list eventually containing plans for all turns
-        # iterate over turns:
+
+        turn_scores = []
+        turn_fails = []
+        turn_hallucinations = []
+        turn_explorations = []
+        plan_records = []
+
+        invalid_format = ""
+        turn_limit_loss = False
+        successfully_finished = False
+        final_goals_achieved = []
+        loop_abort = False
+
         for turn_idx, turn in enumerate(episode_interactions["turns"]):
-            turn_score = {
-                "request_count": 1,
-                "goal_score": 0,
-            }  # only one request per turn; no re-prompting
-            turn_fail = {fail_type: 0 for fail_type in fail_types}  # start with zero failures
-            plan_record = {plan_type: 0 for plan_type in plan_types}  # start with zero plan values
+            turn_score = {"request_count": 1, "goal_score": 0}
+            turn_fail = {fail_type: 0 for fail_type in fail_types}
+            plan_record = {plan_type: 0 for plan_type in plan_types}
             hallucination = 0
             turn_exploration = dict()
-            # iterate over individual record entries for turn:
-            for (
-                event
-            ) in turn:  # 'event' following clembench nomenclature, not connected to IF events
-                action = event[
-                    "action"
-                ]  # 'action' following clembench nomenclature, not connected to IF actions
-                # check for format failures:
+
+            for event in turn:
+                action = event["action"]
+
                 if action["type"] == config.event_types["invalid_format"]:
                     invalid_format = action["content"]
-
-                # check for adventure finish:
                 if action["type"] == config.event_types["adventure_finished"]:
                     successfully_finished = True
-
-                # check for hallucinated finishes:
                 if action["type"] == config.event_types["hallucinated_finish"]:
                     hallucination = 1
-
-                # check for looping:
                 if action["type"] == config.event_types["loop_detected"]:
-                    # print("found loop_detected!")
                     loop_abort = True
-
-                # handle DONE as hallucinated finish if the adventure is not finished:
                 if (
                     action["type"] == config.event_types["action_info"]
                     and action["content"]["action_type"] == config.actions["done"]
                 ):
                     if not successfully_finished:
                         hallucination = 1
-
-                # check for IF interaction failures:
                 if action["type"] == config.event_types["action_fail"]:
-                    # check for unlisted fail type:
                     if action["content"][config.keys["fail_type"]] not in fail_types:
-                        logger.info(
-                            f"Unlisted fail type: {action['content'][config.keys['fail_type']]}"
-                        )
-                    # record IF interaction fail phase:
+                        logger.info(f"Unlisted fail type: {action['content'][config.keys['fail_type']]}")
                     turn_fail[action["content"]["phase"]] = 1
-                    # record IF interaction fail type:
                     turn_fail[action["content"][config.keys["fail_type"]]] = 1
 
-                # get exploration values:
                 if (
                     action["type"] == config.event_types["action_info"]
                     or action["type"] == config.event_types["action_fail"]
                 ):
                     exploration_info = action["content"]["exploration_info"]
                     logger.info(f"exploration_info: {exploration_info}")
-                    if exploration_info["action_epistemic"]:
-                        turn_exploration["epistemic_action"] = 1
-                    else:
-                        turn_exploration["epistemic_action"] = 0
-                    if exploration_info["action_pragmatic"]:
-                        turn_exploration["pragmatic_action"] = 1
-                    else:
-                        turn_exploration["pragmatic_action"] = 0
+                    turn_exploration["epistemic_action"] = 1 if exploration_info["action_epistemic"] else 0
+                    turn_exploration["pragmatic_action"] = 1 if exploration_info["action_pragmatic"] else 0
                     turn_exploration["effective_epistemic_gain_amount"] = exploration_info[
                         "effective_epistemic_gain_amount"
                     ]
-                    turn_exploration["known_entities_ratio"] = exploration_info[
-                        "known_entities_ratio"
-                    ]
-                    turn_exploration["visited_rooms_ratio"] = exploration_info[
-                        "visited_rooms_ratio"
-                    ]
-                    turn_exploration["known_goal_entities_ratio"] = exploration_info[
-                        "known_goal_entities_ratio"
-                    ]
+                    turn_exploration["known_entities_ratio"] = exploration_info["known_entities_ratio"]
+                    turn_exploration["visited_rooms_ratio"] = exploration_info["visited_rooms_ratio"]
+                    turn_exploration["known_goal_entities_ratio"] = exploration_info["known_goal_entities_ratio"]
 
-                # get plan values:
                 if action["type"] in plan_types:
                     plan_record[action["type"]] = action["content"]
-                # check for turn limit episode end:
                 if action["type"] == config.event_types["turn_limit_reached"]:
                     turn_limit_loss = True
-                    # with DONE ending now being mandatory, episode is effectively lost without DONE before turn limit
-                    # even if all goal states have been achieved:
                     successfully_finished = False
-                # get goal values:
                 if action["type"] == config.event_types["goal_status"]:
                     turn_score["goal_score"] = action["content"][config.keys["turn_goal_score"]]
-                # get final game values (last turn):
                 if action["type"] == config.event_types["game_result"]:
-                    successfully_finished = action["content"][
-                        config.keys["game_successfully_finished"]
-                    ]
+                    successfully_finished = action["content"][config.keys["game_successfully_finished"]]
                     final_goals_achieved = action["content"][config.keys["goal_states_achieved"]]
-            # check for format following, set turn violated/parsed values:
+
             if invalid_format:
                 turn_score["violated_request_count"] = 1
                 turn_score["parsed_request_count"] = 0
             else:
                 turn_score["violated_request_count"] = 0
                 turn_score["parsed_request_count"] = 1
-            # record standard turn-level request scores:
-            self.log_round_score(
-                turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"]
-            )
-            self.log_round_score(
-                turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"]
-            )
-            self.log_round_score(
-                turn_idx,
-                metrics.METRIC_REQUEST_COUNT_VIOLATED,
-                turn_score["violated_request_count"],
-            )
-            # record invalid format type turn values:
+
+            turn_scores.append(turn_score)
+            turn_fails.append(turn_fail)
+            turn_hallucinations.append(hallucination)
+            turn_explorations.append(turn_exploration)
+
+            if turn_idx >= config.array_indices["plan_analysis_start_turn"]:
+                followed_bad_plan = 0
+                if (
+                    plan_records[-1][config.log_keys["plan_command_success_ratio"]]
+                    == config.thresholds["bad_plan_viability"]
+                    and plan_record[config.event_types["plan_followed"]]
+                ):
+                    followed_bad_plan = 1
+                plan_record["bad_plan_followed"] = followed_bad_plan
+
+            plan_records.append(plan_record)
+
+        return (
+            turn_scores,
+            turn_fails,
+            turn_hallucinations,
+            turn_explorations,
+            plan_records,
+            successfully_finished,
+            final_goals_achieved,
+            loop_abort,
+            invalid_format,
+        )
+
+    def _log_turn_level_scores(
+        self,
+        episode_interactions: Dict,
+        turn_scores: List[Dict],
+        turn_fails: List[Dict],
+        turn_hallucinations: List[int],
+        turn_explorations: List[Dict],
+        plan_records: List[Dict],
+        invalid_format: str,
+        loop_abort: bool,
+    ) -> None:
+        """
+        Log all turn-level metrics to score files.
+
+        Args:
+            episode_interactions: Episode interaction data
+            turn_scores: List of turn score dicts
+            turn_fails: List of turn fail dicts
+            turn_hallucinations: List of hallucination counts
+            turn_explorations: List of exploration dicts
+            plan_records: List of plan records
+            invalid_format: Invalid format error string
+            loop_abort: Whether loop was detected
+        """
+        fail_types = config.fail_types
+        plan_types = config.plan_metrics
+
+        for turn_idx in range(len(episode_interactions["turns"])):
+            turn_score = turn_scores[turn_idx]
+            turn_fail = turn_fails[turn_idx]
+            hallucination = turn_hallucinations[turn_idx]
+            turn_exploration = turn_explorations[turn_idx]
+            plan_record = plan_records[turn_idx]
+
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"])
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"])
+            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_VIOLATED, turn_score["violated_request_count"])
+
             if invalid_format == config.parse_errors["command_tag_missing"]:
                 self.log_round_score(turn_idx, config.parse_errors["command_tag_missing"], 1)
                 self.log_round_score(turn_idx, config.parse_errors["next_actions_missing"], 0)
@@ -615,86 +623,78 @@ class AdventureGameScorer(GameScorer):
             else:
                 self.log_round_score(turn_idx, config.parse_errors["command_tag_missing"], 0)
                 self.log_round_score(turn_idx, config.parse_errors["next_actions_missing"], 0)
-            # record hallucinated finish:
+
             self.log_round_score(turn_idx, "hallucination", hallucination)
-            # record loop abort:
             if loop_abort:
-                # print("loop abort is True!")
                 self.log_round_score(turn_idx, "loop_detected", 1)
-            # record IF interaction fail values by phase:
+
             self.log_round_score(turn_idx, "action_parsing_fail", turn_fail["parsing"])
             self.log_round_score(turn_idx, "action_resolution_fail", turn_fail["resolution"])
-            # record fine-grained IF interaction fail values:
+
             for fail_type in fail_types[2:]:
                 self.log_round_score(turn_idx, fail_type, turn_fail[fail_type])
-            # record turn-level goal score:
+
             self.log_round_score(turn_idx, "goal_score", turn_score["goal_score"])
 
-            # exploration:
             if turn_exploration:
+                self.log_round_score(turn_idx, "epistemic_action", turn_exploration["epistemic_action"])
+                self.log_round_score(turn_idx, "pragmatic_action", turn_exploration["pragmatic_action"])
                 self.log_round_score(
-                    turn_idx, "epistemic_action", turn_exploration["epistemic_action"]
+                    turn_idx, "effective_epistemic_gain_amount", turn_exploration["effective_epistemic_gain_amount"]
                 )
+                self.log_round_score(turn_idx, "known_entities_ratio", turn_exploration["known_entities_ratio"])
+                self.log_round_score(turn_idx, "visited_rooms_ratio", turn_exploration["visited_rooms_ratio"])
                 self.log_round_score(
-                    turn_idx, "pragmatic_action", turn_exploration["pragmatic_action"]
-                )
-                self.log_round_score(
-                    turn_idx,
-                    "effective_epistemic_gain_amount",
-                    turn_exploration["effective_epistemic_gain_amount"],
-                )
-                self.log_round_score(
-                    turn_idx, "known_entities_ratio", turn_exploration["known_entities_ratio"]
-                )
-                self.log_round_score(
-                    turn_idx, "visited_rooms_ratio", turn_exploration["visited_rooms_ratio"]
-                )
-                self.log_round_score(
-                    turn_idx,
-                    "known_goal_entities_ratio",
-                    turn_exploration["known_goal_entities_ratio"],
+                    turn_idx, "known_goal_entities_ratio", turn_exploration["known_goal_entities_ratio"]
                 )
 
-            # append turn values to episode-level lists:
-            turn_scores.append(turn_score)
-            turn_fails.append(turn_fail)
-            turn_hallucinations.append(hallucination)
-            turn_explorations.append(turn_exploration)
-
-            # record planning values:
             for plan_type in plan_types:
                 self.log_round_score(turn_idx, plan_type, plan_record[plan_type])
-            # BAD PLAN FOLLOWING
-            if turn_idx >= config.array_indices["plan_analysis_start_turn"]:
-                followed_bad_plan: int = 0
-                # check if prior turn plan is viable at all and was followed:
-                if (
-                    plan_records[-1][config.log_keys["plan_command_success_ratio"]]
-                    == config.thresholds["bad_plan_viability"]
-                    and plan_record[config.event_types["plan_followed"]]
-                ):
-                    followed_bad_plan = 1
-                # record 'bad' plan following value:
-                plan_record["bad_plan_followed"] = followed_bad_plan
-            # append planning turn values to episode-level list:
-            plan_records.append(plan_record)
 
-        # sum up and record standard episode-level request scores:
+    def _compute_and_log_episode_metrics(
+        self,
+        turn_scores: List[Dict],
+        turn_fails: List[Dict],
+        turn_hallucinations: List[int],
+        successfully_finished: bool,
+        final_goals_achieved: List,
+        adventure_info: Dict,
+        plan_records: List[Dict],
+        invalid_format: str,
+        turn_limit_loss: bool,
+        loop_abort: bool,
+    ) -> None:
+        """
+        Compute and log episode-level metrics.
+
+        Args:
+            turn_scores: List of turn score dicts
+            turn_fails: List of turn fail dicts
+            turn_hallucinations: List of hallucination counts
+            successfully_finished: Whether episode finished successfully
+            final_goals_achieved: List of achieved goals
+            adventure_info: Adventure metadata
+            plan_records: List of plan records
+            invalid_format: Invalid format error string
+            turn_limit_loss: Whether turn limit was reached
+            loop_abort: Whether loop was detected
+        """
+        fail_types = config.fail_types
+
+        # Request scores
         violated_request_count = sum([turn["violated_request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_VIOLATED, violated_request_count)
         parsed_request_count = sum([turn["parsed_request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_PARSED, parsed_request_count)
         request_count = sum([turn["request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT, request_count)
-        self.log_episode_score(
-            metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count
-        )
+        self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count)
 
-        # sum up and record episode-level action hallucination values:
+        # Hallucination scores
         hallucination_count = sum(turn_hallucinations)
         self.log_episode_score("hallucination_count", hallucination_count)
 
-        # sum up and record episode-level action fail scores:
+        # Action fail scores
         action_parsing_fail_count = sum([turn["parsing"] for turn in turn_fails])
         self.log_episode_score("action_parsing_fail", action_parsing_fail_count)
         action_resolution_fail_count = sum([turn["resolution"] for turn in turn_fails])
@@ -706,70 +706,53 @@ class AdventureGameScorer(GameScorer):
         sucessful_actions = parsed_request_count - fail_sum
         self.log_episode_score("successful_actions", sucessful_actions)
 
-        # record turn limit exceeding loss:
-        if turn_limit_loss:
-            self.log_episode_score(config.log_keys["turn_limit_loss"], 1)
-        else:
-            self.log_episode_score(config.log_keys["turn_limit_loss"], 0)
+        # Turn limit loss
+        self.log_episode_score(config.log_keys["turn_limit_loss"], 1 if turn_limit_loss else 0)
 
-        # SPEED
-        # NOTE: Speed metrics were not informative in v1, and are now inaccurate, specially with inventory limit
-        # NOTE: Instance generation and optimal solving are yet to be updated to take v2 changes into account
-        # turn count for metrics based on it:
-        turn_count: int = len(turn_scores)
-        # get optimal turns for this episode:
-        optimal_turns: int = adventure_info["optimal_turns"]
-        # 'on par' score; how far off the episode is from the optimal number of turns:
-        turns_over_par: int = turn_count - optimal_turns
+        # Speed metrics
+        turn_count = len(turn_scores)
+        optimal_turns = adventure_info["optimal_turns"]
+        turns_over_par = turn_count - optimal_turns
         if successfully_finished:
             self.log_episode_score("turns_over_par", turns_over_par)
         else:
             self.log_episode_score("turns_over_par", np.nan)
-        # range of possible number of turns:
+
         turn_range = adventure_info["max_turns"] - adventure_info["optimal_turns"]
-        # ratio of turns taken / possible turn range:
         turn_ratio = 1 - (turns_over_par / turn_range)
         if successfully_finished:
             self.log_episode_score("turn_ratio", turn_ratio)
         else:
             self.log_episode_score("turn_ratio", np.nan)
-        # finishing speed rating:
+
         finish_speed_rating = 1 - turn_ratio
         if successfully_finished:
             self.log_episode_score("finish_speed", finish_speed_rating)
         else:
             self.log_episode_score("finish_speed", np.nan)
 
-        # count goals achieved:
+        # Goal achievement
         final_goal_score = len(final_goals_achieved)
-        # ratio of goals achieved to total number of goals:
-        goal_count: int = adventure_info["goal_count"]
+        goal_count = adventure_info["goal_count"]
         achieved_ratio = final_goal_score / goal_count
-        # record achieved goal ratio:
         self.log_episode_score("achieved_goal_ratio", achieved_ratio)
-        # combine goals/turns into overall rating; scrapped due to badly representing performance:
-        partial_success_rating = achieved_ratio
-        # scale full rating to 0-100:
-        partial_success_rating = partial_success_rating * 100
-        # log partial success rating score:
+        partial_success_rating = achieved_ratio * 100
         self.log_episode_score("achieved_goal_rating", partial_success_rating)
 
-        # MAIN SCORE
-        # use binary success rating as main score:
+        # Main score
         if successfully_finished:
             total_success_rating = config.scores["success"]
         else:
             total_success_rating = config.scores["failure"]
         self.log_episode_score(metrics.BENCH_SCORE, total_success_rating)
 
-        # invalid format or turn limit aborted:
+        # Aborted/Success/Lose metrics
         if invalid_format or turn_limit_loss or loop_abort:
             self.log_episode_score(metrics.METRIC_ABORTED, 1)
             self.log_episode_score(metrics.METRIC_SUCCESS, 0)
             self.log_episode_score(metrics.METRIC_LOSE, 0)
         else:
             self.log_episode_score(metrics.METRIC_ABORTED, 0)
-            # log successful/failed play:
             if successfully_finished:
                 self.log_episode_score(metrics.METRIC_SUCCESS, 1)
                 self.log_episode_score(metrics.METRIC_LOSE, 0)
@@ -777,23 +760,78 @@ class AdventureGameScorer(GameScorer):
                 self.log_episode_score(metrics.METRIC_SUCCESS, 0)
                 self.log_episode_score(metrics.METRIC_LOSE, 1)
 
-        # planning episode-level:
-        # plan following:
-        plan_followed_count = sum(
-            [turn["plan_followed"] for turn in plan_records[1:]]
-        )  # start at turn 2
+        # Planning metrics
+        plan_followed_count = sum([turn["plan_followed"] for turn in plan_records[1:]])
         plan_followed_ratio = plan_followed_count / turn_count
         self.log_episode_score("plan_followed_ratio", plan_followed_ratio)
-        # plan viability:
+
         plan_viability_sum = sum([turn["plan_command_success_ratio"] for turn in plan_records])
         plan_average_viability_ratio = plan_viability_sum / turn_count
         self.log_episode_score("plan_average_viability_ratio", plan_average_viability_ratio)
-        # bad plan following:
+
         bad_plan_followed_sum = sum([turn["bad_plan_followed"] for turn in plan_records])
         bad_plan_followed_ratio = bad_plan_followed_sum / turn_count
         self.log_episode_score("bad_plan_follow_ratio", bad_plan_followed_ratio)
         bad_plan_dismiss_ratio = 1 - bad_plan_followed_ratio
         self.log_episode_score("bad_plan_dismiss_ratio", bad_plan_dismiss_ratio)
+
+    def compute_scores(self, episode_interactions: Dict) -> None:
+        """
+        Episode level scores.
+        Writes to score file in the episode directory.
+        :param episode_interactions: Dict containing episode records for entire episode and turns.
+        """
+
+        # TODO: update scoring to clemcore 3.0.2
+
+        # Get adventure metadata
+        adventure_info: dict = episode_interactions[config.log_keys["adventure_info"]]
+
+        # Step 1: Extract turn-level metrics from episode interactions
+        (
+            turn_scores,
+            turn_fails,
+            turn_hallucinations,
+            turn_explorations,
+            plan_records,
+            successfully_finished,
+            final_goals_achieved,
+            loop_abort,
+            invalid_format,
+        ) = self._extract_turn_metrics(episode_interactions)
+
+        # Compute turn_limit_loss from extracted data
+        turn_limit_loss = any(
+            event["action"]["type"] == config.event_types["turn_limit_reached"]
+            for turn in episode_interactions["turns"]
+            for event in turn
+        )
+
+        # Step 2: Log all turn-level scores
+        self._log_turn_level_scores(
+            episode_interactions,
+            turn_scores,
+            turn_fails,
+            turn_hallucinations,
+            turn_explorations,
+            plan_records,
+            invalid_format,
+            loop_abort,
+        )
+
+        # Step 3: Compute and log episode-level metrics
+        self._compute_and_log_episode_metrics(
+            turn_scores,
+            turn_fails,
+            turn_hallucinations,
+            successfully_finished,
+            final_goals_achieved,
+            adventure_info,
+            plan_records,
+            invalid_format,
+            turn_limit_loss,
+            loop_abort,
+        )
 
 
 class AdventureGameBenchmark(GameBenchmark):
