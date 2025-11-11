@@ -2132,156 +2132,129 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return resolve_effect_results
 
-    def resolve_action(self, action_dict: dict) -> [bool, Union[Set, str], Union[dict, Set]]:
-        # print("resolve_action input action_dict:", action_dict)
+    def _prepare_feedback_variable_map(self, variable_map: dict) -> dict:
+        """
+        Convert instance IDs to human-readable strings for feedback templates.
 
-        # deepcopy the world state to prevent referential interaction:
-        prior_world_state = deepcopy(self.world_state)
+        Args:
+            variable_map: Dictionary mapping variable names to instance IDs
 
-        # get current action definition:
-        cur_action_def = self.action_types[action_dict["type"]]
-        # print("cur_action_def:", cur_action_def)
-        # pretty_action(cur_action_def)
-        # get current action PDDL parameter mapping:
-        cur_action_pddl_map = self.action_types[action_dict["type"]]["pddl_parameter_mapping"]
-        # print("cur_action_pddl_map:", cur_action_pddl_map)
+        Returns:
+            Dictionary with instance IDs converted to readable strings
+        """
+        clean_feedback_variable_map = deepcopy(variable_map)
+        for key in clean_feedback_variable_map:
+            if clean_feedback_variable_map[key]:
+                if clean_feedback_variable_map[key].endswith(
+                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                ):
+                    clean_feedback_variable_map[key] = self._get_inst_str(
+                        clean_feedback_variable_map[key]
+                    )
+        return clean_feedback_variable_map
 
-        # PARAMETERS
+    def _build_parameter_variable_map(
+        self, cur_action_def: dict, cur_action_pddl_map: dict, action_dict: dict
+    ) -> tuple[dict, list]:
+        """
+        Build variable map from action parameters and check type constraints.
+
+        Args:
+            cur_action_def: Action definition dictionary
+            cur_action_pddl_map: PDDL parameter mapping
+            action_dict: Player action dictionary
+
+        Returns:
+            Tuple of (variable_map, type_match_fails)
+        """
         variable_map = dict()
+        type_match_fails = list()
+
         parameters_base = cur_action_def["interaction"]["parameters"]
-        # print(parameters_base)
-        # print("cur_action_def:", cur_action_def)
-        # check that parameters key correctly contains a PDDL type_list:
         if not "type_list" in parameters_base:
             raise KeyError
-        # type match fail variable to allow parameter failure feedback after precon failures:
-        type_match_fails: list = list()
-        # get parameters list:
+
         parameters = parameters_base["type_list"]
+
         for param_idx, parameter in enumerate(parameters):
-            # print("\nparameter:", parameter, "idx:", param_idx)
             cur_parameter_type = parameter["type_list_element"]
-            # print("cur_parameter_type:", cur_parameter_type)
-            # go over variables in parameter:
+
             for variable in parameter["items"]:
-                # print("variable:", variable)
                 var_id = variable["variable"]
-                # print("var_id:", var_id)
-                # use parameter mapping to resolve variable:
                 cur_var_map = cur_action_pddl_map[f"?{var_id}"]
-                # print("cur_var_map:", cur_var_map)
+
                 match cur_var_map[0]:
-                    # assign action arguments:
                     case "arg1":
                         variable_map[var_id] = action_dict["arg1"]
                     case "arg2":
                         if "arg2" in action_dict:
-                            # print("arg2 in action_dict")
                             variable_map[var_id] = action_dict["arg2"]
                         else:
-                            # print("arg2 NOT in action_dict")
-                            # check alternate mapping:
                             if len(cur_var_map) == 2:
-                                # print("Alternate mapping:", cur_var_map[1])
                                 if cur_var_map[1] == "arg1_receptacle":
-                                    # print("variable_map:", variable_map)
                                     arg1_variable = None
                                     for (
                                         assigned_variable,
                                         assigned_value,
                                     ) in cur_action_pddl_map.items():
-                                        # print("Checking", assigned_variable, assigned_value)
-                                        # print("assigned_variable value:", cur_action_pddl_map[assigned_variable])
                                         if assigned_value[0] == "arg1":
-                                            # print("arg1 variable:", assigned_variable)
                                             arg1_variable = assigned_variable[1:]
-                                            # print("arg1_variable:", arg1_variable)
                                             break
                                     arg1_value = variable_map[arg1_variable]
-                                    # print(arg1_value)
                                     arg1_receptacle = None
                                     for fact in self.world_state:
                                         if fact[0] in ["in", "on"]:
-                                            if (
-                                                fact[1] == f"{arg1_value}1"
-                                            ):  # assume only one instance of each type
+                                            if fact[1] == f"{arg1_value}1":
                                                 arg1_receptacle = fact[2]
-                                                # print("arg1_receptacle:", arg1_receptacle)
                                                 break
                                     variable_map[var_id] = arg1_receptacle
                             else:
                                 variable_map[var_id] = None
-                    # assign default wildcards:
                     case "current_player_room":
                         variable_map[var_id] = self.get_player_room()
                     case "player":
-                        # for now only single-player, so the current player is always player1:
                         variable_map[var_id] = config.entities["player_id"]
                     case "inventory":
-                        # for now only single-player, so the current player inventory is always 'inventory':
                         variable_map[var_id] = config.entities["inventory_id"]
                     case "current_room_floor":
-                        # floors are always room ID + floor1
                         variable_map[var_id] = (
                             self.get_player_room() + config.entities["floor_id_suffix"]
                         )
 
-                # check type match:
-                # assume all world state instance IDs end in numbers:
-
-                # logger.info(variable_map)
-
+                # Check type match
                 if variable_map[var_id]:
                     if variable_map[var_id].endswith(
                         ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
                     ):
-                        # logger.info(self.inst_to_type_dict)
-                        # logger.info(f"{variable_map[var_id]} in self.inst_to_type_dict: {variable_map[var_id] in self.inst_to_type_dict}")
-                        # logger.info(f"{variable_map[var_id]} in self.room_to_type_dict: {variable_map[var_id] in self.room_to_type_dict}")
                         if variable_map[var_id] in self.inst_to_type_dict:
                             var_type = self.inst_to_type_dict[variable_map[var_id]]
                         elif variable_map[var_id] in self.room_to_type_dict:
                             var_type = self.room_to_type_dict[variable_map[var_id]]
                     else:
-                        # assume that other strings are essentially type strings:
                         var_type = variable_map[var_id]
                 else:
                     var_type = variable_map[var_id]
 
-                # print("var_type:", var_type)
-
                 # DOMAIN TYPE CHECK
                 type_matched = False
                 if type(var_type) == str:
-                    # NOTE: Inventory contents are handled via effects PDDL forall now.
-                    if var_type in self.domain["supertypes"]:
-                        # print("domain supertypes for current var_type:", self.domain['supertypes'][var_type])
-                        pass
-                    # check if type matches directly:
                     if var_type == cur_parameter_type:
                         type_matched = True
-                    # check if type matches through supertype:
                     elif (
                         var_type in self.domain["supertypes"]
                         and cur_parameter_type in self.domain["supertypes"][var_type]
                     ):
                         type_matched = True
-                    # print("type matched:", type_matched)
                 else:
-                    # Fallback for edge cases
                     type_matched = True
 
                 if not type_matched:
-                    # get the index of the mismatched variable:
                     var_idx = list(cur_action_pddl_map.keys()).index(f"?{var_id}")
-                    # get fail feedback template using mismatched variable index:
                     feedback_template = cur_action_def["failure_feedback"]["parameters"][var_idx][0]
                     feedback_jinja = jinja2.Template(feedback_template)
-                    # fill feedback template:
                     jinja_args = {var_id: variable_map[var_id]}
                     feedback_str = feedback_jinja.render(jinja_args)
                     feedback_str = feedback_str.capitalize()
-                    # use action def feedback fail type:
                     fail_type = cur_action_def["failure_feedback"]["parameters"][var_idx][1]
 
                     failed_action_info = {
@@ -2297,50 +2270,45 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     type_match_fails.append((False, feedback_str, fail_dict))
 
-                    # return False, feedback_str, fail_dict
+        return variable_map, type_match_fails
 
-        # variable map is filled during parameter checking
-        # print("variable_map pre-preconditions:", variable_map)
+    def _check_action_preconditions_and_get_feedback(
+        self, cur_action_def: dict, preconditions: list, variable_map: dict, action_dict: dict
+    ) -> tuple[bool, Union[None, tuple]]:
+        """
+        Check action preconditions and generate failure feedback if needed.
 
-        # PRECONDITION
-        preconditions: list = cur_action_def["interaction"]["precondition"][0]
-        # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
+        Args:
+            cur_action_def: Action definition dictionary
+            preconditions: List of precondition predicates
+            variable_map: Variable bindings
+            action_dict: Player action dictionary
+
+        Returns:
+            Tuple of (success, failure_result)
+            - success: True if preconditions satisfied, False otherwise
+            - failure_result: None if success, else (False, feedback_str, fail_dict)
+        """
         self.precon_idx = -1
-        # self.precon_idx = 0
         self.precon_tuples = list()
         self.precon_trace = list()
         checked_conditions = self.check_conditions(preconditions, variable_map)
-        # print("Main action checked_conditions:",checked_conditions)
-        # print("Checked precon tuples:", self.precon_tuples)
 
-        # if checked_conditions:
         if self.precon_trace[-1]["fulfilled"]:
             logger.info("Preconditions fulfilled!")
-            pass
+            return True, None
         else:
             logger.info("Preconditions not fulfilled!")
-
-            # NOTE: The first precondition fact that does not check out is used for feedback. This means that the order
-            # of predicates (and clauses) in the precondition PDDL for the action determines feedback priority!
-
             logger.info(f"precon_trace: {self.precon_trace}")
 
             def feedback_idx_from_precon_trace(precon_trace):
-                # iterate over precon trace:
                 for item in precon_trace[-1]["and"]:
-                    # print("precon_trace item:", item)
-                    # print("Checks out:", item['fulfilled'])
                     if not item["fulfilled"]:
-                        # print("Precon trace item does not check out:")
-                        # print(item)
                         if "or" in item:
-                            # print("or clause:", item)
                             for or_item in item["or"]:
-                                # print("or_item:", or_item)
                                 if "and" in or_item:
                                     for and_item in or_item["and"]:
                                         if not and_item["fulfilled"]:
-                                            # print("or and_item does not check out:", and_item)
                                             if "not" in and_item:
                                                 feedback_idx = and_item["not"]["precon_idx"]
                                                 return feedback_idx, and_item
@@ -2356,7 +2324,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                         elif "and" in item:
                             for and_item in item["and"]:
                                 if not and_item["fulfilled"]:
-                                    # print("or and_item does not check out:", and_item)
                                     if "not" in and_item:
                                         feedback_idx = and_item["not"]["precon_idx"]
                                         return feedback_idx, and_item
@@ -2371,53 +2338,47 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 feedback_idx = item["not"]["precon_idx"]
                                 return feedback_idx, item
 
-            # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
-
             feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(
                 self.precon_trace
             )
             logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
 
-            # get textual failure feedback template:
             feedback_template = cur_action_def["failure_feedback"]["precondition"][feedback_idx][0]
             feedback_jinja = jinja2.Template(feedback_template)
-            # fill feedback template:
             clean_feedback_variable_map = deepcopy(variable_map)
             logger.info(
                 f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}"
             )
+
             for key in clean_feedback_variable_map:
-                # erroneous non-supported/non-contained TAKE hotfix:
-                # if key == 's' and clean_feedback_variable_map[key] is None:
                 if clean_feedback_variable_map[key] is None:
                     feedback_str = config.messages["cannot_do_that"]
                     failed_action_info = {
                         "failed_action_type": action_dict["type"],
                         "failed_precon_predicate": "?s - receptacle",
                     }
-                    # use action def feedback fail type:
                     fail_dict: dict = {
                         "phase": "resolution",
                         "fail_type": "take_non_takeable_object",
                         "arg": failed_action_info,
                     }
-                    return False, feedback_str, fail_dict
-                    # TODO: handle this more generically in parameter handling instead
+                    return False, (False, feedback_str, fail_dict)
+
                 if clean_feedback_variable_map[key].endswith(
                     ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
                 ):
                     clean_feedback_variable_map[key] = self._get_inst_str(
                         clean_feedback_variable_map[key]
                     )
+
             jinja_args = clean_feedback_variable_map
             feedback_str = feedback_jinja.render(jinja_args)
             feedback_str = feedback_str.capitalize()
-            # failed action information for records:
+
             failed_action_info = {
                 "failed_action_type": action_dict["type"],
                 "failed_precon_predicate": failed_precon_predicate,
             }
-            # use action def feedback fail type:
             fail_type = cur_action_def["failure_feedback"]["precondition"][feedback_idx][1]
             fail_dict: dict = {
                 "phase": "resolution",
@@ -2425,27 +2386,22 @@ class AdventureIFInterpreter(GameResourceLocator):
                 "arg": failed_action_info,
             }
 
-            return False, feedback_str, fail_dict
+            return False, (False, feedback_str, fail_dict)
 
-        # if there were type match fails, return the first including feedback:
-        if type_match_fails:
-            return type_match_fails[0]
+    def _apply_action_effects(self, effects: list, variable_map: dict) -> dict:
+        """
+        Apply action effects to world state.
 
-        # print("variable_map post-preconditions:", variable_map)
+        Args:
+            effects: List of effect definitions
+            variable_map: Variable bindings
 
-        # EFFECT
-
-        effects: list = cur_action_def["interaction"]["effect"]
-        if (
-            "and" in effects[0]
-        ):  # handle multi-predicate effect, but allow non-and single predicate effect
-            effects: list = cur_action_def["interaction"]["effect"][0]["and"]
-        # print("effects:", effects)
-
+        Returns:
+            Dictionary with 'added' and 'removed' fact lists
+        """
         world_state_effects = {"added": [], "removed": []}
 
         for effect in effects:
-            # print("effect:", effect)
             if "forall" in effect:
                 forall_results = self.resolve_forall(effect, variable_map)
                 world_state_effects["added"] += forall_results["added"]
@@ -2459,39 +2415,28 @@ class AdventureIFInterpreter(GameResourceLocator):
                 world_state_effects["added"] += resolve_effect_results["added"]
                 world_state_effects["removed"] += resolve_effect_results["removed"]
 
-        # print("world_state_effects:", world_state_effects)
+        return world_state_effects
 
-        # print("World state after effects:", self.world_state)
+    def _generate_success_feedback(
+        self, cur_action_def: dict, variable_map: dict, action_dict: dict, world_state_effects: dict
+    ) -> str:
+        """
+        Generate success feedback for action execution.
 
-        # add deepcopy of new current world state to world state history:
-        self.world_state_history.append(deepcopy(self.world_state))
+        Args:
+            cur_action_def: Action definition dictionary
+            variable_map: Variable bindings
+            action_dict: Player action dictionary
+            world_state_effects: Dictionary of added/removed facts
 
-        # get all changed facts:
-        post_world_state = deepcopy(self.world_state)
-        post_resolution_changes = post_world_state.difference(prior_world_state)
-        if prior_world_state == self.world_state_history[-2]:
-            logger.info(f"Prior world state matches second to last world state in history")
-        logger.info(f"Resolution world state changes: {post_resolution_changes}")
-
-        # SUCCESS FEEDBACK
-
-        # type word variable map instead of instance ID:
-        clean_feedback_variable_map = deepcopy(variable_map)
-        for key in clean_feedback_variable_map:
-            if clean_feedback_variable_map[key]:
-                if clean_feedback_variable_map[key].endswith(
-                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                ):
-                    clean_feedback_variable_map[key] = self._get_inst_str(
-                        clean_feedback_variable_map[key]
-                    )
+        Returns:
+            Formatted feedback string
+        """
+        clean_feedback_variable_map = self._prepare_feedback_variable_map(variable_map)
 
         success_feedback_template = cur_action_def["success_feedback"]
-        # print("success_feedback_template:", success_feedback_template)
-
         feedback_jinja = jinja2.Template(success_feedback_template)
 
-        # jinja_args: dict = {}
         jinja_args: dict = clean_feedback_variable_map
         if "room_desc" in success_feedback_template:
             jinja_args["room_desc"] = self.get_full_room_desc()
@@ -2501,39 +2446,94 @@ class AdventureIFInterpreter(GameResourceLocator):
             if "prep" in action_dict:
                 jinja_args["prep"] = action_dict["prep"]
             else:
-                # get preposition fact from world state effects:
                 for added_fact in world_state_effects["added"]:
                     if added_fact[0] in ["in", "on"]:
                         jinja_args["prep"] = added_fact[0]
                         break
         if "container_content" in success_feedback_template:
-            # get opened container fact from world state effects:
             for added_fact in world_state_effects["added"]:
                 if added_fact[0] == "open":
                     opened_container_id = added_fact[1]
                     break
             jinja_args["container_content"] = self.get_container_content_desc(opened_container_id)
         if "arg1_desc" in success_feedback_template:
-            # get description of arg1 entity:
             entity_desc = self.get_entity_desc(action_dict["arg1"])
-            # print()
             jinja_args["arg1_desc"] = entity_desc
         if "arg2_desc" in success_feedback_template:
-            # get description of arg2 entity:
             entity_desc = self.get_entity_desc(action_dict["arg2"])
-            # print()
             jinja_args["arg2_desc"] = entity_desc
-
         if "arg1_text" in success_feedback_template:
-            # get text of arg1 entity:
             entity_text = self.get_entity_text(action_dict["arg1"])
-            # print()
             jinja_args["arg1_text"] = entity_text
 
         feedback_str = feedback_jinja.render(jinja_args)
-        # feedback_str = feedback_str.capitalize()
+        return feedback_str
 
-        # print("feedback_str:", feedback_str)
+    def resolve_action(self, action_dict: dict) -> [bool, Union[Set, str], Union[dict, Set]]:
+        """
+        Resolve player action and update world state.
+
+        Main orchestrator function that coordinates action resolution:
+        1. Build parameter variable map and check types
+        2. Check action preconditions
+        3. Apply action effects
+        4. Generate feedback
+
+        Args:
+            action_dict: Player action dictionary with type and arguments
+
+        Returns:
+            Tuple of (success, feedback_str, result_dict)
+            - success: Boolean indicating if action succeeded
+            - feedback_str: Human-readable feedback message
+            - result_dict: Either world_state_effects dict or fail_dict
+        """
+        # Save prior world state for change tracking
+        prior_world_state = deepcopy(self.world_state)
+
+        # Get action definition and PDDL parameter mapping
+        cur_action_def = self.action_types[action_dict["type"]]
+        cur_action_pddl_map = cur_action_def["pddl_parameter_mapping"]
+
+        # Step 1: Build parameter variable map and check types
+        variable_map, type_match_fails = self._build_parameter_variable_map(
+            cur_action_def, cur_action_pddl_map, action_dict
+        )
+
+        # Step 2: Check action preconditions
+        preconditions: list = cur_action_def["interaction"]["precondition"][0]
+        precon_success, precon_failure = self._check_action_preconditions_and_get_feedback(
+            cur_action_def, preconditions, variable_map, action_dict
+        )
+
+        if not precon_success:
+            return precon_failure
+
+        # Return type match failures after precondition check (priority order)
+        if type_match_fails:
+            return type_match_fails[0]
+
+        # Step 3: Apply action effects
+        effects: list = cur_action_def["interaction"]["effect"]
+        if "and" in effects[0]:
+            effects: list = effects[0]["and"]
+
+        world_state_effects = self._apply_action_effects(effects, variable_map)
+
+        # Update world state history
+        self.world_state_history.append(deepcopy(self.world_state))
+
+        # Log world state changes
+        post_world_state = deepcopy(self.world_state)
+        post_resolution_changes = post_world_state.difference(prior_world_state)
+        if prior_world_state == self.world_state_history[-2]:
+            logger.info("Prior world state matches second to last world state in history")
+        logger.info(f"Resolution world state changes: {post_resolution_changes}")
+
+        # Step 4: Generate success feedback
+        feedback_str = self._generate_success_feedback(
+            cur_action_def, variable_map, action_dict, world_state_effects
+        )
 
         return True, feedback_str, {"world_state_effects": world_state_effects}
 
