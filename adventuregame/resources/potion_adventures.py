@@ -1,6 +1,9 @@
 """Functions for creating potion brewing adventures."""
 
+import logging
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def generate_potion_recipe(
@@ -194,13 +197,13 @@ def create_potion_recipe_events(
 
     for step in potion_recipe["steps"]:
         if verbose:
-            print(step)
+            logger.debug("Step: %s", step)
     if verbose:
-        print()
+        logger.debug("")
 
     for step_idx, step in enumerate(potion_recipe["steps"][step_start:]):
         if verbose:
-            print(step)
+            logger.debug("Step: %s", step)
         step_event_dict: dict = {
             "type_name": f"potion_step_{step_idx+1}",
             "pddl": "",
@@ -212,16 +215,16 @@ def create_potion_recipe_events(
         if step_idx == 0:
             prior_ingredient = potion_recipe["steps"][0]["entity_type"]
             if verbose:
-                print(f"prior_ingredient is {prior_ingredient}")
+                logger.debug("prior_ingredient is %s", prior_ingredient)
         else:
             if potion_recipe["steps"][step_idx]["step_type"] == "use_tool":
                 prior_tool = potion_recipe["steps"][step_idx]["entity_type"]
                 if verbose:
-                    print(f"prior_tool is {prior_tool}")
+                    logger.debug("prior_tool is %s", prior_tool)
             elif potion_recipe["steps"][step_idx]["step_type"] == "add_ingredient":
                 prior_ingredient = potion_recipe["steps"][step_idx]["entity_type"]
                 if verbose:
-                    print(f"prior_ingredient is {prior_ingredient}")
+                    logger.debug("prior_ingredient is %s", prior_ingredient)
 
         current_entity = step["entity_type"]
 
@@ -282,12 +285,12 @@ def create_potion_recipe_events(
                 )
                 asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                 if verbose:
-                    print(asp_event_trigger)
+                    logger.debug("ASP event trigger: %s", asp_event_trigger)
                 asp_rules.append(asp_event_trigger)
                 # event effects ASP:
                 # added facts:
                 if verbose:
-                    print("add facts:")
+                    logger.debug("add facts:")
                 # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace(
@@ -309,14 +312,14 @@ def create_potion_recipe_events(
                 asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                 # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose:
-                    print(asp_next_turn_add)
+                    logger.debug("ASP next turn add: %s", asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
                 # persist added facts in ASP:
                 asp_persistence_facts = [
                     fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                 ]
                 if verbose:
-                    print("asp_persistence_facts:", asp_persistence_facts)
+                    logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                 for asp_persistence_fact in asp_persistence_facts:
                     asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                     asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -325,7 +328,7 @@ def create_potion_recipe_events(
                     asp_rules.append(asp_next_turn_persist)
                 # removed facts:
                 if verbose:
-                    print("remove facts:")
+                    logger.debug("remove facts:")
                 effect_sub_predicates = [
                     f"at_t(TURN,{prior_ingredient}1,ROOM)",
                     f"in_t(TURN,{prior_ingredient}1,cauldron1)",
@@ -346,7 +349,7 @@ def create_potion_recipe_events(
                         "MUTABLE_FACT_AFTER", effect_sub_asp_string
                     )
                     if verbose:
-                        print(asp_next_turn_sub)
+                        logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
                 combined_asp_rules = "\n".join(asp_rules)
@@ -397,12 +400,12 @@ def create_potion_recipe_events(
                 )
                 asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                 if verbose:
-                    print(asp_event_trigger)
+                    logger.debug("ASP event trigger: %s", asp_event_trigger)
                 asp_rules.append(asp_event_trigger)
                 # event effects ASP:
                 # added facts:
                 if verbose:
-                    print("add facts:")
+                    logger.debug("add facts:")
                 # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace(
@@ -424,7 +427,7 @@ def create_potion_recipe_events(
                 asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                 # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose:
-                    print(asp_next_turn_add)
+                    logger.debug("ASP next turn add: %s", asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
 
                 # persist added facts in ASP:
@@ -432,7 +435,7 @@ def create_potion_recipe_events(
                     fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                 ]
                 if verbose:
-                    print("asp_persistence_facts:", asp_persistence_facts)
+                    logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                 for asp_persistence_fact in asp_persistence_facts:
                     # asp_next_turn_persist = f"PERSISTENT_FACT :-  not event_t(TURN,potion_step_{step_idx + 2},ROOM), room(ROOM,_)."
                     asp_next_turn_persist = (
@@ -445,7 +448,7 @@ def create_potion_recipe_events(
 
                 # removed facts:
                 if verbose:
-                    print("remove facts:")
+                    logger.debug("remove facts:")
                 effect_sub_predicates = [
                     f"at_t(TURN,liquid{step_idx},ROOM)",
                     f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -466,7 +469,7 @@ def create_potion_recipe_events(
                         "MUTABLE_FACT_AFTER", effect_sub_asp_string
                     )
                     if verbose:
-                        print(asp_next_turn_sub)
+                        logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
                 combined_asp_rules = "\n".join(asp_rules)
@@ -521,12 +524,12 @@ def create_potion_recipe_events(
                 )
                 asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                 if verbose:
-                    print(asp_event_trigger)
+                    logger.debug("ASP event trigger: %s", asp_event_trigger)
                 asp_rules.append(asp_event_trigger)
                 # event effects ASP:
                 # added facts:
                 if verbose:
-                    print("add facts:")
+                    logger.debug("add facts:")
                 # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                 asp_next_turn_add = asp_next_turn_add.replace(
@@ -548,14 +551,14 @@ def create_potion_recipe_events(
                 asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                 # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                 if verbose:
-                    print(asp_next_turn_add)
+                    logger.debug("ASP next turn add: %s", asp_next_turn_add)
                 asp_rules.append(asp_next_turn_add)
                 # persist added facts in ASP:
                 asp_persistence_facts = [
                     fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                 ]
                 if verbose:
-                    print("asp_persistence_facts:", asp_persistence_facts)
+                    logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                 for asp_persistence_fact in asp_persistence_facts:
                     asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                     asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -564,7 +567,7 @@ def create_potion_recipe_events(
                     asp_rules.append(asp_next_turn_persist)
                 # removed facts:
                 if verbose:
-                    print("remove facts:")
+                    logger.debug("remove facts:")
                 effect_sub_predicates = [
                     f"at_t(TURN,liquid{step_idx},ROOM)",
                     f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -585,7 +588,7 @@ def create_potion_recipe_events(
                         "MUTABLE_FACT_AFTER", effect_sub_asp_string
                     )
                     if verbose:
-                        print(asp_next_turn_sub)
+                        logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                     asp_rules.append(asp_next_turn_sub)
                 # combine ASP rules:
                 combined_asp_rules = "\n".join(asp_rules)
@@ -593,7 +596,7 @@ def create_potion_recipe_events(
         elif step["step_type"] == "use_tool":
             # swirl/puff/etc event
             if verbose:
-                print(f"use_tool step, {current_entity}")
+                logger.debug("use_tool step, %s", current_entity)
             # check if wand or stirrer:
             tool_category = str()
             if current_entity in domain_def["types"]["wand"]:  # ugly hardcode, but quick
@@ -603,7 +606,7 @@ def create_potion_recipe_events(
             # get applied predicate:
             applied_predicate = entity_defs[current_entity]["applied_predicate"]
             if verbose:
-                print(f"{current_entity} applies {applied_predicate}")
+                logger.debug("%s applies %s", current_entity, applied_predicate)
             # TODO: fix intermediate liquid preconditions (liquid2 directly instead of (type ?l liquid2)
             if step_idx == 0:
                 # create liquid1
@@ -654,12 +657,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -681,14 +684,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                         asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -697,7 +700,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,{prior_ingredient}1,ROOM)",
                         f"in_t(TURN,{prior_ingredient}1,cauldron1)",
@@ -719,7 +722,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -771,12 +774,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -798,14 +801,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                         asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -814,7 +817,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,{prior_ingredient}1,ROOM)",
                         f"in_t(TURN,{prior_ingredient}1,cauldron1)",
@@ -836,7 +839,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -888,12 +891,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -915,14 +918,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = (
                             f"PERSISTENT_FACT :- {asp_persistence_fact}, turn(TURN), room(ROOM,_)."
@@ -933,7 +936,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,liquid{step_idx},ROOM)",
                         f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -954,7 +957,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -1004,12 +1007,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -1031,14 +1034,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = (
                             f"PERSISTENT_FACT :- {asp_persistence_fact}, turn(TURN), room(ROOM,_)."
@@ -1049,7 +1052,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,liquid{step_idx},ROOM)",
                         f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -1071,7 +1074,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -1121,12 +1124,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -1148,14 +1151,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                         asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -1164,7 +1167,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,liquid{step_idx},ROOM)",
                         f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -1185,7 +1188,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -1234,12 +1237,12 @@ def create_potion_recipe_events(
                     )
                     asp_event_trigger = asp_event_trigger.replace("PRECON_FACTS", precon_facts)
                     if verbose:
-                        print(asp_event_trigger)
+                        logger.debug("ASP event trigger: %s", asp_event_trigger)
                     asp_rules.append(asp_event_trigger)
                     # event effects ASP:
                     # added facts:
                     if verbose:
-                        print("add facts:")
+                        logger.debug("add facts:")
                     # asp_next_turn_add = "MUTABLE_FACTS :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = " :- event_t(TURN,EVENT_TYPE,ROOM)."
                     asp_next_turn_add = asp_next_turn_add.replace(
@@ -1261,14 +1264,14 @@ def create_potion_recipe_events(
                     asp_next_turn_add = "\n".join(effect_add_asp_rules_list)
                     # asp_next_turn_add = asp_next_turn_add.replace("MUTABLE_FACTS", effect_add_asp_string)
                     if verbose:
-                        print(asp_next_turn_add)
+                        logger.debug("ASP next turn add: %s", asp_next_turn_add)
                     asp_rules.append(asp_next_turn_add)
                     # persist added facts in ASP:
                     asp_persistence_facts = [
                         fact_str for fact_str in effect_add_asp_list if "_t" in fact_str
                     ]
                     if verbose:
-                        print("asp_persistence_facts:", asp_persistence_facts)
+                        logger.debug("asp_persistence_facts: %s", asp_persistence_facts)
                     for asp_persistence_fact in asp_persistence_facts:
                         asp_next_turn_persist = f"PERSISTENT_FACT :- {asp_persistence_fact}, not event_t(TURN,potion_step_{step_idx + 2},ROOM), turn(TURN), room(ROOM,_)."
                         asp_next_turn_persist = asp_next_turn_persist.replace(
@@ -1277,7 +1280,7 @@ def create_potion_recipe_events(
                         asp_rules.append(asp_next_turn_persist)
                     # removed facts:
                     if verbose:
-                        print("remove facts:")
+                        logger.debug("remove facts:")
                     effect_sub_predicates = [
                         f"at_t(TURN,liquid{step_idx},ROOM)",
                         f"in_t(TURN,liquid{step_idx},cauldron1)",
@@ -1299,7 +1302,7 @@ def create_potion_recipe_events(
                             "MUTABLE_FACT_AFTER", effect_sub_asp_string
                         )
                         if verbose:
-                            print(asp_next_turn_sub)
+                            logger.debug("ASP next turn sub: %s", asp_next_turn_sub)
                         asp_rules.append(asp_next_turn_sub)
                     # combine ASP rules:
                     combined_asp_rules = "\n".join(asp_rules)
@@ -1309,9 +1312,9 @@ def create_potion_recipe_events(
         step_event_dict["asp"] = combined_asp_rules
         step_events.append(step_event_dict)
         if verbose:
-            print()
+            logger.debug("")
     if verbose:
-        print()
+        logger.debug("")
     for step_event in step_events:
         # print(step_event)
         # print(step_event['pddl'])
