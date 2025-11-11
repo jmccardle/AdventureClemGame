@@ -49,7 +49,7 @@ class AdventurePlayer(Player):
         latest_response = config.messages["initial_response"]
         if context is not None:
             latest_response = context[config.keys["message_content"]]
-        print(f"\n{latest_response}")
+        logger.info(latest_response)
         user_input = input(
             f"Type in your action, {config.game_constants['command_prefix']} will be automatically added if missing:\n"
         )
