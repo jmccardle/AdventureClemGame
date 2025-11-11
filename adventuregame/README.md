@@ -105,3 +105,42 @@ pre-commit run --all-files
 ```
 
 Pre-commit hooks are automatically run before each commit to ensure code quality.
+
+### Logging
+
+The project uses Python's logging module for all output. Logging is configured in `config.json`:
+
+```json
+{
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": null,
+    "console": true
+  }
+}
+```
+
+**Logging Levels:**
+- `DEBUG`: Detailed diagnostic information (variable dumps, intermediate states)
+- `INFO`: General progress and status messages
+- `WARNING`: Unexpected but recoverable situations
+- `ERROR`: Error conditions that impact functionality
+- `CRITICAL`: Critical errors requiring immediate attention
+
+**Usage Example:**
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+logger.debug("Processing state: %s", state_dict)
+logger.info("Generated %d adventures", count)
+logger.warning("Using default config")
+logger.error("Failed to parse file: %s", filename)
+```
+
+For detailed logging guidelines, see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+### Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines on code style, logging best practices, and the contribution process.
