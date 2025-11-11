@@ -23,25 +23,25 @@ def split_state_string(state_string: str, value_delimiter: str = "(", value_sepa
 # adventure source file with initial state and goals:
 source_file_path = "layout_source2.json"
 # load initial state facts:
-with open(source_file_path, 'r', encoding='utf-8') as source_file:
+with open(source_file_path, "r", encoding="utf-8") as source_file:
     adventure_source = json.load(source_file)
-adventure_facts = adventure_source['initial_state']
-adventure_goals = adventure_source['goal_state']
+adventure_facts = adventure_source["initial_state"]
+adventure_goals = adventure_source["goal_state"]
 # split facts into tuples:
 split_facts = [split_state_string(fact) for fact in adventure_facts]
 # split goals into tuples:
 split_goals = [split_state_string(goal) for goal in adventure_goals]
 # directed graph:
-dot = graphviz.Digraph('room_layout', format='png')
+dot = graphviz.Digraph("room_layout", format="png")
 
 # dot.attr('node', shape='house')
-dot.attr('node', shape='box')
+dot.attr("node", shape="box")
 
 for fact in split_facts:
     if fact[0] == "room":
         dot.node(fact[1], fact[1])
 
-dot.attr('node', shape='box')
+dot.attr("node", shape="box")
 """
 for fact in split_facts:
     if fact[0] == "type":
@@ -50,7 +50,7 @@ for fact in split_facts:
                 if fact2[0] == "container" or fact2[0] == "support":
                     dot.node(fact[1], fact[1])
 """
-dot.attr('node', shape='ellipse')
+dot.attr("node", shape="ellipse")
 
 for fact in split_facts:
     """
@@ -72,7 +72,7 @@ for fact in split_facts:
         dot.edge(fact[1], fact[2], "in")
     """
 
-dot.attr('edge', style='dashed')
+dot.attr("edge", style="dashed")
 """
 for goal in split_goals:
     if goal[0] == "on":

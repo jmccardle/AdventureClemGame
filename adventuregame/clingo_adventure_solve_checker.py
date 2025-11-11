@@ -9,7 +9,7 @@ from clingo.control import Control
 ctl = Control(["0"])
 
 # load ASP encoding:
-with open("adventure_solve_asp_example.lp", 'r', encoding='utf-8') as lp_file:
+with open("adventure_solve_asp_example.lp", "r", encoding="utf-8") as lp_file:
     example_lp = lp_file.read()
 
 # add encoding to clingo controller:
@@ -37,6 +37,7 @@ with ctl.solve(yield_=True) as solve:
     elif satisfiable == "UNSAT":
         print("Adventure can NOT be solved.")
 # the last model in the models list is the optimal solution
+
 
 def convert_action_to_tuple(action: str):
     action_splice = action[9:-1]
@@ -74,7 +75,7 @@ for model_idx, model in enumerate(models):
 
     turns_list.sort()
     # as turns limit actions, the effect of the last action is seen at the 'turn after the last turn':
-    turns_list.append(turns_list[-1]+1)
+    turns_list.append(turns_list[-1] + 1)
 
     actions_list.sort(key=lambda turn: turn[0])
     # filter out specific action types for inspection:
@@ -98,4 +99,3 @@ for model_idx, model in enumerate(models):
             if action[1] in actions_filter and action[0] == turn:
                 print("action", action)
         print()
-

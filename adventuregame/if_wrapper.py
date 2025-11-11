@@ -1,32 +1,29 @@
 """
-    IF interpreter for adventuregame.
+IF interpreter for adventuregame.
 """
 
+import itertools
 import json
-import lark
-from lark import Lark, Transformer
-import jinja2
-
-import numpy as np
+import logging
 import os
 from copy import deepcopy
 from typing import List, Set, Union
-import itertools
 
-from clemcore.clemgame import GameResourceLocator
-
-import logging
-
+import jinja2
+import lark
+import numpy as np
 from adv_util import fact_str_to_tuple, fact_tuple_to_str
+from clemcore.clemgame import GameResourceLocator
 from config_loader import get_config
+from lark import Lark, Transformer
 
 # Load configuration
 config = get_config()
 
-PATH = config.paths['game_module_path']
-RESOURCES_SUBPATH = config.paths['resources_dir']
+PATH = config.paths["game_module_path"]
+RESOURCES_SUBPATH = config.paths["resources_dir"]
 
-GAME_NAME = config.game_constants['game_name']
+GAME_NAME = config.game_constants["game_name"]
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +32,7 @@ class IFTransformer(Transformer):
     """
     IF action grammar transformer to convert Lark parse to python dict for further use.
     """
+
     # since this is solely for action command parse conversion, any input is converted to a parsed action dict:
     def action(self, content):
         action: lark.Tree = content[0]
@@ -42,29 +40,35 @@ class IFTransformer(Transformer):
         action_type = action.data  # main grammar rule the input was parsed as
         # print("IFTransformer action_type:", action_type)
         action_content = action.children  # all parsed arguments of the action 'VP'
-        action_dict = {'type': action_type.value}  # value = string name of rule in grammar
+        action_dict = {"type": action_type.value}  # value = string name of rule in grammar
 
         arguments = []
         arg_idx = 1
 
         for child in action_content:
             # handle potentially multi-word 'thing' arguments; roughly equivalent to generic 'NP':
-            if type(child) == lark.Tree and child.data == 'thing':
-                argument_words = [word.value for word in child.children if word.type == 'WORD']
+            if type(child) == lark.Tree and child.data == "thing":
+                argument_words = [word.value for word in child.children if word.type == "WORD"]
                 arguments.append(" ".join(argument_words))
                 # extract defined adjectives:
-                argument_adjs = [adj.value.strip() for adj in child.children[:-1] if adj.type == 'ADJ']
+                argument_adjs = [
+                    adj.value.strip() for adj in child.children[:-1] if adj.type == "ADJ"
+                ]
                 if argument_adjs:
-                    action_dict[f'arg{arg_idx}_adjs'] = argument_adjs
-                action_dict[f'arg{arg_idx}'] = arguments[-1]
+                    action_dict[f"arg{arg_idx}_adjs"] = argument_adjs
+                action_dict[f"arg{arg_idx}"] = arguments[-1]
                 arg_idx += 1
             # extract defined prepositions:
-            if type(child) == lark.Token and child.type == 'PREP':
-                action_dict['prep'] = child.value.strip()
+            if type(child) == lark.Token and child.type == "PREP":
+                action_dict["prep"] = child.value.strip()
             # if the input can't be parsed as a defined action command, the grammar labels it as 'unknown'
             # in this case, the first word is assumed to be the verb and is returned for feedback:
-            if action_type.value == 'unknown' and type(child) == lark.Token and child.type == 'WORD':
-                action_dict[f'arg{arg_idx}'] = child.value
+            if (
+                action_type.value == "unknown"
+                and type(child) == lark.Token
+                and child.type == "WORD"
+            ):
+                action_dict[f"arg{arg_idx}"] = child.value
                 break
 
         return action_dict
@@ -74,6 +78,7 @@ class PDDLBaseTransformer(Transformer):
     """PDDL parse transformer for shared base methods/grammar rules.
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string."""
+
     def forall(self, content):
         # print("forall cont:", content)
         iterated_object = content[2]
@@ -81,7 +86,7 @@ class PDDLBaseTransformer(Transformer):
         forall_body = content[4:]
         # print("forall body:", forall_body)
 
-        forall_dict = {'forall': iterated_object, 'body': forall_body}
+        forall_dict = {"forall": iterated_object, "body": forall_body}
         # print("forall returns:", forall_dict)
         return forall_dict
 
@@ -94,7 +99,7 @@ class PDDLBaseTransformer(Transformer):
                 pass
             else:
                 when_items.append(when_item)
-        when_dict = {'when': when_items}
+        when_dict = {"when": when_items}
         # print("when returns:", when_dict)
         return when_dict
 
@@ -107,7 +112,7 @@ class PDDLBaseTransformer(Transformer):
                 pass
             else:
                 and_items.append(and_item)
-        and_dict = {'and': and_items}
+        and_dict = {"and": and_items}
         # print("andp returns:", and_dict, "\n")
         return and_dict
 
@@ -120,24 +125,24 @@ class PDDLBaseTransformer(Transformer):
                 pass
             else:
                 or_items.append(or_item)
-        or_dict = {'or': or_items}
+        or_dict = {"or": or_items}
         # print("orp returns:", or_dict, "\n")
         return or_dict
 
     def notp(self, content):
         # print("notp cont:", content)
         # (not X) always wraps only one item, hence:
-        return {'not': content[2]}
+        return {"not": content[2]}
 
     def type_list(self, content):
         # print(content)
-        return {'type_list': content}
+        return {"type_list": content}
 
     def type_list_element(self, content):
         # print("type_list_item cont:", content)
         type_list_items = list()
         for item_element in content:
-            if 'variable' in item_element:
+            if "variable" in item_element:
                 type_list_items.append(item_element)
             elif type(item_element) == lark.Token:
                 if item_element.type == "WORDP":
@@ -150,7 +155,7 @@ class PDDLBaseTransformer(Transformer):
         else:
             cat_name = content[-1].value
 
-        return {'type_list_element': cat_name, 'items': type_list_items}
+        return {"type_list_element": cat_name, "items": type_list_items}
 
     def pred(self, content):
         # print("pred content:", content)
@@ -180,26 +185,31 @@ class PDDLBaseTransformer(Transformer):
             else:
                 pred_arg3 = content[6]
 
-        pred_dict = {'predicate': pred_type, 'arg1': pred_arg1, 'arg2': pred_arg2, 'arg3': pred_arg3}
+        pred_dict = {
+            "predicate": pred_type,
+            "arg1": pred_arg1,
+            "arg2": pred_arg2,
+            "arg3": pred_arg3,
+        }
         # print(pred_dict, "\n")
 
         return pred_dict
 
     def var(self, content):
         # print(content[0])
-        return {'variable': content[0].value}
+        return {"variable": content[0].value}
 
     def function(self, content):
         # print("function content:", content)
 
         function_dict = dict()
 
-        if content[0].type == 'NUMBER':
+        if content[0].type == "NUMBER":
             # print("function NUMBER:", content[0].value)
-            function_dict['function_number'] = content[0].value
+            function_dict["function_number"] = content[0].value
         else:
-            function_dict['function_id'] = content[0].value
-            function_dict['function_variable'] = content[2]
+            function_dict["function_id"] = content[0].value
+            function_dict["function_variable"] = content[2]
 
         # print("function_dict:", function_dict)
 
@@ -208,10 +218,10 @@ class PDDLBaseTransformer(Transformer):
     def equal(self, content):
         # print("greq content:", content)
 
-        equal_dict = {'num_comp': "equal"}
+        equal_dict = {"num_comp": "equal"}
 
-        equal_dict['arg1'] = content[2]
-        equal_dict['arg2'] = content[4]
+        equal_dict["arg1"] = content[2]
+        equal_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -220,10 +230,10 @@ class PDDLBaseTransformer(Transformer):
     def greater(self, content):
         # print("greq content:", content)
 
-        greater_dict = {'num_comp': "greater"}
+        greater_dict = {"num_comp": "greater"}
 
-        greater_dict['arg1'] = content[2]
-        greater_dict['arg2'] = content[4]
+        greater_dict["arg1"] = content[2]
+        greater_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -232,10 +242,10 @@ class PDDLBaseTransformer(Transformer):
     def greq(self, content):
         # print("greq content:", content)
 
-        greq_dict = {'num_comp': "greq"}
+        greq_dict = {"num_comp": "greq"}
 
-        greq_dict['arg1'] = content[2]
-        greq_dict['arg2'] = content[4]
+        greq_dict["arg1"] = content[2]
+        greq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -244,10 +254,10 @@ class PDDLBaseTransformer(Transformer):
     def less(self, content):
         # print("greq content:", content)
 
-        less_dict = {'num_comp': "less"}
+        less_dict = {"num_comp": "less"}
 
-        less_dict['arg1'] = content[2]
-        less_dict['arg2'] = content[4]
+        less_dict["arg1"] = content[2]
+        less_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -256,10 +266,10 @@ class PDDLBaseTransformer(Transformer):
     def leq(self, content):
         # print("greq content:", content)
 
-        leq_dict = {'num_comp': "leq"}
+        leq_dict = {"num_comp": "leq"}
 
-        leq_dict['arg1'] = content[2]
-        leq_dict['arg2'] = content[4]
+        leq_dict["arg1"] = content[2]
+        leq_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -268,10 +278,10 @@ class PDDLBaseTransformer(Transformer):
     def assign(self, content):
         # print("greq content:", content)
 
-        assign_dict = {'function_change': "assign"}
+        assign_dict = {"function_change": "assign"}
 
-        assign_dict['arg1'] = content[2]
-        assign_dict['arg2'] = content[4]
+        assign_dict["arg1"] = content[2]
+        assign_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -280,10 +290,10 @@ class PDDLBaseTransformer(Transformer):
     def increase(self, content):
         # print("greq content:", content)
 
-        increase_dict = {'function_change': "increase"}
+        increase_dict = {"function_change": "increase"}
 
-        increase_dict['arg1'] = content[2]
-        increase_dict['arg2'] = content[4]
+        increase_dict["arg1"] = content[2]
+        increase_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -292,10 +302,10 @@ class PDDLBaseTransformer(Transformer):
     def decrease(self, content):
         # print("greq content:", content)
 
-        decrease_dict = {'function_change': "decrease"}
+        decrease_dict = {"function_change": "decrease"}
 
-        decrease_dict['arg1'] = content[2]
-        decrease_dict['arg2'] = content[4]
+        decrease_dict["arg1"] = content[2]
+        decrease_dict["arg2"] = content[4]
 
         # print("greq_dict:", greq_dict)
 
@@ -307,11 +317,12 @@ class PDDLActionTransformer(PDDLBaseTransformer):
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
     """
+
     def action(self, content):
         # print("action cont:", content)
 
         # action_def_dict = {'action_name': content[1].value, 'content': content[3:]}
-        action_def_dict = {'action_name': content[1].value.lower()}
+        action_def_dict = {"action_name": content[1].value.lower()}
 
         for cont in content:
             # print(type(cont))
@@ -320,13 +331,12 @@ class PDDLActionTransformer(PDDLBaseTransformer):
                 pass
             else:
                 # print("non-Token", cont)
-                if 'parameters' in cont:
-                    action_def_dict['parameters'] = cont['parameters']
-                elif 'precondition' in cont:
-                    action_def_dict['precondition'] = cont['precondition']
-                elif 'effect' in cont:
-                    action_def_dict['effect'] = cont['effect']
-
+                if "parameters" in cont:
+                    action_def_dict["parameters"] = cont["parameters"]
+                elif "precondition" in cont:
+                    action_def_dict["precondition"] = cont["precondition"]
+                elif "effect" in cont:
+                    action_def_dict["effect"] = cont["effect"]
 
         # action: lark.Tree = content[0]
         # action_type = action.data  # main grammar rule the input was parsed as
@@ -343,16 +353,16 @@ class PDDLActionTransformer(PDDLBaseTransformer):
             parameter_list = content[1]
         # print("parameters:", parameter_list)
 
-        return {'parameters': parameter_list}
+        return {"parameters": parameter_list}
 
     def precondition(self, content):
         # print("precond cont:", content)
         # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
+        return {"precondition": content[1:-1]}
 
     def effect(self, content):
         # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
+        effect_dict = {"effect": content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
 
@@ -362,6 +372,7 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
     """
+
     def define(self, content):
         # print("define cont:", content)
 
@@ -376,17 +387,17 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
                 pass
             else:
                 # print("non-Token:", cont)
-                if 'domain_id' in cont:
-                    domain_def_dict['domain_id'] = cont['domain_id']
-                if 'types' in cont:
-                    domain_def_dict['types'] = cont['types']
-                if 'functions' in cont:
-                    domain_def_dict['functions'] = cont['functions']
-                if 'event_id' in cont:
-                    if not 'events' in domain_def_dict:
-                        domain_def_dict['events'] = [cont]
+                if "domain_id" in cont:
+                    domain_def_dict["domain_id"] = cont["domain_id"]
+                if "types" in cont:
+                    domain_def_dict["types"] = cont["types"]
+                if "functions" in cont:
+                    domain_def_dict["functions"] = cont["functions"]
+                if "event_id" in cont:
+                    if not "events" in domain_def_dict:
+                        domain_def_dict["events"] = [cont]
                     else:
-                        domain_def_dict['events'].append(cont)
+                        domain_def_dict["events"].append(cont)
 
         # action: lark.Tree = content[0]
         # action_type = action.data  # main grammar rule the input was parsed as
@@ -400,20 +411,20 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
     def domain_id(self, content):
         # print("domain_id cont:", content)
         # print("domain_id return:", {'domain_id': content[-1].value})
-        return {'domain_id': content[-1].value}
+        return {"domain_id": content[-1].value}
 
     def types(self, content):
         # print("types cont:", content)
         types_list = list()
         for cont in content:
-            if 'type_list_element' in cont:
+            if "type_list_element" in cont:
                 types_list.append(cont)
         types_dict = dict()
         for type_list in types_list:
             # print(type_list)
-            types_dict[f'{type_list["type_list_element"]}'] = type_list['items']
+            types_dict[f'{type_list["type_list_element"]}'] = type_list["items"]
         # print("types return:", {'types': types_list})
-        return {'types': types_dict}
+        return {"types": types_dict}
 
     def parameters(self, content):
         parameter_list = None
@@ -421,25 +432,25 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
             parameter_list = content[1]
         # print("parameters:", parameter_list)
 
-        return {'parameters': parameter_list}
+        return {"parameters": parameter_list}
 
     def precondition(self, content):
         # print("precond cont:", content)
         # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
+        return {"precondition": content[1:-1]}
 
     def effect(self, content):
         # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
+        effect_dict = {"effect": content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
 
     def functions(self, content):
         # print("functions content:", content)
-        functions_dict = {'functions': list()}
+        functions_dict = {"functions": list()}
         for functions_item in content:
-            if 'function_def_predicate' in functions_item:
-                functions_dict['functions'].append(functions_item)
+            if "function_def_predicate" in functions_item:
+                functions_dict["functions"].append(functions_item)
 
         return functions_dict
 
@@ -458,9 +469,11 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
         function_def_type = content[6].value
         # print("function_type:", function_type)
 
-        function_dict = {'function_def_predicate': function_def_predicate,
-                         'function_def_variable': function_def_variable,
-                         "function_def_type": function_def_type}
+        function_dict = {
+            "function_def_predicate": function_def_predicate,
+            "function_def_variable": function_def_variable,
+            "function_def_type": function_def_type,
+        }
 
         return function_dict
 
@@ -470,16 +483,16 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
         event_id = content[2].value
         # print("event_id:", event_id)
 
-        event_dict = {'event_id': content[2].value}
+        event_dict = {"event_id": content[2].value}
 
         for event_item in content[4:]:
             # print("event_item:", event_item)
-            if 'parameters' in event_item:
-                event_dict['event_parameters'] = event_item['parameters']
-            if 'precondition' in event_item:
-                event_dict['event_precondition'] = event_item['precondition']
-            if 'effect' in event_item:
-                event_dict['event_effect'] = event_item['effect']
+            if "parameters" in event_item:
+                event_dict["event_parameters"] = event_item["parameters"]
+            if "precondition" in event_item:
+                event_dict["event_precondition"] = event_item["precondition"]
+            if "effect" in event_item:
+                event_dict["event_effect"] = event_item["effect"]
 
         # print("event_dict:", event_dict)
 
@@ -491,25 +504,26 @@ class PDDLEventTransformer(PDDLBaseTransformer):
     Method names must match grammar rule names, thus some rules have an added -p to distinguish their name from a python
     constant/type/default term string.
     """
+
     def event(self, content):
         # print("event content:", content)
 
         event_id = content[2].value
         # print("event_id:", event_id)
 
-        event_dict = {'event_id': content[2].value}
+        event_dict = {"event_id": content[2].value}
 
         for event_item in content[4:]:
             # print("event_item:", event_item)
-            if 'parameters' in event_item:
+            if "parameters" in event_item:
                 # event_dict['event_parameters'] = event_item['parameters']
-                event_dict['parameters'] = event_item['parameters']
-            if 'precondition' in event_item:
+                event_dict["parameters"] = event_item["parameters"]
+            if "precondition" in event_item:
                 # event_dict['event_precondition'] = event_item['precondition']
-                event_dict['precondition'] = event_item['precondition']
-            if 'effect' in event_item:
+                event_dict["precondition"] = event_item["precondition"]
+            if "effect" in event_item:
                 # event_dict['event_effect'] = event_item['effect']
-                event_dict['effect'] = event_item['effect']
+                event_dict["effect"] = event_item["effect"]
 
         # print("event_dict:", event_dict)
 
@@ -519,14 +533,14 @@ class PDDLEventTransformer(PDDLBaseTransformer):
         # print("types cont:", content)
         types_list = list()
         for cont in content:
-            if 'type_list_element' in cont:
+            if "type_list_element" in cont:
                 types_list.append(cont)
         types_dict = dict()
         for type_list in types_list:
             # print(type_list)
-            types_dict[f'{type_list["type_list_element"]}'] = type_list['items']
+            types_dict[f'{type_list["type_list_element"]}'] = type_list["items"]
         # print("types return:", {'types': types_list})
-        return {'types': types_dict}
+        return {"types": types_dict}
 
     def parameters(self, content):
         parameter_list = None
@@ -534,25 +548,25 @@ class PDDLEventTransformer(PDDLBaseTransformer):
             parameter_list = content[1]
         # print("parameters:", parameter_list)
 
-        return {'parameters': parameter_list}
+        return {"parameters": parameter_list}
 
     def precondition(self, content):
         # print("precond cont:", content)
         # print("precond cont:", content[1][1:])
-        return {'precondition': content[1:-1]}
+        return {"precondition": content[1:-1]}
 
     def effect(self, content):
         # print("effect cont:", content)
-        effect_dict = {'effect': content[1:-1]}
+        effect_dict = {"effect": content[1:-1]}
         # print("effect returns:", effect_dict)
         return effect_dict
 
     def functions(self, content):
         # print("functions content:", content)
-        functions_dict = {'functions': list()}
+        functions_dict = {"functions": list()}
         for functions_item in content:
-            if 'function_def_predicate' in functions_item:
-                functions_dict['functions'].append(functions_item)
+            if "function_def_predicate" in functions_item:
+                functions_dict["functions"].append(functions_item)
 
         return functions_dict
 
@@ -571,12 +585,13 @@ class PDDLEventTransformer(PDDLBaseTransformer):
         function_def_type = content[6].value
         # print("function_type:", function_type)
 
-        function_dict = {'function_def_predicate': function_def_predicate,
-                         'function_def_variable': function_def_variable,
-                         "function_def_type": function_def_type}
+        function_dict = {
+            "function_def_predicate": function_def_predicate,
+            "function_def_variable": function_def_variable,
+            "function_def_type": function_def_type,
+        }
 
         return function_dict
-
 
 
 class AdventureIFInterpreter(GameResourceLocator):
@@ -584,7 +599,15 @@ class AdventureIFInterpreter(GameResourceLocator):
     IF interpreter for adventuregame.
     Holds game world state and handles all interaction and feedback.
     """
-    def __init__(self, game_path, game_instance: dict, name: str = GAME_NAME, verbose: bool = False, rng_seed: int = 42):
+
+    def __init__(
+        self,
+        game_path,
+        game_instance: dict,
+        name: str = GAME_NAME,
+        verbose: bool = False,
+        rng_seed: int = 42,
+    ):
         super().__init__(name, game_path)
 
         self.rng_seed = rng_seed
@@ -643,25 +666,30 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load entity type definitions in game instance:
         entity_definitions: list = list()
 
-        for entity_def in self.game_instance[config.keys['entity_definitions']]:
+        for entity_def in self.game_instance[config.keys["entity_definitions"]]:
             # check if entity definition is file name string:
             if type(entity_def) == str:
-                entities_file = self.load_json(f"resources{os.sep}definitions{os.sep}{entity_def[:-5]}")
+                entities_file = self.load_json(
+                    f"resources{os.sep}definitions{os.sep}{entity_def[:-5]}"
+                )
                 entity_definitions += entities_file
             # check if entity definition is direct dict:
             elif type(entity_def) == dict:
                 entity_definitions.append(entity_def)
 
         for entity_definition in entity_definitions:
-            self.entity_types[entity_definition['type_name']] = dict()
+            self.entity_types[entity_definition["type_name"]] = dict()
             for entity_attribute in entity_definition:
-                if entity_attribute == 'type_name':
+                if entity_attribute == "type_name":
                     # assign surface strings:
-                    self.repr_str_to_type_dict[entity_definition['repr_str']] = entity_definition[entity_attribute]
+                    self.repr_str_to_type_dict[entity_definition["repr_str"]] = entity_definition[
+                        entity_attribute
+                    ]
                 else:
                     # get all other attributes:
-                    self.entity_types[entity_definition['type_name']][entity_attribute] = entity_definition[
-                        entity_attribute]
+                    self.entity_types[entity_definition["type_name"]][entity_attribute] = (
+                        entity_definition[entity_attribute]
+                    )
 
     def initialize_room_types(self):
         """
@@ -671,7 +699,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load room type definitions in game instance:
         room_definitions: list = list()
 
-        for room_def in self.game_instance[config.keys['room_definitions']]:
+        for room_def in self.game_instance[config.keys["room_definitions"]]:
             # check if room definition is file name string:
             if type(room_def) == str:
                 rooms_file = self.load_json(f"resources{os.sep}definitions{os.sep}{room_def[:-5]}")
@@ -681,24 +709,39 @@ class AdventureIFInterpreter(GameResourceLocator):
                 room_definitions.append(room_def)
 
         for room_definition in room_definitions:
-            self.room_types[room_definition['type_name']] = dict()
+            self.room_types[room_definition["type_name"]] = dict()
             for room_attribute in room_definition:
-                if room_attribute == 'type_name':
+                if room_attribute == "type_name":
                     # assign surface strings:
-                    self.repr_str_to_type_dict[room_definition['repr_str']] = room_definition[room_attribute]
+                    self.repr_str_to_type_dict[room_definition["repr_str"]] = room_definition[
+                        room_attribute
+                    ]
                 else:
                     # get all other attributes:
-                    self.room_types[room_definition['type_name']][room_attribute] = room_definition[
-                        room_attribute]
+                    self.room_types[room_definition["type_name"]][room_attribute] = room_definition[
+                        room_attribute
+                    ]
 
     def initialize_pddl_definition_parsing(self):
-        action_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_actions']}")
-        self.action_def_parser = Lark(action_def_grammar, start=config.parser_settings['action_grammar_start_rule'])
-        domain_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_domain']}")
-        self.domain_def_parser = Lark(domain_def_grammar, start=config.parser_settings['domain_grammar_start_rule'])
-        if config.keys['event_definitions'] in self.game_instance:
-            event_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_events']}")
-            self.event_def_parser = Lark(event_def_grammar, start=config.parser_settings['event_grammar_start_rule'])
+        action_def_grammar = self.load_file(
+            f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_actions']}"
+        )
+        self.action_def_parser = Lark(
+            action_def_grammar, start=config.parser_settings["action_grammar_start_rule"]
+        )
+        domain_def_grammar = self.load_file(
+            f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_domain']}"
+        )
+        self.domain_def_parser = Lark(
+            domain_def_grammar, start=config.parser_settings["domain_grammar_start_rule"]
+        )
+        if config.keys["event_definitions"] in self.game_instance:
+            event_def_grammar = self.load_file(
+                f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_events']}"
+            )
+            self.event_def_parser = Lark(
+                event_def_grammar, start=config.parser_settings["event_grammar_start_rule"]
+            )
 
     def initialize_action_types(self):
         """
@@ -708,31 +751,34 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load action type definitions in game instance:
         action_definitions: list = list()
 
-        for action_def in self.game_instance[config.keys['action_definitions']]:
+        for action_def in self.game_instance[config.keys["action_definitions"]]:
             # check if action definition is file name string:
             if type(action_def) == str:
-                actions_file = self.load_json(f"resources{os.sep}definitions{os.sep}{action_def[:-5]}")
+                actions_file = self.load_json(
+                    f"resources{os.sep}definitions{os.sep}{action_def[:-5]}"
+                )
                 action_definitions += actions_file
             # check if room definition is direct dict:
             elif type(action_def) == dict:
                 action_definitions.append(action_def)
 
         for action_definition in action_definitions:
-            self.action_types[action_definition['type_name']] = dict()
+            self.action_types[action_definition["type_name"]] = dict()
             # get all action attributes:
             for action_attribute in action_definition:
-                if not action_attribute == 'type_name':
-                    self.action_types[action_definition['type_name']][action_attribute] = action_definition[
-                        action_attribute]
+                if not action_attribute == "type_name":
+                    self.action_types[action_definition["type_name"]][action_attribute] = (
+                        action_definition[action_attribute]
+                    )
 
         for action_type in self.action_types:
             cur_action_type = self.action_types[action_type]
-            if 'pddl' in cur_action_type:
+            if "pddl" in cur_action_type:
                 # print(cur_action_type['pddl'])
-                parsed_action_pddl = self.action_def_parser.parse(cur_action_type['pddl'])
+                parsed_action_pddl = self.action_def_parser.parse(cur_action_type["pddl"])
                 processed_action_pddl = self.action_def_transformer.transform(parsed_action_pddl)
                 # print(processed_action_pddl)
-                cur_action_type['interaction'] = processed_action_pddl
+                cur_action_type["interaction"] = processed_action_pddl
             else:
                 raise KeyError
 
@@ -766,22 +812,22 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # print("domain_definitions", domain_definitions)
 
-        self.domain['mutable_states']: list = list()
+        self.domain["mutable_states"]: list = list()
 
         if not domain_preparsed:
             for domain_definition in domain_definitions:
                 # print("domain_definition:", domain_definition)
                 # parsed_domain_pddl = self.domain_def_parser.parse(domain_definition)
-                parsed_domain_pddl = self.domain_def_parser.parse(domain_definition['pddl_domain'])
+                parsed_domain_pddl = self.domain_def_parser.parse(domain_definition["pddl_domain"])
                 processed_domain_pddl = self.domain_def_transformer.transform(parsed_domain_pddl)
                 # print("processed_domain_pddl:", processed_domain_pddl)
                 # for now assume only one domain definition:
                 self.domain = processed_domain_pddl
-                if 'mutable_states' in domain_definition:
+                if "mutable_states" in domain_definition:
                     # print("mutable states in domain file")
-                    self.domain['mutable_states'] = domain_definition['mutable_states']
+                    self.domain["mutable_states"] = domain_definition["mutable_states"]
                 else:
-                    self.domain['mutable_states'] = config.predicates['mutable_states']
+                    self.domain["mutable_states"] = config.predicates["mutable_states"]
         else:
             processed_domain_pddl = domain_definitions[-1]
             # for now assume only one domain definition:
@@ -801,26 +847,26 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("self.domain:", self.domain)
         # print(self.domain['types']['entity'])
         trait_type_dict = dict()
-        for entity_type in self.domain['types']['entity']:
+        for entity_type in self.domain["types"]["entity"]:
 
             # print("domain entity type:", entity_type, "; type defined:", self.entity_types[entity_type])
-            if 'traits' in self.entity_types[entity_type]:
+            if "traits" in self.entity_types[entity_type]:
                 # print("defined type traits:", self.entity_types[entity_type]['traits'])
-                for trait in self.entity_types[entity_type]['traits']:
+                for trait in self.entity_types[entity_type]["traits"]:
                     if trait not in trait_type_dict:
                         trait_type_dict[trait] = [entity_type]
                     else:
                         trait_type_dict[trait].append(entity_type)
-                    if trait not in self.domain['types']:
-                        self.domain['types'][trait] = [entity_type]
+                    if trait not in self.domain["types"]:
+                        self.domain["types"][trait] = [entity_type]
                     else:
-                        self.domain['types'][trait].append(entity_type)
+                        self.domain["types"][trait].append(entity_type)
         # print("trait type dict:", trait_type_dict)
         # print(self.domain['types'])
 
         # REVERSE SUBTYPE/SUPERTYPE DICT
         supertype_dict = dict()
-        for supertype, subtypes in self.domain['types'].items():
+        for supertype, subtypes in self.domain["types"].items():
             # print("supertype:", supertype, "subtypes:", subtypes)
             for subtype in subtypes:
                 if subtype not in supertype_dict:
@@ -829,15 +875,15 @@ class AdventureIFInterpreter(GameResourceLocator):
                     supertype_dict[subtype].append(supertype)
 
         # print(supertype_dict)
-        self.domain['supertypes'] = supertype_dict
+        self.domain["supertypes"] = supertype_dict
         # print("domain:", self.domain)
 
         if domain_preparsed:
             # mutable states/predicates set from domain:
             mutable_states: list = list()
-            for predicate in self.game_instance[config.keys['domain_definitions']][0]['predicates']:
-                mutable_states.append(predicate['predicate_id'])
-            self.domain['mutable_states'] = mutable_states
+            for predicate in self.game_instance[config.keys["domain_definitions"]][0]["predicates"]:
+                mutable_states.append(predicate["predicate_id"])
+            self.domain["mutable_states"] = mutable_states
 
     def initialize_event_types(self):
         """Load and process the event(s) used in this adventure.
@@ -846,10 +892,12 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load event definitions in game instance:
         event_definitions: list = list()
 
-        for event_def in self.game_instance[config.keys['event_definitions']]:
+        for event_def in self.game_instance[config.keys["event_definitions"]]:
             # check if event definition is file name string:
             if type(event_def) == str:
-                events_file = self.load_json(f"resources{os.sep}definitions{os.sep}{event_def[:-5]}")
+                events_file = self.load_json(
+                    f"resources{os.sep}definitions{os.sep}{event_def[:-5]}"
+                )
                 event_definitions += events_file
             # check if event definition is direct dict:
             elif type(event_def) == dict:
@@ -858,21 +906,22 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("event_definitions", event_definitions)
 
         for event_definition in event_definitions:
-            self.event_types[event_definition['type_name']] = dict()
+            self.event_types[event_definition["type_name"]] = dict()
             # get all action attributes:
             for event_attribute in event_definition:
-                if not event_attribute == 'type_name':
-                    self.event_types[event_definition['type_name']][event_attribute] = event_definition[
-                        event_attribute]
+                if not event_attribute == "type_name":
+                    self.event_types[event_definition["type_name"]][event_attribute] = (
+                        event_definition[event_attribute]
+                    )
 
         for event_type in self.event_types:
             cur_event_type = self.event_types[event_type]
-            if 'pddl' in cur_event_type:
+            if "pddl" in cur_event_type:
                 # logger.info(f"event pddl:\n{cur_event_type['pddl']}")
-                parsed_event_pddl = self.event_def_parser.parse(cur_event_type['pddl'])
+                parsed_event_pddl = self.event_def_parser.parse(cur_event_type["pddl"])
                 processed_event_pddl = self.event_def_transformer.transform(parsed_event_pddl)
                 # print(processed_event_pddl)
-                cur_event_type['interaction'] = processed_event_pddl
+                cur_event_type["interaction"] = processed_event_pddl
             else:
                 raise KeyError
 
@@ -888,9 +937,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         for action_type in self.action_types:
             cur_action_type = self.action_types[action_type]
-            action_rule = cur_action_type['lark'].split(":")[0]
+            action_rule = cur_action_type["lark"].split(":")[0]
             act_grammar_rules.append(action_rule)
-            act_grammar_larks.append(cur_action_type['lark'])
+            act_grammar_larks.append(cur_action_type["lark"])
         # root rule to parse any action command input, with fallback 'unknown':
         act_grammar_action_line = f"action: {' | '.join(act_grammar_rules)} | unknown\n"
         # append all individual action lark grammar snippets:
@@ -898,24 +947,26 @@ class AdventureIFInterpreter(GameResourceLocator):
         # gather all possible adjectives from entity definitions:
         all_adjs = set()
         for entity_type, entity_def in self.entity_types.items():
-            if 'possible_adjs' in entity_def:
-                new_adj_set = set(entity_def['possible_adjs'])
+            if "possible_adjs" in entity_def:
+                new_adj_set = set(entity_def["possible_adjs"])
                 all_adjs.update(new_adj_set)
         all_adjs = [f'"{adj}"' for adj in all_adjs]
         # adjective rule:
         act_grammar_adj_line = f"ADJ.1: ({' | '.join(all_adjs)}) WS\n"
         # load the core grammar from file:
         grammar_core = self.load_json(f"resources{os.sep}grammar_core")
-        grammar_head = grammar_core['grammar_head']
-        grammar_foot = grammar_core['grammar_foot']
+        grammar_head = grammar_core["grammar_head"]
+        grammar_foot = grammar_core["grammar_foot"]
         # combine adventure-specific grammar rules with core grammar:
-        act_grammar = (f"{grammar_head}{act_grammar_action_line}"
-                       f"{act_grammar_larks_str}\n{act_grammar_adj_line}{grammar_foot}")
+        act_grammar = (
+            f"{grammar_head}{act_grammar_action_line}"
+            f"{act_grammar_larks_str}\n{act_grammar_adj_line}{grammar_foot}"
+        )
         # print grammar in verbose mode for inspection:
         if print_lark_grammar:
             print(act_grammar)
         # initialize lark parser with the combined grammar:
-        self.act_parser = Lark(act_grammar, start='action')
+        self.act_parser = Lark(act_grammar, start="action")
 
     def initialize_states_from_strings(self):
         """
@@ -923,7 +974,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Converts List[Str] world state format into Set[Tuple].
         """
         # INITIAL STATE:
-        for fact_string in self.game_instance['initial_state']:
+        for fact_string in self.game_instance["initial_state"]:
             self.world_state.add(fact_str_to_tuple(fact_string))
 
         # NOTE: The following world state augmentations are left in here to make manual adventure creation/modification
@@ -935,20 +986,20 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # add trait facts for objects:
         for fact in self.world_state:
-            if fact[0] == 'type':
+            if fact[0] == "type":
                 # logger.info({"type fact for trait assignment": fact})
                 # add trait facts by entity type:
-                if 'traits' in self.entity_types[fact[2]]:
-                    type_traits: list = self.entity_types[fact[2]]['traits']
+                if "traits" in self.entity_types[fact[2]]:
+                    type_traits: list = self.entity_types[fact[2]]["traits"]
                     for type_trait in type_traits:
                         facts_to_add.add((type_trait, fact[1]))
 
         # add floors to rooms:
         for fact in self.world_state:
-            if fact[0] == 'room':
-                facts_to_add.add(('type', f'{fact[1]}floor1', 'floor'))
+            if fact[0] == "room":
+                facts_to_add.add(("type", f"{fact[1]}floor1", "floor"))
                 # add floor:
-                facts_to_add.add(('at', f'{fact[1]}floor1', fact[1]))
+                facts_to_add.add(("at", f"{fact[1]}floor1", fact[1]))
 
         self.world_state = self.world_state.union(facts_to_add)
 
@@ -957,7 +1008,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # get entity instance types from world state:
         for fact in self.world_state:
             # entity instance to entity type mapping:
-            if fact[0] == 'type':
+            if fact[0] == "type":
                 self.inst_to_type_dict[fact[1]] = fact[2]
 
         # dict with the type for each room instance in the adventure:
@@ -965,7 +1016,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # get room instance types from world state:
         for fact in self.world_state:
             # room instance to room type mapping:
-            if fact[0] == 'room':
+            if fact[0] == "room":
                 self.room_to_type_dict[fact[1]] = fact[2]
 
         # put 'supported' items on the floor if they are not 'in' or 'on':
@@ -973,53 +1024,56 @@ class AdventureIFInterpreter(GameResourceLocator):
             if fact[1] in self.inst_to_type_dict:
                 if self.inst_to_type_dict[fact[1]] in self.entity_types:
                     pass
-            if fact[0] == 'at' and ('needs_support', fact[1]) in self.world_state:
+            if fact[0] == "at" and ("needs_support", fact[1]) in self.world_state:
                 currently_supported = False
                 for state_pred2 in self.world_state:
-                    if state_pred2[0] == 'on' and state_pred2[1] == fact[1]:
+                    if state_pred2[0] == "on" and state_pred2[1] == fact[1]:
                         currently_supported = True
                         break
-                    if state_pred2[0] == 'in' and state_pred2[1] == fact[1]:
+                    if state_pred2[0] == "in" and state_pred2[1] == fact[1]:
                         currently_supported = True
                         break
                 if not currently_supported:
-                    facts_to_add.add(('on', fact[1], f'{fact[2]}floor'))
+                    facts_to_add.add(("on", fact[1], f"{fact[2]}floor"))
 
         # make items that are not 'in' closed containers or 'in' inventory or 'on' supports 'accessible':
         for fact in self.world_state:
             if fact[1] in self.inst_to_type_dict:
                 if self.inst_to_type_dict[fact[1]] in self.entity_types:
                     pass
-            if fact[0] == 'in' and ('container', fact[2]) in self.world_state:
+            if fact[0] == "in" and ("container", fact[2]) in self.world_state:
                 container_currently_open = False
                 for state_pred2 in self.world_state:
-                    if state_pred2[0] == 'open' and state_pred2[1] == fact[2]:
+                    if state_pred2[0] == "open" and state_pred2[1] == fact[2]:
                         container_currently_open = True
                         break
                 if container_currently_open:
-                    facts_to_add.add(('accessible', fact[1]))
-            if fact[0] == 'in' and fact[2] == 'inventory':
+                    facts_to_add.add(("accessible", fact[1]))
+            if fact[0] == "in" and fact[2] == "inventory":
                 # print(f"{fact[1]} in inventory!")
-                facts_to_add.add(('accessible', fact[1]))
-            if fact[0] == 'on' and ('support', fact[2]) in self.world_state:
-                facts_to_add.add(('accessible', fact[1]))
-            if fact[0] == 'type' and ('needs_support', fact[1]) not in self.world_state and fact[2] not in tuple(
-            config.entities['exempt_from_support']):
-                facts_to_add.add(('accessible', fact[1]))
+                facts_to_add.add(("accessible", fact[1]))
+            if fact[0] == "on" and ("support", fact[2]) in self.world_state:
+                facts_to_add.add(("accessible", fact[1]))
+            if (
+                fact[0] == "type"
+                and ("needs_support", fact[1]) not in self.world_state
+                and fact[2] not in tuple(config.entities["exempt_from_support"])
+            ):
+                facts_to_add.add(("accessible", fact[1]))
         # make inventory 'accessible' from the start:
-        facts_to_add.add(('accessible', config.entities['inventory_id']))
+        facts_to_add.add(("accessible", config.entities["inventory_id"]))
 
         self.world_state = self.world_state.union(facts_to_add)
 
         # FUNCTIONS
-        if 'functions' in self.domain:
+        if "functions" in self.domain:
             # logger.info(f"Domain functions: {self.domain['functions']}")
             # convert premade initial_state function fact string numbers to proper numbers:
-            for function_def in self.domain['functions']:
+            for function_def in self.domain["functions"]:
                 # logger.info(f"Checking domain function: {function_def}")
                 found_function_facts = list()
                 for fact in self.world_state:
-                    if fact[0] == function_def['function_def_predicate']:
+                    if fact[0] == function_def["function_def_predicate"]:
                         found_function_facts.append(fact)
                 # logger.info(f"Found function facts: {found_function_facts}")
                 # remove non-number function facts and replace with number function facts:
@@ -1036,30 +1090,46 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # add function facts with value 0 for defined functions in the domain for corresponding type instances:
                 for fact in self.world_state:
                     # TODO?: use domain type inheritance to augment in addition to direct type?
-                    if fact[0] == 'type' and fact[2] == function_def['function_def_type']:
-                        augmentable_function_fact = [function_def['function_def_predicate'], fact[1], 0]
+                    if fact[0] == "type" and fact[2] == function_def["function_def_type"]:
+                        augmentable_function_fact = [
+                            function_def["function_def_predicate"],
+                            fact[1],
+                            0,
+                        ]
                         function_fact_already_exists = False
                         for fact2 in self.world_state:
-                            if fact2[0] == function_def['function_def_predicate'] and fact2[1] == fact[1]:
+                            if (
+                                fact2[0] == function_def["function_def_predicate"]
+                                and fact2[1] == fact[1]
+                            ):
                                 function_fact_already_exists = True
                         if not function_fact_already_exists:
                             self.world_state.add(tuple(augmentable_function_fact))
 
                 # add missing function fact(s) with value 0 for inventory as there is no type fact for inventory:
-                if function_def['function_def_type'] == config.entities['inventory_id']:
+                if function_def["function_def_type"] == config.entities["inventory_id"]:
                     inventory_function_fact_already_exists = False
                     for fact in self.world_state:
-                        if fact[0] == function_def['function_def_predicate'] and fact[1] == config.entities['inventory_id']:
+                        if (
+                            fact[0] == function_def["function_def_predicate"]
+                            and fact[1] == config.entities["inventory_id"]
+                        ):
                             inventory_function_fact_already_exists = True
                     if not inventory_function_fact_already_exists:
-                        self.world_state.add((function_def['function_def_predicate'], config.entities['inventory_id'], 0))
+                        self.world_state.add(
+                            (
+                                function_def["function_def_predicate"],
+                                config.entities["inventory_id"],
+                                0,
+                            )
+                        )
 
         # add initial world state to world state history:
         self.world_state_history.append(deepcopy(self.world_state))
 
         # GOALS
         # get goal state fact set:
-        for fact_string in self.game_instance[config.keys['goal_state']]:
+        for fact_string in self.game_instance[config.keys["goal_state"]]:
             self.goal_state.add(fact_str_to_tuple(fact_string))
 
     def _get_inst_str(self, inst) -> str:
@@ -1074,7 +1144,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         inst_adjs = list()
         # get instance adjectives from adj facts:
         for fact in self.world_state:
-            if fact[0] == 'adj' and fact[1] == inst:
+            if fact[0] == "adj" and fact[1] == inst:
                 inst_adjs.append(fact[2])
 
         # get type of instance:
@@ -1082,9 +1152,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # get surface string for instance type:
         if inst_type in self.entity_types:
-            inst_str: str = self.entity_types[inst_type]['repr_str']
+            inst_str: str = self.entity_types[inst_type]["repr_str"]
         elif inst_type in self.room_types:
-            inst_str: str = self.room_types[inst_type]['repr_str']
+            inst_str: str = self.room_types[inst_type]["repr_str"]
         else:  # fallback for potential edge cases
             inst_str: str = inst_type
         # combine into full surface string:
@@ -1107,8 +1177,10 @@ class AdventureIFInterpreter(GameResourceLocator):
             inst_type: str = self.room_to_type_dict[inst]
         else:  # fallback for potential edge cases
             # TODO: retrace why this can fail
-            logger.info(f"_inst_to_type got {inst}, which is not in the _to_type dicts! "
-                        f"Heuristically culling numbers from inst string end as fallback...")
+            logger.info(
+                f"_inst_to_type got {inst}, which is not in the _to_type dicts! "
+                f"Heuristically culling numbers from inst string end as fallback..."
+            )
             inst_type = deepcopy(inst)
             while inst_type.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                 inst_type = inst_type[:-1]
@@ -1121,7 +1193,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Get the current player location's internal room string ID.
         """
         for fact in self.world_state:
-            if fact[0] == 'at' and fact[1] == 'player1':
+            if fact[0] == "at" and fact[1] == "player1":
                 player_room = fact[2]
                 break
 
@@ -1135,7 +1207,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         room_contents = list()
         for fact in self.world_state:
             # get all entities 'at' the player's location, except the player themselves:
-            if fact[0] == 'at' and fact[2] == player_room and not fact[1] == 'player1':
+            if fact[0] == "at" and fact[2] == player_room and not fact[1] == "player1":
                 room_contents.append(fact[1])
 
         return room_contents
@@ -1151,25 +1223,25 @@ class AdventureIFInterpreter(GameResourceLocator):
         visible_contents = list()
         for thing in room_contents:
             # do not access entities that are hidden by type:
-            if 'hidden' in self.entity_types[self._inst_to_type(thing)]:
+            if "hidden" in self.entity_types[self._inst_to_type(thing)]:
                 continue
 
             # do not access entities inside closed containers:
             contained_in = None
             for fact in self.world_state:
                 # check if entity is 'in' closed container:
-                if fact[0] == 'in' and fact[1] == thing:
+                if fact[0] == "in" and fact[1] == thing:
                     contained_in = fact[2]
                     # print(f"{thing} is contained in {contained_in}")
                     for state_pred2 in self.world_state:
                         if state_pred2[1] == contained_in:
-                            if state_pred2[0] == 'closed':
+                            if state_pred2[0] == "closed":
                                 # not visible/accessible in closed container
                                 break
-                            elif state_pred2[0] == 'open':
+                            elif state_pred2[0] == "open":
                                 visible_contents.append(thing)
                                 break
-                            elif state_pred2[1] == 'inventory':
+                            elif state_pred2[1] == "inventory":
                                 # inventory content is not visible
                                 break
                             else:
@@ -1190,7 +1262,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         room_exits = list()
         for fact in self.world_state:
             # passage facts are 'exit' in the adventure/instance format
-            if fact[0] == 'exit' and fact[1] == player_room:
+            if fact[0] == "exit" and fact[1] == player_room:
                 room_exits.append(fact[2])
 
         return room_exits
@@ -1202,9 +1274,11 @@ class AdventureIFInterpreter(GameResourceLocator):
         # get player room:
         player_room = self.get_player_room()
         # create room description start:
-        room_repr_str = self.room_types[self.room_to_type_dict[player_room]]['repr_str']
+        room_repr_str = self.room_types[self.room_to_type_dict[player_room]]["repr_str"]
         # using simple type surface string due to v1 not having multiple rooms of the same type:
-        player_at_str = config.messages['room_description_template'].format(room_repr_str=room_repr_str)
+        player_at_str = config.messages["room_description_template"].format(
+            room_repr_str=room_repr_str
+        )
 
         # get visible room content:
         internal_visible_contents = self.get_player_room_contents_visible()
@@ -1219,13 +1293,17 @@ class AdventureIFInterpreter(GameResourceLocator):
             comma_list = f"{config.delimiters['list_separator']}".join(visible_contents[:-1])
             and_last = f"{config.delimiters['list_last_conjunction']}{visible_contents[-1]}"
             items_str = f"{comma_list} {and_last}"
-            visible_contents_str = config.messages['multi_item_description'].format(items=items_str)
+            visible_contents_str = config.messages["multi_item_description"].format(items=items_str)
             visible_contents_str = " " + visible_contents_str
         elif len(visible_contents) == 2:
-            visible_contents_str = config.messages['two_item_description'].format(item1=visible_contents[0], item2=visible_contents[1])
+            visible_contents_str = config.messages["two_item_description"].format(
+                item1=visible_contents[0], item2=visible_contents[1]
+            )
             visible_contents_str = " " + visible_contents_str
         elif len(visible_contents) == 1:
-            visible_contents_str = config.messages['single_item_description'].format(item=visible_contents[0])
+            visible_contents_str = config.messages["single_item_description"].format(
+                item=visible_contents[0]
+            )
             visible_contents_str = " " + visible_contents_str
 
         # get predicate state facts of visible objects and create textual representations:
@@ -1233,16 +1311,18 @@ class AdventureIFInterpreter(GameResourceLocator):
         visible_content_state_strs = list()
         for thing in internal_visible_contents:
             for fact in self.world_state:
-                if fact[0] == 'closed' and fact[1] == thing:
+                if fact[0] == "closed" and fact[1] == thing:
                     visible_content_state_strs.append(f"The {self._get_inst_str(thing)} is closed.")
-                elif fact[0] == 'open' and fact[1] == thing:
+                elif fact[0] == "open" and fact[1] == thing:
                     visible_content_state_strs.append(f"The {self._get_inst_str(thing)} is open.")
-                if fact[0] == 'in' and fact[1] == thing:
+                if fact[0] == "in" and fact[1] == thing:
                     visible_content_state_strs.append(
-                        f"The {self._get_inst_str(thing)} is in the {self._get_inst_str(fact[2])}.")
-                if fact[0] == 'on' and fact[1] == thing:
+                        f"The {self._get_inst_str(thing)} is in the {self._get_inst_str(fact[2])}."
+                    )
+                if fact[0] == "on" and fact[1] == thing:
                     visible_content_state_strs.append(
-                        f"The {self._get_inst_str(thing)} is on the {self._get_inst_str(fact[2])}.")
+                        f"The {self._get_inst_str(thing)} is on the {self._get_inst_str(fact[2])}."
+                    )
 
         if visible_content_state_strs:
             visible_content_state_combined = " ".join(visible_content_state_strs)
@@ -1256,14 +1336,20 @@ class AdventureIFInterpreter(GameResourceLocator):
         if len(room_exits) == 1:
             exits_str = f" There is a passage to a {self._get_inst_str(room_exits[0])} here."
         elif len(room_exits) == 2:
-            exits_str = (f" There are passages to a {self._get_inst_str(room_exits[0])} and a "
-                         f"{self._get_inst_str(room_exits[1])} here.")
+            exits_str = (
+                f" There are passages to a {self._get_inst_str(room_exits[0])} and a "
+                f"{self._get_inst_str(room_exits[1])} here."
+            )
         elif len(room_exits) >= 3:
-            comma_exits = ", a ".join([self._get_inst_str(room_exit) for room_exit in room_exits[:-1]])
+            comma_exits = ", a ".join(
+                [self._get_inst_str(room_exit) for room_exit in room_exits[:-1]]
+            )
             exits_str = f" There are passages to a {comma_exits} and a {self._get_inst_str(room_exits[-1])} here."
 
         # combine full room description:
-        room_description = f"{player_at_str}{visible_contents_str}{visible_content_state_combined}{exits_str}"
+        room_description = (
+            f"{player_at_str}{visible_contents_str}{visible_content_state_combined}{exits_str}"
+        )
 
         return room_description
 
@@ -1271,7 +1357,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         """Get list of inventroy content."""
         inventory_content = list()
         for fact in self.world_state:
-            if fact[0] == 'in' and fact[2] == 'inventory':
+            if fact[0] == "in" and fact[2] == "inventory":
                 inventory_content.append(fact[1])
 
         return inventory_content
@@ -1284,7 +1370,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         inv_list = inventory_content
         inv_item_cnt = len(inv_list)
         if inv_item_cnt == 0:
-            inv_desc = config.messages['empty_inventory']
+            inv_desc = config.messages["empty_inventory"]
             return inv_desc
         elif inv_item_cnt == 1:
             inv_str = f"a {self._get_inst_str(inv_list[0])}"
@@ -1292,14 +1378,14 @@ class AdventureIFInterpreter(GameResourceLocator):
             inv_strs = [f"a {self._get_inst_str(inv_item)}" for inv_item in inv_list]
             inv_str = ", ".join(inv_strs[:-1])
             inv_str += f" and {inv_strs[-1]}"
-        inv_desc = config.messages['inventory_description'].format(items=inv_str)
+        inv_desc = config.messages["inventory_description"].format(items=inv_str)
 
         return inv_desc
 
     def get_container_content(self, container_id) -> list:
         container_content = list()
         for fact in self.world_state:
-            if fact[0] == 'in' and fact[2] == container_id:
+            if fact[0] == "in" and fact[2] == container_id:
                 container_content.append(fact[1])
 
         return container_content
@@ -1315,7 +1401,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             inv_str = f"a {self._get_inst_str(container_content[0])}"
             content_desc = f"In the {container_repr} there is {inv_str}."
         else:
-            content_strs = [f"a {self._get_inst_str(container_item)}" for container_item in container_content]
+            content_strs = [
+                f"a {self._get_inst_str(container_item)}" for container_item in container_content
+            ]
             content_str = ", ".join(content_strs[:-1])
             content_str += f" and {content_strs[-1]}"
             content_desc = f"In the {container_repr} there are {content_str}."
@@ -1327,14 +1415,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         Used for the EXAMINE action.
         """
         # get inventory description if inventory is examined:
-        if entity == config.entities['inventory_id']:
+        if entity == config.entities["inventory_id"]:
             return self.get_inventory_desc()
 
         # get entity ID:
         # NOTE: This assumes only one instance of any entity type is in any adventure!
         entity_id = str()
         for fact in self.world_state:
-            if fact[0] == 'type' and fact[2] == entity:
+            if fact[0] == "type" and fact[2] == entity:
                 entity_id = fact[1]
                 break
         # print("entity ID found:", entity_id)
@@ -1354,12 +1442,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         for fact in self.world_state:
             if fact[1] == entity_id:
                 # print("entity state fact:", fact)
-                if fact[0] == config.predicates['text']:
+                if fact[0] == config.predicates["text"]:
                     entity_desc_list.append("There is writing on it.")
                 # describe 'openable' entity states:
-                if fact[0] == config.predicates['openable']:
+                if fact[0] == config.predicates["openable"]:
                     openable_entity: str = fact[1]
-                    while openable_entity.endswith(("0","1","2","3","4","5","6","7","8","9")):
+                    while openable_entity.endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         openable_entity = openable_entity[:-1]
                     # print("openable_entity:", openable_entity)
                     for fact2 in self.world_state:
@@ -1370,17 +1460,23 @@ class AdventureIFInterpreter(GameResourceLocator):
                     openable_desc = f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
                     entity_desc_list.append(openable_desc)
                 # describe 'takeable' entities:
-                if fact[0] == config.predicates['takeable']:
+                if fact[0] == config.predicates["takeable"]:
                     takeable_entity: str = fact[1]
-                    while takeable_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                    while takeable_entity.endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         takeable_entity = takeable_entity[:-1]
                     # print("takeable_entity:", takeable_entity)
-                    takeable_desc = f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
+                    takeable_desc = (
+                        f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
+                    )
                     entity_desc_list.append(takeable_desc)
                 # describe the container or support state of 'needs_support' entities:
-                if fact[0] == config.predicates['needs_support']:
+                if fact[0] == config.predicates["needs_support"]:
                     needs_support_entity: str = fact[1]
-                    while needs_support_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                    while needs_support_entity.endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         needs_support_entity = needs_support_entity[:-1]
                     # print("needs_support_entity:", needs_support_entity)
 
@@ -1392,13 +1488,15 @@ class AdventureIFInterpreter(GameResourceLocator):
                             # print("supporter_entity:", supporter_entity)
                             break
 
-                    if supporter_entity == config.entities['inventory_id']:
-                        supporter_entity = config.entities['inventory_id']
+                    if supporter_entity == config.entities["inventory_id"]:
+                        supporter_entity = config.entities["inventory_id"]
                     else:
-                        while supporter_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                        while supporter_entity.endswith(
+                            ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                        ):
                             supporter_entity = supporter_entity[:-1]
                         # supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
-                    if supporter_entity.endswith(config.entities['floor_type']):
+                    if supporter_entity.endswith(config.entities["floor_type"]):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
                     elif supporter_entity.endswith("ceiling"):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
@@ -1406,9 +1504,11 @@ class AdventureIFInterpreter(GameResourceLocator):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the {self.entity_types[supporter_entity]['repr_str']}."
                     entity_desc_list.append(needs_support_desc)
 
-                if fact[0] == config.predicates['container']:
+                if fact[0] == config.predicates["container"]:
                     container_entity: str = fact[1]
-                    while container_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                    while container_entity.endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         container_entity = container_entity[:-1]
                     # print("container_entity:", container_entity)
 
@@ -1416,26 +1516,35 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     for fact2 in self.world_state:
                         if len(fact2) == 3:
-                            if fact2[2] == entity_id and fact2[0] == config.predicates['predicate_in']:
+                            if (
+                                fact2[2] == entity_id
+                                and fact2[0] == config.predicates["predicate_in"]
+                            ):
                                 # print(fact2)
                                 contained_entity = fact2[1]
                                 # print("contained_entity:", contained_entity)
                                 # check if contained entity is accessible:
-                                if ('accessible', contained_entity) not in self.world_state:
+                                if ("accessible", contained_entity) not in self.world_state:
                                     # print()
                                     continue
                                 # print("contained_entity is accessible")
 
-                                while contained_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                                while contained_entity.endswith(
+                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                                ):
                                     contained_entity = contained_entity[:-1]
                                 # print("contained_entity:", contained_entity)
-                                contained_entities.append(f"a {self.entity_types[contained_entity]['repr_str']}")
+                                contained_entities.append(
+                                    f"a {self.entity_types[contained_entity]['repr_str']}"
+                                )
 
-                    if ('closed', fact[1]) in self.world_state:
+                    if ("closed", fact[1]) in self.world_state:
                         container_content_desc = f"You can't see the {self.entity_types[container_entity]['repr_str']}'s contents because it is closed."
                     else:
                         if len(contained_entities) == 0:
-                            container_content_desc = f"The {self.entity_types[container_entity]['repr_str']} is empty."
+                            container_content_desc = (
+                                f"The {self.entity_types[container_entity]['repr_str']} is empty."
+                            )
                         elif len(contained_entities) == 1:
                             container_content_desc = f"There is {contained_entities[0]} in the {self.entity_types[container_entity]['repr_str']}."
                         elif len(contained_entities) == 2:
@@ -1445,9 +1554,11 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     entity_desc_list.append(container_content_desc)
 
-                if fact[0] == config.predicates['support']:
+                if fact[0] == config.predicates["support"]:
                     support_entity: str = fact[1]
-                    while support_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                    while support_entity.endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         support_entity = support_entity[:-1]
                     # print("support_entity:", support_entity)
 
@@ -1455,15 +1566,22 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     for fact2 in self.world_state:
                         if len(fact2) == 3:
-                            if fact2[2] == entity_id and fact2[0] == config.predicates['predicate_on']:
+                            if (
+                                fact2[2] == entity_id
+                                and fact2[0] == config.predicates["predicate_on"]
+                            ):
                                 # print(fact2)
                                 supported_entity = fact2[1]
                                 # print("supported_entity:", supported_entity)
 
-                                while supported_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                                while supported_entity.endswith(
+                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                                ):
                                     supported_entity = supported_entity[:-1]
                                 # print("supported_entity:", supported_entity)
-                                supported_entities.append(f"a {self.entity_types[supported_entity]['repr_str']}")
+                                supported_entities.append(
+                                    f"a {self.entity_types[supported_entity]['repr_str']}"
+                                )
 
                     if len(supported_entities) == 0:
                         support_content_desc = f"There is nothing on the {self.entity_types[support_entity]['repr_str']}."
@@ -1476,10 +1594,12 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     entity_desc_list.append(support_content_desc)
 
-                if self.domain['mutable_states'] and fact[0] in self.domain['mutable_states']:
+                if self.domain["mutable_states"] and fact[0] in self.domain["mutable_states"]:
                     if not fact[0] == "at":
                         mutable_state_entity: str = fact[1]
-                        while mutable_state_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                        while mutable_state_entity.endswith(
+                            ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                        ):
                             mutable_state_entity = mutable_state_entity[:-1]
                         mutable_state_desc = f"The {self.entity_types[mutable_state_entity]['repr_str']} is {fact[0]}."
                         entity_desc_list.append(mutable_state_desc)
@@ -1494,7 +1614,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # NOTE: This assumes only one instance of any entity type is in any adventure!
         entity_id = str()
         for fact in self.world_state:
-            if fact[0] == 'type' and fact[2] == entity:
+            if fact[0] == "type" and fact[2] == entity:
                 entity_id = fact[1]
                 break
 
@@ -1502,7 +1622,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         for fact in self.world_state:
             if fact[1] == entity_id:
                 # return text fact content:
-                if fact[0] == config.predicates['text']:
+                if fact[0] == config.predicates["text"]:
                     return fact[2]
 
     def get_current_perceived(self) -> set:
@@ -1510,21 +1630,23 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # get player room at fact
         for fact in self.world_state:
-            if fact[0] == 'at' and fact[1] == config.entities['player_id']:
+            if fact[0] == "at" and fact[1] == config.entities["player_id"]:
                 current_perceived.add(fact)
 
         visible_room_contents = self.get_player_room_contents_visible()
         for fact in self.world_state:
             # TODO: de-hardcode mutable predicates tracked here
             # if fact[1] in visible_room_contents and fact[0] in self.domain['mutable_states']:
-            if fact[1] in visible_room_contents and fact[0] in config.predicates['mutable_states']:
+            if fact[1] in visible_room_contents and fact[0] in config.predicates["mutable_states"]:
                 current_perceived.add(fact)
 
         inventory_content = self.get_inventory_content()
         for fact in self.world_state:
             if fact[1] in inventory_content and fact[0] in ("at", "in"):
                 current_perceived.add(fact)
-            if fact[1] == config.entities['inventory_id'] and fact[0] == "itemcount":  # TODO: de-hardcode this
+            if (
+                fact[1] == config.entities["inventory_id"] and fact[0] == "itemcount"
+            ):  # TODO: de-hardcode this
                 current_perceived.add(fact)
 
         # current_room_exits = self.get_player_room_exits()
@@ -1585,7 +1707,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             # NOTE: This is done this way to assure that actions like GO don't result in 'loss of exploration' as using
             # set operations would
             if world_state_effects:
-                for removed_fact in world_state_effects['removed']:
+                for removed_fact in world_state_effects["removed"]:
                     if removed_fact in self.exploration_state:
                         # logger.info(f"Removing fact {removed_fact} from exploration state.")
                         self.exploration_state.remove(removed_fact)
@@ -1623,72 +1745,117 @@ class AdventureIFInterpreter(GameResourceLocator):
             parsed_command = self.act_parser.parse(action_input)
         except Exception as exception:
             logger.info(f"Parsing lark exception")
-            fail_dict: dict = {'phase': "parsing", 'fail_type': "lark_exception", 'arg': str(exception)}
-            return False, config.messages['unknown_command'], fail_dict
+            fail_dict: dict = {
+                "phase": "parsing",
+                "fail_type": "lark_exception",
+                "arg": str(exception),
+            }
+            return False, config.messages["unknown_command"], fail_dict
         action_dict = self.act_transformer.transform(parsed_command)
 
         # catch 'unknown' action parses:
-        if action_dict['type'] == config.actions['unknown']:
-            if action_dict['arg1'] in self.action_types:
+        if action_dict["type"] == config.actions["unknown"]:
+            if action_dict["arg1"] in self.action_types:
                 logger.info(f"Parsing unknown action with defined verb")
                 logger.info(f"{action_dict}")
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "malformed_command", 'arg': str(action_dict)}
-                return False, config.messages['unknown_command'], fail_dict
+                fail_dict: dict = {
+                    "phase": "parsing",
+                    "fail_type": "malformed_command",
+                    "arg": str(action_dict),
+                }
+                return False, config.messages["unknown_command"], fail_dict
 
-        if action_dict['type'] not in self.action_types:
-            if 'arg1' in action_dict:
+        if action_dict["type"] not in self.action_types:
+            if "arg1" in action_dict:
                 logger.info(f"Parsing undefined action with undefined verb")
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_action_verb", 'arg': action_dict['arg1']}
-                return False, config.messages['undefined_action'].format(action=action_dict['arg1']), fail_dict
+                fail_dict: dict = {
+                    "phase": "parsing",
+                    "fail_type": "undefined_action_verb",
+                    "arg": action_dict["arg1"],
+                }
+                return (
+                    False,
+                    config.messages["undefined_action"].format(action=action_dict["arg1"]),
+                    fail_dict,
+                )
             else:
                 logger.info(f"Parsing undefined action without verb")
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_action", 'arg': action_input}
-                return False, config.messages['unknown_command'], fail_dict
+                fail_dict: dict = {
+                    "phase": "parsing",
+                    "fail_type": "undefined_action",
+                    "arg": action_input,
+                }
+                return False, config.messages["unknown_command"], fail_dict
 
         logger.info(f"current parsed action_dict: {action_dict}")
 
-        if action_dict['type'] == config.actions['done']:
+        if action_dict["type"] == config.actions["done"]:
             return True, action_dict, {}
 
-        if 'arg1' in action_dict:
-            if action_dict['arg1'] in self.repr_str_to_type_dict:
+        if "arg1" in action_dict:
+            if action_dict["arg1"] in self.repr_str_to_type_dict:
                 # convert arg1 from repr to internal type:
-                action_dict['arg1'] = self.repr_str_to_type_dict[action_dict['arg1']]
+                action_dict["arg1"] = self.repr_str_to_type_dict[action_dict["arg1"]]
             else:
                 # in this case, the action is defined, but the first argument isn't, leading to corresponding feedback
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg1']}
-                return False, config.messages['unknown_entity'].format(arg=action_dict['arg1']), fail_dict
+                fail_dict: dict = {
+                    "phase": "parsing",
+                    "fail_type": "undefined_repr_str",
+                    "arg": action_dict["arg1"],
+                }
+                return (
+                    False,
+                    config.messages["unknown_entity"].format(arg=action_dict["arg1"]),
+                    fail_dict,
+                )
 
             # TODO?: Remove action-type specific hardcode below?; should be handled by PDDL-based resolution now
 
-            if action_dict['arg1'] not in self.entity_types:
+            if action_dict["arg1"] not in self.entity_types:
                 logger.info(f"Action arg1 '{action_dict['arg1']}' is not an entity")
                 # handle manipulating rooms, ie "> take from kitchen":
-                if action_dict['arg1'] in self.room_types:
-                    if action_dict['type'] in ["take", "put", "open", "close"]:
+                if action_dict["arg1"] in self.room_types:
+                    if action_dict["type"] in ["take", "put", "open", "close"]:
                         logger.info(f"Action type is '{action_dict['type']}', manipulating room")
-                        fail_dict: dict = {'phase': "parsing", 'fail_type': "manipulating_room",
-                                           'arg': action_dict['arg1']}
-                        if action_dict['type'] == "take":
-                            fail_response = config.messages['cannot_take'].format(action=action_dict['type'], arg=action_dict['arg1'])
-                        elif action_dict['type'] == "put":
-                            fail_response = config.messages['cannot_put'].format(action=action_dict['type'], arg=action_dict['arg1'])
-                        elif action_dict['type'] == "open":
-                            fail_response = config.messages['no_need_open'].format(action=action_dict['type'], arg=action_dict['arg1'])
-                        elif action_dict['type'] == "close":
-                            fail_response = config.messages['cannot_close'].format(action=action_dict['type'], arg=action_dict['arg1'])
+                        fail_dict: dict = {
+                            "phase": "parsing",
+                            "fail_type": "manipulating_room",
+                            "arg": action_dict["arg1"],
+                        }
+                        if action_dict["type"] == "take":
+                            fail_response = config.messages["cannot_take"].format(
+                                action=action_dict["type"], arg=action_dict["arg1"]
+                            )
+                        elif action_dict["type"] == "put":
+                            fail_response = config.messages["cannot_put"].format(
+                                action=action_dict["type"], arg=action_dict["arg1"]
+                            )
+                        elif action_dict["type"] == "open":
+                            fail_response = config.messages["no_need_open"].format(
+                                action=action_dict["type"], arg=action_dict["arg1"]
+                            )
+                        elif action_dict["type"] == "close":
+                            fail_response = config.messages["cannot_close"].format(
+                                action=action_dict["type"], arg=action_dict["arg1"]
+                            )
                         return False, fail_response, fail_dict
                 else:
                     logger.info(f"Action arg1 {action_dict['arg1']} is not a room either")
-                    fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_argument_type",
-                                       'arg': action_dict['arg1']}
-                    return False, config.messages['unknown_item_type'].format(arg=action_dict['arg1']), fail_dict
+                    fail_dict: dict = {
+                        "phase": "parsing",
+                        "fail_type": "undefined_argument_type",
+                        "arg": action_dict["arg1"],
+                    }
+                    return (
+                        False,
+                        config.messages["unknown_item_type"].format(arg=action_dict["arg1"]),
+                        fail_dict,
+                    )
 
-
-        if 'arg2' in action_dict:
-            if action_dict['type'] == "take":
+        if "arg2" in action_dict:
+            if action_dict["type"] == "take":
                 # handle unnecessary inventory interaction:
-                if action_dict['arg2'] == config.entities['inventory_id']:
+                if action_dict["arg2"] == config.entities["inventory_id"]:
                     # TODO: remove 'taking from inventory', now handled via PDDL precondition
                     #  but PDDL handling does it via precondition (not (in <item> inventory)), not by checking for the
                     #  second argument, so check if this handling here might still be useful
@@ -1696,25 +1863,55 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # get inventory content:
                     inventory_content = self.get_inventory_content()
                     for inventory_item in inventory_content:
-                        if self.inst_to_type_dict[inventory_item] == action_dict['arg1']:
-                            fail_dict: dict = {'phase': "resolution", 'fail_type': "taking_from_inventory",
-                                               'arg': action_dict['arg1']}
-                            return False, config.messages['already_in_inventory'].format(item=self.entity_types[action_dict['arg1']]['repr_str']), fail_dict
-                    fail_dict: dict = {'phase': "parsing", 'fail_type': "taking_from_inventory", 'arg': action_dict['arg2']}
-                    return False, config.messages['cannot_take_from_inventory'], fail_dict
-            if action_dict['arg2'] in self.repr_str_to_type_dict:
+                        if self.inst_to_type_dict[inventory_item] == action_dict["arg1"]:
+                            fail_dict: dict = {
+                                "phase": "resolution",
+                                "fail_type": "taking_from_inventory",
+                                "arg": action_dict["arg1"],
+                            }
+                            return (
+                                False,
+                                config.messages["already_in_inventory"].format(
+                                    item=self.entity_types[action_dict["arg1"]]["repr_str"]
+                                ),
+                                fail_dict,
+                            )
+                    fail_dict: dict = {
+                        "phase": "parsing",
+                        "fail_type": "taking_from_inventory",
+                        "arg": action_dict["arg2"],
+                    }
+                    return False, config.messages["cannot_take_from_inventory"], fail_dict
+            if action_dict["arg2"] in self.repr_str_to_type_dict:
                 # convert arg1 from repr to internal type:
-                action_dict['arg2'] = self.repr_str_to_type_dict[action_dict['arg2']]
+                action_dict["arg2"] = self.repr_str_to_type_dict[action_dict["arg2"]]
                 # handle other room interaction attempts; ie "> take plate from kitchen" while player is elsewhere:
-                if action_dict['arg2'] in self.room_types:
-                    cur_room_str = self.room_types[self.room_to_type_dict[self.get_player_room()]]['repr_str']
-                    if not action_dict['arg2'] == cur_room_str:
-                        fail_dict: dict = {'phase': "parsing", 'fail_type': "other_room_argument",
-                                           'arg': action_dict['arg2']}
-                        return False, config.messages['not_in_room'].format(room=action_dict['arg2']), fail_dict
+                if action_dict["arg2"] in self.room_types:
+                    cur_room_str = self.room_types[self.room_to_type_dict[self.get_player_room()]][
+                        "repr_str"
+                    ]
+                    if not action_dict["arg2"] == cur_room_str:
+                        fail_dict: dict = {
+                            "phase": "parsing",
+                            "fail_type": "other_room_argument",
+                            "arg": action_dict["arg2"],
+                        }
+                        return (
+                            False,
+                            config.messages["not_in_room"].format(room=action_dict["arg2"]),
+                            fail_dict,
+                        )
             else:
-                fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg2']}
-                return False, config.messages['unknown_entity'].format(arg=action_dict['arg2']), fail_dict
+                fail_dict: dict = {
+                    "phase": "parsing",
+                    "fail_type": "undefined_repr_str",
+                    "arg": action_dict["arg2"],
+                }
+                return (
+                    False,
+                    config.messages["unknown_entity"].format(arg=action_dict["arg2"]),
+                    fail_dict,
+                )
 
         return True, action_dict, {}
 
@@ -1739,12 +1936,12 @@ class AdventureIFInterpreter(GameResourceLocator):
         # logger.info(f"predicate_to_tuple input predicate: {predicate}")
         # logger.info(f"predicate_to_tuple input variable_map: {variable_map}")
 
-        predicate_type = predicate['predicate']
+        predicate_type = predicate["predicate"]
         # print("predicate_type:", predicate_type)
 
-        predicate_arg1 = predicate['arg1']
-        if 'variable' in predicate_arg1:
-            predicate_arg1 = variable_map[predicate_arg1['variable']]
+        predicate_arg1 = predicate["arg1"]
+        if "variable" in predicate_arg1:
+            predicate_arg1 = variable_map[predicate_arg1["variable"]]
             # print("filled when condition variable:", when_condition_arg1)
             # for now:
             if type(predicate_arg1) == list:
@@ -1754,20 +1951,20 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("predicate_list after arg1:", predicate_list)
 
         predicate_arg2 = None
-        if predicate['arg2']:
-            predicate_arg2 = predicate['arg2']
-            if 'variable' in predicate_arg2:
-                predicate_arg2 = variable_map[predicate_arg2['variable']]
+        if predicate["arg2"]:
+            predicate_arg2 = predicate["arg2"]
+            if "variable" in predicate_arg2:
+                predicate_arg2 = variable_map[predicate_arg2["variable"]]
                 # print("filled when condition variable:", when_condition_arg2)
             predicate_list.append(predicate_arg2)
 
         # print("predicate_list after arg2:", predicate_list)
 
         predicate_arg3 = None
-        if predicate['arg3']:
-            predicate_arg3 = predicate['arg3']
-            if 'variable' in predicate_arg3:
-                predicate_arg3 = variable_map[predicate_arg3['variable']]
+        if predicate["arg3"]:
+            predicate_arg3 = predicate["arg3"]
+            if "variable" in predicate_arg3:
+                predicate_arg3 = variable_map[predicate_arg3["variable"]]
                 # print("filled when condition variable:", when_condition_arg3)
             predicate_list.append(predicate_arg3)
 
@@ -1776,12 +1973,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("when_condition_tuple:", when_condition_tuple)
 
         # logger.info(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
-        #rint(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
+        # rint(f"predicate_to_tuple predicate_tuple intermediate: {predicate_tuple}")
 
         # if not predicate_type == "type":
         if predicate_type not in ["type", "room"]:
             # assume that action arguments that don't end in numbers or "floor" are type words:
-            for tuple_idx, tuple_arg in enumerate(predicate_tuple[1:]):  # first tuple item is always a predicate
+            for tuple_idx, tuple_arg in enumerate(
+                predicate_tuple[1:]
+            ):  # first tuple item is always a predicate
                 # print("tuple_arg:", tuple_arg)
                 # logger.info(f"tuple_arg: {tuple_arg}")
                 type_matched_instances = list()
@@ -1792,7 +1991,21 @@ class AdventureIFInterpreter(GameResourceLocator):
                     #    tuple_arg = tuple_arg[0]
 
                     # if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", config.entities['inventory_id'])):
+                    if not tuple_arg.endswith(
+                        (
+                            "0",
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5",
+                            "6",
+                            "7",
+                            "8",
+                            "9",
+                            config.entities["inventory_id"],
+                        )
+                    ):
                         # print(f"{tuple_arg} is not a type instance ID!")
                         # go over world state facts to find room or type predicate:
                         for fact in self.world_state:
@@ -1806,7 +2019,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                         # fallback to prevent list index out-of-range exceptions:
                         if not type_matched_instances:
-                            logger.info(f"Empty type_matched_instances for predicate_to_tuple tuple_arg intermediate: {tuple_arg}")
+                            logger.info(
+                                f"Empty type_matched_instances for predicate_to_tuple tuple_arg intermediate: {tuple_arg}"
+                            )
                             type_matched_instances = [None]
                             # there will be no matching facts for the condition check, since none were found
                             # so the check result will be negative as intended
@@ -1827,52 +2042,74 @@ class AdventureIFInterpreter(GameResourceLocator):
                             case 3:
                                 if tuple_idx == 0:
                                     predicate_tuple = (
-                                    predicate_tuple[0], type_matched_instances[0], predicate_tuple[2])
+                                        predicate_tuple[0],
+                                        type_matched_instances[0],
+                                        predicate_tuple[2],
+                                    )
                                 elif tuple_idx == 1:
                                     predicate_tuple = (
-                                    predicate_tuple[0], predicate_tuple[1], type_matched_instances[0])
+                                        predicate_tuple[0],
+                                        predicate_tuple[1],
+                                        type_matched_instances[0],
+                                    )
                             case 4:
                                 if tuple_idx == 0:
                                     predicate_tuple = (
-                                        predicate_tuple[0], type_matched_instances[0], predicate_tuple[2],
-                                        predicate_tuple[3])
+                                        predicate_tuple[0],
+                                        type_matched_instances[0],
+                                        predicate_tuple[2],
+                                        predicate_tuple[3],
+                                    )
                                 elif tuple_idx == 1:
                                     predicate_tuple = (
-                                        predicate_tuple[0], predicate_tuple[1], type_matched_instances[0],
-                                        predicate_tuple[3])
+                                        predicate_tuple[0],
+                                        predicate_tuple[1],
+                                        type_matched_instances[0],
+                                        predicate_tuple[3],
+                                    )
                                 elif tuple_idx == 2:
                                     predicate_tuple = (
-                                        predicate_tuple[0], predicate_tuple[1], predicate_tuple[2],
-                                        type_matched_instances[0])
+                                        predicate_tuple[0],
+                                        predicate_tuple[1],
+                                        predicate_tuple[2],
+                                        type_matched_instances[0],
+                                    )
 
             # print("predicate_tuple post-instance resolution:", predicate_tuple)
 
         return predicate_tuple
 
-    def check_conditions(self, conditions, variable_map, check_precon_idx = True, precon_trace = True) -> bool:
+    def check_conditions(
+        self, conditions, variable_map, check_precon_idx=True, precon_trace=True
+    ) -> bool:
         """Check if a passed condition 'and'/'or' clause is true.
         Full action preconditions must have a root 'and' clause!
         """
         # print()
         # print("check_conditions input conditions:", conditions)
 
-        if 'not' in conditions:
+        if "not" in conditions:
             # print("'Not' phrase condition.")
 
-            not_dict = {'not': dict()}
+            not_dict = {"not": dict()}
 
             conditions_polarity = False
-            inner_condition = conditions['not']
+            inner_condition = conditions["not"]
             # print("'not' phrase inner_condition:", inner_condition)
-            inner_condition_is_fact = self.check_conditions(inner_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+            inner_condition_is_fact = self.check_conditions(
+                inner_condition,
+                variable_map,
+                check_precon_idx=check_precon_idx,
+                precon_trace=precon_trace,
+            )
             # print("inner_condition_is_fact:", inner_condition_is_fact)
 
             if precon_trace:
-                not_dict['not'] = inner_condition_is_fact
+                not_dict["not"] = inner_condition_is_fact
                 not_true = False
-                if inner_condition_is_fact['fulfilled'] == conditions_polarity:
+                if inner_condition_is_fact["fulfilled"] == conditions_polarity:
                     not_true = True
-                not_dict['fulfilled'] = not_true
+                not_dict["fulfilled"] = not_true
                 self.precon_trace.append(not_dict)
 
                 # print("not_dict:", not_dict)
@@ -1884,7 +2121,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             else:
                 return False
 
-        if 'predicate' in conditions:
+        if "predicate" in conditions:
             # logger.info(f"IF.check_conditions() bare predicate condition: {conditions}")
             # print(f"IF.check_conditions() bare predicate condition: {conditions}")
             predicate_tuple = self.predicate_to_tuple(conditions, variable_map)
@@ -1899,24 +2136,28 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_tuples.append((predicate_tuple, is_fact, self.precon_idx))
 
             if precon_trace:
-                predicate_dict = {'predicate_tuple': predicate_tuple, 'fulfilled': is_fact, 'precon_idx': self.precon_idx}
+                predicate_dict = {
+                    "predicate_tuple": predicate_tuple,
+                    "fulfilled": is_fact,
+                    "precon_idx": self.precon_idx,
+                }
                 # logger.info(f"predicate condition precon_trace predicate_dict: {predicate_dict}")
                 return predicate_dict
 
             return is_fact
 
-        if 'num_comp' in conditions:
+        if "num_comp" in conditions:
             # logger.info(f"IF.check_conditions() num_comp condition: {conditions}")
 
             # get direct number argument values or function fact argument values:
             arg1_function_list = list()
             arg1_is_number = False
-            if 'function_number' in conditions['arg1']:
+            if "function_number" in conditions["arg1"]:
                 arg1_is_number = True
-            elif 'function_id' in conditions['arg1']:
-                arg1_function_list.append(conditions['arg1']['function_id'])
+            elif "function_id" in conditions["arg1"]:
+                arg1_function_list.append(conditions["arg1"]["function_id"])
                 # logger.info(f"arg1_function_list: {arg1_function_list}")
-                arg1_function_var = conditions['arg1']['function_variable']['variable']
+                arg1_function_var = conditions["arg1"]["function_variable"]["variable"]
                 # logger.info(f"arg1_function_var: {arg1_function_var}")
                 arg1_function_object = variable_map[arg1_function_var]
                 # logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
@@ -1936,7 +2177,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # logger.info(f"No world state fact matching arg1_function_list '{arg1_function_list}' found!")
                     pass
             else:
-                arg1_value = conditions['arg1']['function_number']
+                arg1_value = conditions["arg1"]["function_number"]
                 if "." in arg1_value:
                     arg1_value = float(arg1_value)
                 else:
@@ -1944,11 +2185,11 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             arg2_function_list = list()
             arg2_is_number = False
-            if 'function_number' in conditions['arg2']:
+            if "function_number" in conditions["arg2"]:
                 arg2_is_number = True
-            elif 'function_id' in conditions['arg2']:
-                arg2_function_list.append(conditions['arg2']['function_id'])
-                arg2_function_var = conditions['arg2']['function_variable']['variable']
+            elif "function_id" in conditions["arg2"]:
+                arg2_function_list.append(conditions["arg2"]["function_id"])
+                arg2_function_var = conditions["arg2"]["function_variable"]["variable"]
                 arg2_function_object = variable_map[arg2_function_var]
                 # logger.info(f"num_comp condition arg2 function object: {arg2_function_object}")
                 arg2_function_list.append(arg2_function_object)
@@ -1960,14 +2201,14 @@ class AdventureIFInterpreter(GameResourceLocator):
                         arg2_function_list.append(fact[2])
                         arg2_value = fact[2]
             else:
-                arg2_value = conditions['arg2']['function_number']
+                arg2_value = conditions["arg2"]["function_number"]
                 if "." in arg2_value:
                     arg2_value = float(arg2_value)
                 else:
                     arg2_value = int(arg2_value)
 
             # get numerical comparison type:
-            num_comp_type = conditions['num_comp']
+            num_comp_type = conditions["num_comp"]
 
             # numerical comparison:
             predicate_tuple = list()
@@ -2019,33 +2260,41 @@ class AdventureIFInterpreter(GameResourceLocator):
                 self.precon_tuples.append((tuple(predicate_tuple), fulfilled, self.precon_idx))
 
             if precon_trace:
-                predicate_dict = {'predicate_tuple': tuple(predicate_tuple), 'fulfilled': fulfilled,
-                                  'precon_idx': self.precon_idx}
+                predicate_dict = {
+                    "predicate_tuple": tuple(predicate_tuple),
+                    "fulfilled": fulfilled,
+                    "precon_idx": self.precon_idx,
+                }
                 # logger.info(f"num_comp condition precon_trace predicate_dict: {predicate_dict}")
                 return predicate_dict
 
             return fulfilled
 
-        if 'and' in conditions:
-            and_dict = {'and': list()}
+        if "and" in conditions:
+            and_dict = {"and": list()}
 
             and_conditions_checklist = list()
             # print("And conditions:", conditions)
-            conditions = conditions['and']
+            conditions = conditions["and"]
             # print("Extracted and conditions list:", conditions)
             for and_condition in conditions:
                 # print("and_condition:", and_condition)
 
                 # fulfilled = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
 
-                fulfilled = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+                fulfilled = self.check_conditions(
+                    and_condition,
+                    variable_map,
+                    check_precon_idx=check_precon_idx,
+                    precon_trace=precon_trace,
+                )
                 # print("and item fulfilled:", fulfilled)
                 # since all facts need to check out for 'and' clauses, immediately return failure:
                 # if not fulfilled:
                 #    return False
                 if precon_trace:
-                    and_conditions_checklist.append(fulfilled['fulfilled'])
-                    and_dict['and'].append(fulfilled)
+                    and_conditions_checklist.append(fulfilled["fulfilled"])
+                    and_dict["and"].append(fulfilled)
                 else:
                     and_conditions_checklist.append(fulfilled)
                 # print()
@@ -2056,7 +2305,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 and_phrase_true = False
                 if not False in and_conditions_checklist:
                     and_phrase_true = True
-                and_dict['fulfilled'] = and_phrase_true
+                and_dict["fulfilled"] = and_phrase_true
                 self.precon_trace.append(and_dict)
                 # print("and_dict:", and_dict)
                 return and_dict
@@ -2066,23 +2315,28 @@ class AdventureIFInterpreter(GameResourceLocator):
                 else:
                     return False
 
-        if 'or' in conditions:
+        if "or" in conditions:
 
-            or_dict = {'or': list()}
+            or_dict = {"or": list()}
 
             or_conditions_checklist = list()
             # print("Or conditions:", conditions)
-            conditions = conditions['or']
+            conditions = conditions["or"]
             # print("Extracted or conditions list:", conditions)
             for or_condition in conditions:
                 # print("or_condition:", or_condition)
-                fulfilled = self.check_conditions(or_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
+                fulfilled = self.check_conditions(
+                    or_condition,
+                    variable_map,
+                    check_precon_idx=check_precon_idx,
+                    precon_trace=precon_trace,
+                )
                 # print("or item fulfilled:", fulfilled)
 
                 if precon_trace:
-                    or_conditions_checklist.append(fulfilled['fulfilled'])
+                    or_conditions_checklist.append(fulfilled["fulfilled"])
                     # print("or_conditions_checklist:", or_conditions_checklist)
-                    or_dict['or'].append(fulfilled)
+                    or_dict["or"].append(fulfilled)
                 else:
                     or_conditions_checklist.append(fulfilled)
                 # print()
@@ -2094,7 +2348,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # print("or_conditions_checklist:", or_conditions_checklist)
                 if True in or_conditions_checklist:
                     or_phrase_true = True
-                or_dict['fulfilled'] = or_phrase_true
+                or_dict["fulfilled"] = or_phrase_true
                 self.precon_trace.append(or_dict)
                 return or_dict
             else:
@@ -2102,7 +2356,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                     return True
                 else:
                     return False
-
 
         # NOTE: Handling forall conditions not implemented due to time constraints.
 
@@ -2112,37 +2365,37 @@ class AdventureIFInterpreter(GameResourceLocator):
 
     def resolve_forall(self, forall_clause, variable_map):
         # print("forall effect:", forall_clause)
-        forall_type = forall_clause['forall']
+        forall_type = forall_clause["forall"]
         # print("forall_type:", forall_type)
 
-        forall_results = {'added': [], 'removed': []}
+        forall_results = {"added": [], "removed": []}
 
         forall_variable_map = dict()  # all values can be expected to be lists
 
         # handle single-predicate forall:
-        if 'predicate' in forall_type:
+        if "predicate" in forall_type:
             # print()
-            forall_predicate = forall_type['predicate']
-            if 'variable' in forall_predicate:
+            forall_predicate = forall_type["predicate"]
+            if "variable" in forall_predicate:
                 # since this is no type_list, supply list of all __entities__:
-                all_entities_list = [fact[1] for fact in self.world_state if fact[0] == 'type']
+                all_entities_list = [fact[1] for fact in self.world_state if fact[0] == "type"]
 
                 # NOTE: This assumes that forall clauses will only iterate over entities, NOT rooms!
 
                 # print("all_entities_list:", all_entities_list)
-                forall_variable_map[forall_predicate['variable']] = all_entities_list
+                forall_variable_map[forall_predicate["variable"]] = all_entities_list
                 forall_items = all_entities_list
-        elif 'type_list' in forall_type:
+        elif "type_list" in forall_type:
             # TODO?: iterate over multiple type list variables?
             # print("Type list forall_type:", forall_type)
-            forall_type_list = forall_type['type_list']
+            forall_type_list = forall_type["type_list"]
             # print("forall_type_list:", forall_type_list)
             for type_list_element in forall_type_list:
-                type_list_type = type_list_element['type_list_element']
-                for type_list_item in type_list_element['items']:
+                type_list_type = type_list_element["type_list_element"]
+                for type_list_item in type_list_element["items"]:
                     # print("type_list_item:", type_list_item)
-                    if 'variable' in type_list_item:
-                        type_list_item_variable = type_list_item['variable']
+                    if "variable" in type_list_item:
+                        type_list_item_variable = type_list_item["variable"]
                         # print("type_list_item_variable:", type_list_item_variable)
                         # get all type-matched objects:
                         type_matched_objects = list()
@@ -2170,37 +2423,43 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # print("iteration_forall_variable_map:", iteration_forall_variable_map)
 
                 # resolve forall body for iterated object:
-                forall_body = forall_clause['body']
+                forall_body = forall_clause["body"]
                 # print("forall_body:", forall_body)
 
                 for forall_body_element in forall_body:
                     # print("forall_body_element:", forall_body_element)
-                    if 'when' in forall_body_element:
+                    if "when" in forall_body_element:
                         # print("When clause in forall body element:", forall_body_element['when'])
                         # print("When clause forall body element:", forall_body_element)
-                        when_results = self.resolve_when(forall_body_element, iteration_forall_variable_map)
+                        when_results = self.resolve_when(
+                            forall_body_element, iteration_forall_variable_map
+                        )
                         # print("when_results:", when_results)
-                        forall_results['added'] += when_results['added']
-                        forall_results['removed'] += when_results['removed']
+                        forall_results["added"] += when_results["added"]
+                        forall_results["removed"] += when_results["removed"]
 
-                    if 'and' in forall_body_element:
+                    if "and" in forall_body_element:
                         # print("And clause forall body element:", forall_body_element)
                         # print("And clause in forall body element(s):", forall_body_element['and'])
 
-                        and_items = forall_body_element['and']
+                        and_items = forall_body_element["and"]
 
                         for and_item in and_items:
                             # print("and_item:", and_item)
-                            if 'predicate' in and_item or 'not' in and_item:
+                            if "predicate" in and_item or "not" in and_item:
                                 # print("Bare predicate or 'not' predicate item.")
-                                and_item_results = self.resolve_effect(and_item, iteration_forall_variable_map)
+                                and_item_results = self.resolve_effect(
+                                    and_item, iteration_forall_variable_map
+                                )
                                 # print("and_item_results:", and_item_results)
-                                forall_results['added'] += and_item_results['added']
-                                forall_results['removed'] += and_item_results['removed']
-                            if 'when' in and_item:
-                                when_results = self.resolve_when(and_item, iteration_forall_variable_map)
-                                forall_results['added'] += when_results['added']
-                                forall_results['removed'] += when_results['removed']
+                                forall_results["added"] += and_item_results["added"]
+                                forall_results["removed"] += and_item_results["removed"]
+                            if "when" in and_item:
+                                when_results = self.resolve_when(
+                                    and_item, iteration_forall_variable_map
+                                )
+                                forall_results["added"] += when_results["added"]
+                                forall_results["removed"] += when_results["removed"]
                             # print()
 
                     # TODO?: handle single-predicate forall bodies? -> would need grammar coverage
@@ -2210,11 +2469,11 @@ class AdventureIFInterpreter(GameResourceLocator):
         return forall_results
 
     def resolve_when(self, when_clause, variable_map):
-        when_results = {'added': [], 'removed': []}
+        when_results = {"added": [], "removed": []}
 
         # when_items = when_clause['when']
         # get actual content:
-        when_clause = when_clause['when']
+        when_clause = when_clause["when"]
 
         # print("when_clause:", when_clause)
         # print("variable_map for when clause:", variable_map)
@@ -2224,7 +2483,9 @@ class AdventureIFInterpreter(GameResourceLocator):
         when_conditions = when_clause[0]
         # print("when_conditions pre-and/or:", when_conditions)
 
-        checked_conditions = self.check_conditions(when_conditions, variable_map, check_precon_idx=False, precon_trace=False)
+        checked_conditions = self.check_conditions(
+            when_conditions, variable_map, check_precon_idx=False, precon_trace=False
+        )
         # print("checked_conditions:", checked_conditions)
 
         # if when_conditions_fulfilled:
@@ -2232,8 +2493,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             # print("When conditions fulfilled!")
             when_effects = when_clause[1]
             # print("when_effects:", when_effects)
-            if 'and' in when_effects:
-                when_effects = when_effects['and']
+            if "and" in when_effects:
+                when_effects = when_effects["and"]
             else:
                 # put single-predicate effect in list for uniform handling:
                 when_effects = [when_effects]
@@ -2243,8 +2504,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # print("when_effect:", when_effect)
                 resolve_effect_results = self.resolve_effect(when_effect, variable_map)
                 # print("resolve_effect_results", resolve_effect_results)
-                when_results['added'] += resolve_effect_results['added']
-                when_results['removed'] += resolve_effect_results['removed']
+                when_results["added"] += resolve_effect_results["added"]
+                when_results["removed"] += resolve_effect_results["removed"]
         else:
             # print("When conditions NOT fulfilled!")
             pass
@@ -2257,30 +2518,33 @@ class AdventureIFInterpreter(GameResourceLocator):
         """Add or remove fact from world state based on passed effect object."""
         # logger.info(f"effect passed to resolve_effect: {effect}")
 
-        resolve_effect_results = {'added': [], 'removed': []}
+        resolve_effect_results = {"added": [], "removed": []}
 
         # catch 'not' effects:
         effect_polarity = True
-        if 'not' in effect:
+        if "not" in effect:
             effect_polarity = False
-            effect = effect['not']
+            effect = effect["not"]
 
-        if 'predicate' in effect:
-            effect_list = [effect['predicate'], effect['arg1']]  # effect predicates always have at least one argument
-            if effect['arg2']:
+        if "predicate" in effect:
+            effect_list = [
+                effect["predicate"],
+                effect["arg1"],
+            ]  # effect predicates always have at least one argument
+            if effect["arg2"]:
                 # print("effect['arg2']:", effect['arg2'])
-                effect_list.append(effect['arg2'])
-                if effect['arg3']:
-                    effect_list.append(effect['arg3'])
+                effect_list.append(effect["arg2"])
+                if effect["arg3"]:
+                    effect_list.append(effect["arg3"])
 
             # apply variable map:
             for effect_arg_idx, effect_arg in enumerate(effect_list):
                 if effect_arg_idx == 0:  # predicate does not need variable value application
                     continue
                 # print(f"effect_arg {effect_arg_idx}:", effect_arg)
-                if type(effect_arg) == dict and 'variable' in effect_arg:
+                if type(effect_arg) == dict and "variable" in effect_arg:
                     # print("effect_arg['variable']:", effect_arg['variable'])
-                    effect_list[effect_arg_idx] = variable_map[effect_arg['variable']]
+                    effect_list[effect_arg_idx] = variable_map[effect_arg["variable"]]
 
             effect_tuple = tuple(effect_list)
             # print("effect_tuple:", effect_tuple)
@@ -2292,23 +2556,23 @@ class AdventureIFInterpreter(GameResourceLocator):
             if effect_polarity:
                 # print(f"Adding {effect_tuple} to world state.")
                 self.world_state.add(effect_tuple)
-                resolve_effect_results['added'].append(effect_tuple)
+                resolve_effect_results["added"].append(effect_tuple)
             elif not effect_polarity:
                 # print(f"Removing {effect_tuple} from world state.")
                 if effect_tuple in self.world_state:
                     self.world_state.remove(effect_tuple)
-                resolve_effect_results['removed'].append(effect_tuple)
-        elif 'function_change' in effect:
+                resolve_effect_results["removed"].append(effect_tuple)
+        elif "function_change" in effect:
             # logger.info(f"function_change effect passed to resolve_effect: {effect}")
 
             # get direct number argument values or function fact argument values:
             arg1_function_list = list()
             arg1_is_number = False
-            if 'function_number' in effect['arg1']:
+            if "function_number" in effect["arg1"]:
                 arg1_is_number = True
-            elif 'function_id' in effect['arg1']:
-                arg1_function_list.append(effect['arg1']['function_id'])
-                arg1_function_var = effect['arg1']['function_variable']['variable']
+            elif "function_id" in effect["arg1"]:
+                arg1_function_list.append(effect["arg1"]["function_id"])
+                arg1_function_var = effect["arg1"]["function_variable"]["variable"]
                 arg1_function_object = variable_map[arg1_function_var]
                 logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
                 arg1_function_list.append(arg1_function_object)
@@ -2320,7 +2584,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         arg1_function_list.append(fact[2])
                         arg1_value = fact[2]
             else:
-                arg1_value = effect['arg1']['function_number']
+                arg1_value = effect["arg1"]["function_number"]
                 if "." in arg1_value:
                     arg1_value = float(arg1_value)
                 else:
@@ -2328,11 +2592,11 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             arg2_function_list = list()
             arg2_is_number = False
-            if 'function_number' in effect['arg2']:
+            if "function_number" in effect["arg2"]:
                 arg2_is_number = True
-            elif 'function_id' in effect['arg2']:
-                arg2_function_list.append(effect['arg2']['function_id'])
-                arg2_function_var = effect['arg2']['function_variable']['variable']
+            elif "function_id" in effect["arg2"]:
+                arg2_function_list.append(effect["arg2"]["function_id"])
+                arg2_function_var = effect["arg2"]["function_variable"]["variable"]
                 arg2_function_object = variable_map[arg2_function_var]
                 logger.info(f"num_comp condition arg2 function object: {arg2_function_object}")
                 arg2_function_list.append(arg2_function_object)
@@ -2344,7 +2608,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         arg2_function_list.append(fact[2])
                         arg2_value = fact[2]
             else:
-                arg2_value = effect['arg2']['function_number']
+                arg2_value = effect["arg2"]["function_number"]
                 if "." in arg2_value:
                     arg2_value = float(arg2_value)
                 else:
@@ -2353,10 +2617,10 @@ class AdventureIFInterpreter(GameResourceLocator):
             # remove old function value fact:
             if tuple(arg1_function_list) in self.world_state:
                 self.world_state.remove(tuple(arg1_function_list))
-            resolve_effect_results['removed'].append(tuple(arg1_function_list))
+            resolve_effect_results["removed"].append(tuple(arg1_function_list))
 
             # get function change type:
-            function_change_type = effect['function_change']
+            function_change_type = effect["function_change"]
 
             # numerical change:
             match function_change_type:
@@ -2368,7 +2632,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     arg1_function_list[2] = arg2_value
 
             self.world_state.add(tuple(arg1_function_list))
-            resolve_effect_results['added'].append(tuple(arg1_function_list))
+            resolve_effect_results["added"].append(tuple(arg1_function_list))
 
         # logger.info(f"resolve_effect results: {resolve_effect_results}")
 
@@ -2381,45 +2645,45 @@ class AdventureIFInterpreter(GameResourceLocator):
         prior_world_state = deepcopy(self.world_state)
 
         # get current action definition:
-        cur_action_def = self.action_types[action_dict['type']]
+        cur_action_def = self.action_types[action_dict["type"]]
         # print("cur_action_def:", cur_action_def)
         # pretty_action(cur_action_def)
         # get current action PDDL parameter mapping:
-        cur_action_pddl_map = self.action_types[action_dict['type']]['pddl_parameter_mapping']
+        cur_action_pddl_map = self.action_types[action_dict["type"]]["pddl_parameter_mapping"]
         # print("cur_action_pddl_map:", cur_action_pddl_map)
 
         # PARAMETERS
         variable_map = dict()
-        parameters_base = cur_action_def['interaction']['parameters']
+        parameters_base = cur_action_def["interaction"]["parameters"]
         # print(parameters_base)
         # print("cur_action_def:", cur_action_def)
         # check that parameters key correctly contains a PDDL type_list:
-        if not 'type_list' in parameters_base:
+        if not "type_list" in parameters_base:
             raise KeyError
         # type match fail variable to allow parameter failure feedback after precon failures:
         type_match_fails: list = list()
         # get parameters list:
-        parameters = parameters_base['type_list']
+        parameters = parameters_base["type_list"]
         for param_idx, parameter in enumerate(parameters):
             # print("\nparameter:", parameter, "idx:", param_idx)
-            cur_parameter_type = parameter['type_list_element']
+            cur_parameter_type = parameter["type_list_element"]
             # print("cur_parameter_type:", cur_parameter_type)
             # go over variables in parameter:
-            for variable in parameter['items']:
+            for variable in parameter["items"]:
                 # print("variable:", variable)
                 var_id = variable["variable"]
                 # print("var_id:", var_id)
                 # use parameter mapping to resolve variable:
-                cur_var_map = cur_action_pddl_map[f'?{var_id}']
+                cur_var_map = cur_action_pddl_map[f"?{var_id}"]
                 # print("cur_var_map:", cur_var_map)
                 match cur_var_map[0]:
                     # assign action arguments:
-                    case 'arg1':
-                        variable_map[var_id] = action_dict['arg1']
-                    case 'arg2':
-                        if 'arg2' in action_dict:
+                    case "arg1":
+                        variable_map[var_id] = action_dict["arg1"]
+                    case "arg2":
+                        if "arg2" in action_dict:
                             # print("arg2 in action_dict")
-                            variable_map[var_id] = action_dict['arg2']
+                            variable_map[var_id] = action_dict["arg2"]
                         else:
                             # print("arg2 NOT in action_dict")
                             # check alternate mapping:
@@ -2428,7 +2692,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 if cur_var_map[1] == "arg1_receptacle":
                                     # print("variable_map:", variable_map)
                                     arg1_variable = None
-                                    for assigned_variable, assigned_value in cur_action_pddl_map.items():
+                                    for (
+                                        assigned_variable,
+                                        assigned_value,
+                                    ) in cur_action_pddl_map.items():
                                         # print("Checking", assigned_variable, assigned_value)
                                         # print("assigned_variable value:", cur_action_pddl_map[assigned_variable])
                                         if assigned_value[0] == "arg1":
@@ -2441,7 +2708,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                                     arg1_receptacle = None
                                     for fact in self.world_state:
                                         if fact[0] in ["in", "on"]:
-                                            if fact[1] == f"{arg1_value}1":  # assume only one instance of each type
+                                            if (
+                                                fact[1] == f"{arg1_value}1"
+                                            ):  # assume only one instance of each type
                                                 arg1_receptacle = fact[2]
                                                 # print("arg1_receptacle:", arg1_receptacle)
                                                 break
@@ -2449,17 +2718,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                             else:
                                 variable_map[var_id] = None
                     # assign default wildcards:
-                    case 'current_player_room':
+                    case "current_player_room":
                         variable_map[var_id] = self.get_player_room()
-                    case 'player':
+                    case "player":
                         # for now only single-player, so the current player is always player1:
-                        variable_map[var_id] = config.entities['player_id']
-                    case 'inventory':
+                        variable_map[var_id] = config.entities["player_id"]
+                    case "inventory":
                         # for now only single-player, so the current player inventory is always 'inventory':
-                        variable_map[var_id] = config.entities['inventory_id']
-                    case 'current_room_floor':
+                        variable_map[var_id] = config.entities["inventory_id"]
+                    case "current_room_floor":
                         # floors are always room ID + floor1
-                        variable_map[var_id] = self.get_player_room() + config.entities['floor_id_suffix']
+                        variable_map[var_id] = (
+                            self.get_player_room() + config.entities["floor_id_suffix"]
+                        )
 
                 # check type match:
                 # assume all world state instance IDs end in numbers:
@@ -2467,7 +2738,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # logger.info(variable_map)
 
                 if variable_map[var_id]:
-                    if variable_map[var_id].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+                    if variable_map[var_id].endswith(
+                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                    ):
                         # logger.info(self.inst_to_type_dict)
                         # logger.info(f"{variable_map[var_id]} in self.inst_to_type_dict: {variable_map[var_id] in self.inst_to_type_dict}")
                         # logger.info(f"{variable_map[var_id]} in self.room_to_type_dict: {variable_map[var_id] in self.room_to_type_dict}")
@@ -2487,15 +2760,17 @@ class AdventureIFInterpreter(GameResourceLocator):
                 type_matched = False
                 if type(var_type) == str:
                     # NOTE: Inventory contents are handled via effects PDDL forall now.
-                    if var_type in self.domain['supertypes']:
+                    if var_type in self.domain["supertypes"]:
                         # print("domain supertypes for current var_type:", self.domain['supertypes'][var_type])
                         pass
                     # check if type matches directly:
                     if var_type == cur_parameter_type:
                         type_matched = True
                     # check if type matches through supertype:
-                    elif var_type in self.domain['supertypes'] and cur_parameter_type in self.domain['supertypes'][
-                        var_type]:
+                    elif (
+                        var_type in self.domain["supertypes"]
+                        and cur_parameter_type in self.domain["supertypes"][var_type]
+                    ):
                         type_matched = True
                     # print("type matched:", type_matched)
                 else:
@@ -2506,19 +2781,25 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # get the index of the mismatched variable:
                     var_idx = list(cur_action_pddl_map.keys()).index(f"?{var_id}")
                     # get fail feedback template using mismatched variable index:
-                    feedback_template = cur_action_def['failure_feedback']['parameters'][var_idx][0]
+                    feedback_template = cur_action_def["failure_feedback"]["parameters"][var_idx][0]
                     feedback_jinja = jinja2.Template(feedback_template)
                     # fill feedback template:
                     jinja_args = {var_id: variable_map[var_id]}
                     feedback_str = feedback_jinja.render(jinja_args)
                     feedback_str = feedback_str.capitalize()
                     # use action def feedback fail type:
-                    fail_type = cur_action_def['failure_feedback']['parameters'][var_idx][1]
+                    fail_type = cur_action_def["failure_feedback"]["parameters"][var_idx][1]
 
-                    failed_action_info = {'failed_action_type': action_dict['type'],
-                                          'failed_parameter': variable_map[var_id]}
+                    failed_action_info = {
+                        "failed_action_type": action_dict["type"],
+                        "failed_parameter": variable_map[var_id],
+                    }
 
-                    fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
+                    fail_dict: dict = {
+                        "phase": "resolution",
+                        "fail_type": fail_type,
+                        "arg": failed_action_info,
+                    }
 
                     type_match_fails.append((False, feedback_str, fail_dict))
 
@@ -2528,7 +2809,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("variable_map pre-preconditions:", variable_map)
 
         # PRECONDITION
-        preconditions: list = cur_action_def['interaction']['precondition'][0]
+        preconditions: list = cur_action_def["interaction"]["precondition"][0]
         # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
         self.precon_idx = -1
         # self.precon_idx = 0
@@ -2539,7 +2820,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # print("Checked precon tuples:", self.precon_tuples)
 
         # if checked_conditions:
-        if self.precon_trace[-1]['fulfilled']:
+        if self.precon_trace[-1]["fulfilled"]:
             logger.info("Preconditions fulfilled!")
             pass
         else:
@@ -2552,83 +2833,103 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             def feedback_idx_from_precon_trace(precon_trace):
                 # iterate over precon trace:
-                for item in precon_trace[-1]['and']:
+                for item in precon_trace[-1]["and"]:
                     # print("precon_trace item:", item)
                     # print("Checks out:", item['fulfilled'])
-                    if not item['fulfilled']:
+                    if not item["fulfilled"]:
                         # print("Precon trace item does not check out:")
                         # print(item)
-                        if 'or' in item:
+                        if "or" in item:
                             # print("or clause:", item)
-                            for or_item in item['or']:
+                            for or_item in item["or"]:
                                 # print("or_item:", or_item)
-                                if 'and' in or_item:
-                                    for and_item in or_item['and']:
-                                        if not and_item['fulfilled']:
+                                if "and" in or_item:
+                                    for and_item in or_item["and"]:
+                                        if not and_item["fulfilled"]:
                                             # print("or and_item does not check out:", and_item)
-                                            if 'not' in and_item:
-                                                feedback_idx = and_item['not']['precon_idx']
+                                            if "not" in and_item:
+                                                feedback_idx = and_item["not"]["precon_idx"]
                                                 return feedback_idx, and_item
-                                            feedback_idx = and_item['precon_idx']
+                                            feedback_idx = and_item["precon_idx"]
                                             return feedback_idx, and_item
-                                elif 'predicate_tuple' in or_item:
-                                    if not or_item['fulfilled']:
-                                        if 'not' in or_item:
-                                            feedback_idx = or_item['not']['precon_idx']
+                                elif "predicate_tuple" in or_item:
+                                    if not or_item["fulfilled"]:
+                                        if "not" in or_item:
+                                            feedback_idx = or_item["not"]["precon_idx"]
                                             return feedback_idx, or_item
-                                        feedback_idx = or_item['precon_idx']
+                                        feedback_idx = or_item["precon_idx"]
                                         return feedback_idx, or_item
-                        elif 'and' in item:
-                            for and_item in item['and']:
-                                if not and_item['fulfilled']:
+                        elif "and" in item:
+                            for and_item in item["and"]:
+                                if not and_item["fulfilled"]:
                                     # print("or and_item does not check out:", and_item)
-                                    if 'not' in and_item:
-                                        feedback_idx = and_item['not']['precon_idx']
+                                    if "not" in and_item:
+                                        feedback_idx = and_item["not"]["precon_idx"]
                                         return feedback_idx, and_item
-                                    feedback_idx = and_item['precon_idx']
+                                    feedback_idx = and_item["precon_idx"]
                                     return feedback_idx, and_item
-                        elif 'predicate_tuple' in item:
-                            if not item['fulfilled']:
-                                feedback_idx = item['precon_idx']
+                        elif "predicate_tuple" in item:
+                            if not item["fulfilled"]:
+                                feedback_idx = item["precon_idx"]
                                 return feedback_idx, item
-                        elif 'not' in item:
-                            if not item['fulfilled']:
-                                feedback_idx = item['not']['precon_idx']
+                        elif "not" in item:
+                            if not item["fulfilled"]:
+                                feedback_idx = item["not"]["precon_idx"]
                                 return feedback_idx, item
 
             # TODO?: Make feedback_idx extraction from precon_trace recursive for optimal robustness?
 
-            feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(self.precon_trace)
+            feedback_idx, failed_precon_predicate = feedback_idx_from_precon_trace(
+                self.precon_trace
+            )
             logger.info(f"Precondition fail feedback_idx: {feedback_idx}")
 
             # get textual failure feedback template:
-            feedback_template = cur_action_def['failure_feedback']['precondition'][feedback_idx][0]
+            feedback_template = cur_action_def["failure_feedback"]["precondition"][feedback_idx][0]
             feedback_jinja = jinja2.Template(feedback_template)
             # fill feedback template:
             clean_feedback_variable_map = deepcopy(variable_map)
-            logger.info(f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}")
+            logger.info(
+                f"Precondition fail clean_feedback_variable_map: {clean_feedback_variable_map}"
+            )
             for key in clean_feedback_variable_map:
                 # erroneous non-supported/non-contained TAKE hotfix:
                 # if key == 's' and clean_feedback_variable_map[key] is None:
                 if clean_feedback_variable_map[key] is None:
-                    feedback_str = config.messages['cannot_do_that']
-                    failed_action_info = {'failed_action_type': action_dict['type'],
-                                          'failed_precon_predicate': "?s - receptacle"}
+                    feedback_str = config.messages["cannot_do_that"]
+                    failed_action_info = {
+                        "failed_action_type": action_dict["type"],
+                        "failed_precon_predicate": "?s - receptacle",
+                    }
                     # use action def feedback fail type:
-                    fail_dict: dict = {'phase': "resolution", 'fail_type': "take_non_takeable_object", 'arg': failed_action_info}
+                    fail_dict: dict = {
+                        "phase": "resolution",
+                        "fail_type": "take_non_takeable_object",
+                        "arg": failed_action_info,
+                    }
                     return False, feedback_str, fail_dict
                     # TODO: handle this more generically in parameter handling instead
-                if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
+                if clean_feedback_variable_map[key].endswith(
+                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                ):
+                    clean_feedback_variable_map[key] = self._get_inst_str(
+                        clean_feedback_variable_map[key]
+                    )
             jinja_args = clean_feedback_variable_map
             feedback_str = feedback_jinja.render(jinja_args)
             feedback_str = feedback_str.capitalize()
             # failed action information for records:
-            failed_action_info = {'failed_action_type': action_dict['type'],
-                                  'failed_precon_predicate': failed_precon_predicate}
+            failed_action_info = {
+                "failed_action_type": action_dict["type"],
+                "failed_precon_predicate": failed_precon_predicate,
+            }
             # use action def feedback fail type:
-            fail_type = cur_action_def['failure_feedback']['precondition'][feedback_idx][1]
-            fail_dict: dict = {'phase': "resolution", 'fail_type': fail_type, 'arg': failed_action_info}
+            fail_type = cur_action_def["failure_feedback"]["precondition"][feedback_idx][1]
+            fail_dict: dict = {
+                "phase": "resolution",
+                "fail_type": fail_type,
+                "arg": failed_action_info,
+            }
 
             return False, feedback_str, fail_dict
 
@@ -2640,27 +2941,29 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # EFFECT
 
-        effects: list = cur_action_def['interaction']['effect']
-        if 'and' in effects[0]:  # handle multi-predicate effect, but allow non-and single predicate effect
-            effects: list = cur_action_def['interaction']['effect'][0]['and']
+        effects: list = cur_action_def["interaction"]["effect"]
+        if (
+            "and" in effects[0]
+        ):  # handle multi-predicate effect, but allow non-and single predicate effect
+            effects: list = cur_action_def["interaction"]["effect"][0]["and"]
         # print("effects:", effects)
 
-        world_state_effects = {'added': [], 'removed': []}
+        world_state_effects = {"added": [], "removed": []}
 
         for effect in effects:
             # print("effect:", effect)
-            if 'forall' in effect:
+            if "forall" in effect:
                 forall_results = self.resolve_forall(effect, variable_map)
-                world_state_effects['added'] += forall_results['added']
-                world_state_effects['removed'] += forall_results['removed']
-            elif 'when' in effect:
+                world_state_effects["added"] += forall_results["added"]
+                world_state_effects["removed"] += forall_results["removed"]
+            elif "when" in effect:
                 when_results = self.resolve_when(effect, variable_map)
-                world_state_effects['added'] += when_results['added']
-                world_state_effects['removed'] += when_results['removed']
+                world_state_effects["added"] += when_results["added"]
+                world_state_effects["removed"] += when_results["removed"]
             else:
                 resolve_effect_results = self.resolve_effect(effect, variable_map)
-                world_state_effects['added'] += resolve_effect_results['added']
-                world_state_effects['removed'] += resolve_effect_results['removed']
+                world_state_effects["added"] += resolve_effect_results["added"]
+                world_state_effects["removed"] += resolve_effect_results["removed"]
 
         # print("world_state_effects:", world_state_effects)
 
@@ -2676,17 +2979,20 @@ class AdventureIFInterpreter(GameResourceLocator):
             logger.info(f"Prior world state matches second to last world state in history")
         logger.info(f"Resolution world state changes: {post_resolution_changes}")
 
-
         # SUCCESS FEEDBACK
 
         # type word variable map instead of instance ID:
         clean_feedback_variable_map = deepcopy(variable_map)
         for key in clean_feedback_variable_map:
             if clean_feedback_variable_map[key]:
-                if clean_feedback_variable_map[key].endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
+                if clean_feedback_variable_map[key].endswith(
+                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                ):
+                    clean_feedback_variable_map[key] = self._get_inst_str(
+                        clean_feedback_variable_map[key]
+                    )
 
-        success_feedback_template = cur_action_def['success_feedback']
+        success_feedback_template = cur_action_def["success_feedback"]
         # print("success_feedback_template:", success_feedback_template)
 
         feedback_jinja = jinja2.Template(success_feedback_template)
@@ -2699,34 +3005,34 @@ class AdventureIFInterpreter(GameResourceLocator):
             jinja_args["inventory_desc"] = self.get_inventory_desc()
         if "prep" in success_feedback_template:
             if "prep" in action_dict:
-                jinja_args["prep"] = action_dict['prep']
+                jinja_args["prep"] = action_dict["prep"]
             else:
                 # get preposition fact from world state effects:
-                for added_fact in world_state_effects['added']:
-                    if added_fact[0] in ['in', 'on']:
+                for added_fact in world_state_effects["added"]:
+                    if added_fact[0] in ["in", "on"]:
                         jinja_args["prep"] = added_fact[0]
                         break
         if "container_content" in success_feedback_template:
             # get opened container fact from world state effects:
-            for added_fact in world_state_effects['added']:
+            for added_fact in world_state_effects["added"]:
                 if added_fact[0] == "open":
                     opened_container_id = added_fact[1]
                     break
             jinja_args["container_content"] = self.get_container_content_desc(opened_container_id)
         if "arg1_desc" in success_feedback_template:
             # get description of arg1 entity:
-            entity_desc = self.get_entity_desc(action_dict['arg1'])
+            entity_desc = self.get_entity_desc(action_dict["arg1"])
             # print()
             jinja_args["arg1_desc"] = entity_desc
         if "arg2_desc" in success_feedback_template:
             # get description of arg2 entity:
-            entity_desc = self.get_entity_desc(action_dict['arg2'])
+            entity_desc = self.get_entity_desc(action_dict["arg2"])
             # print()
             jinja_args["arg2_desc"] = entity_desc
 
         if "arg1_text" in success_feedback_template:
             # get text of arg1 entity:
-            entity_text = self.get_entity_text(action_dict['arg1'])
+            entity_text = self.get_entity_text(action_dict["arg1"])
             # print()
             jinja_args["arg1_text"] = entity_text
 
@@ -2735,7 +3041,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # print("feedback_str:", feedback_str)
 
-        return True, feedback_str, {'world_state_effects': world_state_effects}
+        return True, feedback_str, {"world_state_effects": world_state_effects}
 
     def run_events(self):
         # deepcopy the world state to prevent referential interaction:
@@ -2750,24 +3056,24 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             # PARAMETERS
             variable_map = dict()
-            parameters_base = cur_event_def['interaction']['parameters']
+            parameters_base = cur_event_def["interaction"]["parameters"]
             # print("parameters_base:", parameters_base)
             # check that parameters key correctly contains a PDDL type_list:
-            if not 'type_list' in parameters_base:
+            if not "type_list" in parameters_base:
                 raise KeyError
 
             # get parameters list:
-            parameters = parameters_base['type_list']
+            parameters = parameters_base["type_list"]
             # print("parameters:", parameters)
             # logger.info(f"parameters: {parameters}")
             cur_var_type_map: dict = dict()
             for parameter in parameters:
                 # print("\nparameter:", parameter)
-                cur_parameter_type = parameter['type_list_element']
+                cur_parameter_type = parameter["type_list_element"]
                 # print("cur_parameter_type:", cur_parameter_type)
 
                 # go over variables in parameter:
-                for variable in parameter['items']:
+                for variable in parameter["items"]:
                     # print("variable:", variable)
                     # logger.info(f"variable: {variable}")
                     var_id = variable["variable"]
@@ -2792,13 +3098,16 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # print(self.domain['types'])
                     # print(type(self.domain['types']))
                     # get domain supertypes:
-                    if cur_type in self.domain['types']:
+                    if cur_type in self.domain["types"]:
                         # value is domain supertype
-                        candidate_types += self.domain['types'][cur_type]
+                        candidate_types += self.domain["types"][cur_type]
                     else:
                         candidate_types.append(cur_type)
-                cur_var_candidates[key] = [type_fact[1] for type_fact in self.world_state
-                                           if type_fact[0] in ["type", "room"] and type_fact[2] in candidate_types]
+                cur_var_candidates[key] = [
+                    type_fact[1]
+                    for type_fact in self.world_state
+                    if type_fact[0] in ["type", "room"] and type_fact[2] in candidate_types
+                ]
 
             # print("cur_var_candidates:", cur_var_candidates)
             candidates_lists = list(cur_var_candidates.values())
@@ -2822,7 +3131,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # print("variable_map:", variable_map)
                 # check event precondition:
                 # PRECONDITION
-                preconditions: list = cur_event_def['interaction']['precondition'][0]
+                preconditions: list = cur_event_def["interaction"]["precondition"][0]
                 # if cur_event_type in ["outhouse_teleport"]:
                 #     logger.info(f"Event preconditions before check_preconditions: {preconditions}")
                 # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
@@ -2839,7 +3148,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 #    logger.info(f"Checked precon tuples: {self.precon_tuples}")
 
                 # if checked_conditions:
-                if self.precon_trace[-1]['fulfilled']:
+                if self.precon_trace[-1]["fulfilled"]:
                     # if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
                     #                          "workshop_antigravity_player_float_start",
                     #                          "workshop_antigravity_player_float_stop"]:
@@ -2850,29 +3159,31 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # EFFECT
                     # IMPORTANT: Events MUST change their precondition to not be true (in the same way) after they have
                     # been triggered!
-                    effects: list = cur_event_def['interaction']['effect']
-                    if 'and' in effects[0]:  # handle multi-predicate effect, but allow non-and single predicate effect
-                        effects: list = cur_event_def['interaction']['effect'][0]['and']
+                    effects: list = cur_event_def["interaction"]["effect"]
+                    if (
+                        "and" in effects[0]
+                    ):  # handle multi-predicate effect, but allow non-and single predicate effect
+                        effects: list = cur_event_def["interaction"]["effect"][0]["and"]
                     # print("effects:", effects)
 
-                    world_state_effects = {'added': [], 'removed': []}
+                    world_state_effects = {"added": [], "removed": []}
 
                     for effect in effects:
                         # if cur_event_type in ["outhouse_teleport"]:
                         #    logger.info(f"{cur_event_type} event effect: {effect}")
                         # print("effect:", effect)
-                        if 'forall' in effect:
+                        if "forall" in effect:
                             forall_results = self.resolve_forall(effect, variable_map)
-                            world_state_effects['added'] += forall_results['added']
-                            world_state_effects['removed'] += forall_results['removed']
-                        elif 'when' in effect:
+                            world_state_effects["added"] += forall_results["added"]
+                            world_state_effects["removed"] += forall_results["removed"]
+                        elif "when" in effect:
                             when_results = self.resolve_when(effect, variable_map)
-                            world_state_effects['added'] += when_results['added']
-                            world_state_effects['removed'] += when_results['removed']
+                            world_state_effects["added"] += when_results["added"]
+                            world_state_effects["removed"] += when_results["removed"]
                         else:
                             resolve_effect_results = self.resolve_effect(effect, variable_map)
-                            world_state_effects['added'] += resolve_effect_results['added']
-                            world_state_effects['removed'] += resolve_effect_results['removed']
+                            world_state_effects["added"] += resolve_effect_results["added"]
+                            world_state_effects["removed"] += resolve_effect_results["removed"]
 
                     # print("world_state_effects:", world_state_effects)
 
@@ -2887,7 +3198,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                     post_world_state = deepcopy(self.world_state)
                     post_resolution_changes = post_world_state.difference(prior_world_state)
                     if prior_world_state == self.world_state_history[-2]:
-                        logger.info(f"Prior world state matches second to last world state in history")
+                        logger.info(
+                            f"Prior world state matches second to last world state in history"
+                        )
                     logger.info(f"Event world state changes: {post_resolution_changes}")
 
                     # EVENT FEEDBACK
@@ -2897,10 +3210,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                     for key in clean_feedback_variable_map:
                         if clean_feedback_variable_map[key]:
                             if clean_feedback_variable_map[key].endswith(
-                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                                clean_feedback_variable_map[key] = self._get_inst_str(clean_feedback_variable_map[key])
+                                ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                            ):
+                                clean_feedback_variable_map[key] = self._get_inst_str(
+                                    clean_feedback_variable_map[key]
+                                )
 
-                    event_feedback_template = cur_event_def['event_feedback']
+                    event_feedback_template = cur_event_def["event_feedback"]
                     # print("event_feedback_template:", event_feedback_template)
 
                     feedback_jinja = jinja2.Template(event_feedback_template)
@@ -2913,17 +3229,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                         jinja_args["inventory_desc"] = self.get_inventory_desc()
                     if "prep" in event_feedback_template:
                         # get preposition fact from world state effects:
-                        for added_fact in world_state_effects['added']:
-                            if added_fact[0] in ['in', 'on']:
+                        for added_fact in world_state_effects["added"]:
+                            if added_fact[0] in ["in", "on"]:
                                 jinja_args["prep"] = added_fact[0]
                                 break
                     if "container_content" in event_feedback_template:
                         # get opened container fact from world state effects:
-                        for added_fact in world_state_effects['added']:
+                        for added_fact in world_state_effects["added"]:
                             if added_fact[0] == "open":
                                 opened_container_id = added_fact[1]
                                 break
-                        jinja_args["container_content"] = self.get_container_content_desc(opened_container_id)
+                        jinja_args["container_content"] = self.get_container_content_desc(
+                            opened_container_id
+                        )
 
                     feedback_str = feedback_jinja.render(jinja_args)
                     # feedback_str = feedback_str.capitalize()
@@ -2933,60 +3251,86 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # randomize event effect after first trigger:
                     # currently tailor-made for potion brewing adventures teleporting outhouse
                     # would need to be made a lot more extensive and properly recursive to handle any possible event
-                    if 'randomize' in cur_event_def:
-                        if not hasattr(self, 'event_randomization'):
+                    if "randomize" in cur_event_def:
+                        if not hasattr(self, "event_randomization"):
                             self.event_randomization: dict = dict()
                         if not cur_event_type in self.event_randomization:
                             # set predefined initial value as prior value to replace next time:
-                            self.event_randomization[cur_event_type] = cur_event_def['randomize']['initial_value']
-                        if 'replace_type' in cur_event_def['randomize']:
+                            self.event_randomization[cur_event_type] = cur_event_def["randomize"][
+                                "initial_value"
+                            ]
+                        if "replace_type" in cur_event_def["randomize"]:
                             replace_candidates: list = list()
                             for fact in self.world_state:
-                                if fact[0] == cur_event_def['randomize']['replace_type']:
-                                    if fact[1] not in cur_event_def['randomize']['not_replacer']:
+                                if fact[0] == cur_event_def["randomize"]["replace_type"]:
+                                    if fact[1] not in cur_event_def["randomize"]["not_replacer"]:
                                         replace_candidates.append(fact[1])
                             random_replacement = self.rng.choice(replace_candidates)
                             # replace prior value with random replacement in effects:
-                            effects: list = cur_event_def['interaction']['effect']
-                            if 'and' in effects[0]:
+                            effects: list = cur_event_def["interaction"]["effect"]
+                            if "and" in effects[0]:
                                 # handle multi-predicate effect, but allow non-and single predicate effect
-                                effects: list = cur_event_def['interaction']['effect'][0]['and']
+                                effects: list = cur_event_def["interaction"]["effect"][0]["and"]
                             # print("effects:", effects)
                             for effect in effects:
                                 # print("effect:", effect)
-                                if 'predicate' in effect:
-                                    if type(effect['arg1']) == str:
-                                        if effect['arg1'] == self.event_randomization[cur_event_type]:
-                                            effect['arg1'] = random_replacement
-                                    if type(effect['arg2']) == str:
-                                        if effect['arg2'] == self.event_randomization[cur_event_type]:
-                                            effect['arg2'] = random_replacement
-                                    if type(effect['arg3']) == str:
-                                        if effect['arg3'] == self.event_randomization[cur_event_type]:
-                                            effect['arg3'] = random_replacement
-                                if 'forall' in effect:
-                                    forall_body = effect['body']
+                                if "predicate" in effect:
+                                    if type(effect["arg1"]) == str:
+                                        if (
+                                            effect["arg1"]
+                                            == self.event_randomization[cur_event_type]
+                                        ):
+                                            effect["arg1"] = random_replacement
+                                    if type(effect["arg2"]) == str:
+                                        if (
+                                            effect["arg2"]
+                                            == self.event_randomization[cur_event_type]
+                                        ):
+                                            effect["arg2"] = random_replacement
+                                    if type(effect["arg3"]) == str:
+                                        if (
+                                            effect["arg3"]
+                                            == self.event_randomization[cur_event_type]
+                                        ):
+                                            effect["arg3"] = random_replacement
+                                if "forall" in effect:
+                                    forall_body = effect["body"]
                                     # logger.info(f"forall_body: {forall_body}")
                                     for forall_effect in forall_body:
-                                        if 'when' in forall_effect:
+                                        if "when" in forall_effect:
                                             # logger.info(f"when forall_effect: {forall_effect}")
                                             # when_effects = forall_effect[1]
-                                            when_effects = forall_effect['when']
+                                            when_effects = forall_effect["when"]
                                             for when_effect in when_effects:
-                                                if 'predicate' in when_effect:
-                                                    if type(when_effect['arg1']) == str:
-                                                        if when_effect['arg1'] == self.event_randomization[cur_event_type]:
-                                                            when_effect['arg1'] = random_replacement
-                                                    if type(when_effect['arg2']) == str:
-                                                        if when_effect['arg2'] == self.event_randomization[cur_event_type]:
-                                                            when_effect['arg2'] = random_replacement
-                                                    if type(when_effect['arg3']) == str:
-                                                        if when_effect['arg3'] == self.event_randomization[cur_event_type]:
-                                                            when_effect['arg3'] = random_replacement
+                                                if "predicate" in when_effect:
+                                                    if type(when_effect["arg1"]) == str:
+                                                        if (
+                                                            when_effect["arg1"]
+                                                            == self.event_randomization[
+                                                                cur_event_type
+                                                            ]
+                                                        ):
+                                                            when_effect["arg1"] = random_replacement
+                                                    if type(when_effect["arg2"]) == str:
+                                                        if (
+                                                            when_effect["arg2"]
+                                                            == self.event_randomization[
+                                                                cur_event_type
+                                                            ]
+                                                        ):
+                                                            when_effect["arg2"] = random_replacement
+                                                    if type(when_effect["arg3"]) == str:
+                                                        if (
+                                                            when_effect["arg3"]
+                                                            == self.event_randomization[
+                                                                cur_event_type
+                                                            ]
+                                                        ):
+                                                            when_effect["arg3"] = random_replacement
                             # store this randomization's random value for the next time to replace:
                             self.event_randomization[cur_event_type] = random_replacement
 
-                    return True, feedback_str, {'world_state_effects': world_state_effects}
+                    return True, feedback_str, {"world_state_effects": world_state_effects}
                 else:
                     # if cur_event_type in ["outhouse_teleport"]:
                     #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
@@ -3000,43 +3344,49 @@ class AdventureIFInterpreter(GameResourceLocator):
         # since no event triggered, return[0] = False:
         return False, "", {}
 
-    def get_exploration_info(self, action_type = None, full_exploration_state = False, full_exploration_history = False):
+    def get_exploration_info(
+        self, action_type=None, full_exploration_state=False, full_exploration_history=False
+    ):
         exploration_info = dict()
 
         if full_exploration_state:
-            exploration_info['exploration_state'] = list(self.exploration_state)
+            exploration_info["exploration_state"] = list(self.exploration_state)
         if full_exploration_history:
-            exploration_info['exploration_history'] = list(self.exploration_history)
+            exploration_info["exploration_history"] = list(self.exploration_history)
 
         # get epistemic/pragmatic info for action:
         if action_type:
             # logger.info(f"action_type: {action_type}")
             # logger.info(f"self.action_types[action_type]['epistemic']: {self.action_types[action_type]['epistemic']}")
-            exploration_info['action_epistemic'] = self.action_types[action_type]['epistemic']
-            exploration_info['action_pragmatic'] = self.action_types[action_type]['pragmatic']
+            exploration_info["action_epistemic"] = self.action_types[action_type]["epistemic"]
+            exploration_info["action_pragmatic"] = self.action_types[action_type]["pragmatic"]
         else:
-            exploration_info['action_epistemic'] = False
-            exploration_info['action_pragmatic'] = False
+            exploration_info["action_epistemic"] = False
+            exploration_info["action_pragmatic"] = False
 
         epistemic_gain_removed = self.exploration_history[-2].difference(self.exploration_state)
         epistemic_gain_added = self.exploration_state.difference(self.exploration_history[-2])
-        logger.info(f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}")
+        logger.info(
+            f"Epistemic gain; Added: {epistemic_gain_added}; Removed: {epistemic_gain_removed}"
+        )
 
-        if exploration_info['action_epistemic']:
+        if exploration_info["action_epistemic"]:
             effective_epistemic_gain = epistemic_gain_added
             effective_epistemic_gain_amount = len(effective_epistemic_gain)
             if action_type:
-                logger.info(f"Epistemic action '{action_type}' resulted in effective epistemic gain: {effective_epistemic_gain}")
-            exploration_info['effective_epistemic_gain_facts'] = list(effective_epistemic_gain)
+                logger.info(
+                    f"Epistemic action '{action_type}' resulted in effective epistemic gain: {effective_epistemic_gain}"
+                )
+            exploration_info["effective_epistemic_gain_facts"] = list(effective_epistemic_gain)
             logger.info(f"Epistemic gain amount: {effective_epistemic_gain_amount}")
-            exploration_info['effective_epistemic_gain_amount'] = effective_epistemic_gain_amount
+            exploration_info["effective_epistemic_gain_amount"] = effective_epistemic_gain_amount
         else:
-            exploration_info['effective_epistemic_gain_amount'] = 0
+            exploration_info["effective_epistemic_gain_amount"] = 0
 
         # all entities:
         all_entities = set()
         for fact in self.world_state:
-            if fact[0] == 'type':
+            if fact[0] == "type":
                 all_entities.add(fact[1])
 
         # known entities:
@@ -3045,30 +3395,30 @@ class AdventureIFInterpreter(GameResourceLocator):
             if fact[0] == "at":
                 known_entities.add(fact)
         logger.info(f"Known entities: {known_entities}")
-        exploration_info['known_entities'] = list(known_entities)
+        exploration_info["known_entities"] = list(known_entities)
 
         known_entities_ratio = len(known_entities) / len(all_entities)
         logger.info(f"Known entities ratio: {known_entities_ratio}")
-        exploration_info['known_entities_ratio'] = known_entities_ratio
+        exploration_info["known_entities_ratio"] = known_entities_ratio
 
         # all rooms:
         all_rooms = set()
         for fact in self.world_state:
-            if fact[0] == 'room':
+            if fact[0] == "room":
                 all_rooms.add(fact[1])
 
         # visited rooms:
         visited_rooms = set()
         for exploration_state in self.exploration_history:
             for exploration_fact in exploration_state:
-                if exploration_fact[0] == 'at' and exploration_fact[1] == 'player1':
+                if exploration_fact[0] == "at" and exploration_fact[1] == "player1":
                     visited_rooms.add(exploration_fact[2])
         logger.info(f"Visited rooms: {visited_rooms}")
-        exploration_info['visited_rooms'] = list(visited_rooms)
+        exploration_info["visited_rooms"] = list(visited_rooms)
 
         visited_rooms_ratio = len(visited_rooms) / len(all_rooms)
         logger.info(f"Visited rooms ratio: {visited_rooms_ratio}")
-        exploration_info['visited_rooms_ratio'] = visited_rooms_ratio
+        exploration_info["visited_rooms_ratio"] = visited_rooms_ratio
 
         # get goal entitiy set:
         goal_entities = set()
@@ -3086,12 +3436,12 @@ class AdventureIFInterpreter(GameResourceLocator):
                 if known_entity[1] in goal_fact:
                     known_goal_entities.add(known_entity)
         logger.info(f"Known goal entities: {known_goal_entities}")
-        exploration_info['known_goal_entities'] = list(known_goal_entities)
+        exploration_info["known_goal_entities"] = list(known_goal_entities)
 
         # ratio of known goal-relevant entities:
         known_goal_entities_ratio = len(known_goal_entities) / len(goal_entities)
         logger.info(f"Known goal entities ratio: {known_goal_entities_ratio}")
-        exploration_info['known_goal_entities_ratio'] = known_goal_entities_ratio
+        exploration_info["known_goal_entities_ratio"] = known_goal_entities_ratio
 
         return exploration_info
 
@@ -3106,7 +3456,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         parsed, parse_result, fail = self.parse_action_input(action_input)
         if not parsed:
             self.track_exploration()
-            fail['exploration_info'] = self.get_exploration_info()
+            fail["exploration_info"] = self.get_exploration_info()
             # logger.info(f"Post-process_action world state:\n{self.world_state}")
             # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
@@ -3130,8 +3480,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             resolved, resolution_result, fail = self.resolve_action(parse_result)
             if not resolved:
                 self.track_exploration()
-                 # get exploration info and add to fail dict:
-                fail['exploration_info'] = self.get_exploration_info(parse_result['type'])
+                # get exploration info and add to fail dict:
+                fail["exploration_info"] = self.get_exploration_info(parse_result["type"])
                 # logger.info(f"Post-process_action world state:\n{self.world_state}")
                 # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
@@ -3162,17 +3512,19 @@ class AdventureIFInterpreter(GameResourceLocator):
                 logger.info(f"Achieved goal states: {goals_achieved_response}")
 
                 # EXPLORATION TRACKING
-                self.track_exploration(fail['world_state_effects'])
+                self.track_exploration(fail["world_state_effects"])
 
                 # successful action returns extra information instead of failure information:
                 extra_action_info = dict()
-                extra_action_info['action_type'] = parse_result['type']
+                extra_action_info["action_type"] = parse_result["type"]
                 # exploration info:
-                extra_action_info['exploration_info'] = self.get_exploration_info(parse_result['type'])
+                extra_action_info["exploration_info"] = self.get_exploration_info(
+                    parse_result["type"]
+                )
 
                 # handle DONE action:
-                if parse_result['type'] == "done":
-                    extra_action_info['done_action'] = True
+                if parse_result["type"] == "done":
+                    extra_action_info["done_action"] = True
                 # logger.info(f"Post-process_action world state:\n{self.world_state}")
                 # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
@@ -3202,7 +3554,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Used to verify parity of IF interpreter and solution generation.
         """
         print(self.get_full_room_desc())
-        for command in self.game_instance[config.keys['optimal_commands']]:
+        for command in self.game_instance[config.keys["optimal_commands"]]:
             print(f"> {command}")
             goals_achieved, response, fail = self.process_action(command)
             print(response)
@@ -3233,7 +3585,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             # check for command failure:
             # result[2] is fail info; if it is truthy, the command failed
             # if result[2]:
-            if 'fail_type' in result[2]:
+            if "fail_type" in result[2]:
                 # stop executing commands at the first failure
                 logger.info(f"Plan sequence failed at step {cmd_idx}")
                 logger.info(f"Plan sequence fail dict: {result[2]}")
@@ -3245,19 +3597,29 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # revert the world state to before plan execution if it changed:
         if world_state_change_count:
-            logger.info(f"Plan world state change count: {world_state_change_count}; reverting changes")
+            logger.info(
+                f"Plan world state change count: {world_state_change_count}; reverting changes"
+            )
             # deepcopy world state after plan execution to prevent reference issues:
             post_plan_world_state = deepcopy(self.world_state)
             post_plan_exploration_state = deepcopy(self.exploration_state)
             # logger.info(f"World state history before reverting: {self.world_state_history}")
-            logger.info(f"World state history length before reverting: {len(self.world_state_history)}")
-            logger.info(f"Exploration history length before reverting: {len(self.exploration_history)}")
+            logger.info(
+                f"World state history length before reverting: {len(self.world_state_history)}"
+            )
+            logger.info(
+                f"Exploration history length before reverting: {len(self.exploration_history)}"
+            )
             # reset world state history to before executed plan:
             self.world_state_history = self.world_state_history[:-world_state_change_count]
             self.exploration_history = self.exploration_history[:-world_state_change_count]
             # logger.info(f"World state history after reverting: {self.world_state_history}")
-            logger.info(f"World state history length after reverting: {len(self.world_state_history)}")
-            logger.info(f"Exploration history length after reverting: {len(self.exploration_history)}")
+            logger.info(
+                f"World state history length after reverting: {len(self.world_state_history)}"
+            )
+            logger.info(
+                f"Exploration history length after reverting: {len(self.exploration_history)}"
+            )
             # check that world state has been properly reset:
             if self.world_state_history[-1] == pre_plan_world_state:
                 logger.info(f"Last world state history item matches pre-plan world state")
@@ -3279,7 +3641,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             post_plan_changes = post_plan_world_state.difference(self.world_state)
             logger.info(f"Reverted plan world state changes: {post_plan_changes}")
         else:
-            logger.info(f"Plan world state change count: {world_state_change_count}; no changes to revert")
+            logger.info(
+                f"Plan world state change count: {world_state_change_count}; no changes to revert"
+            )
 
         logger.info(f"Plan result sequence: {result_sequence}")
 
@@ -3449,29 +3813,29 @@ if __name__ == "__main__":
         }
     """
     game_instance_exmpl = {
-          "game_id": 2,
-          "variant": "basic",
-          "prompt": "You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write \"> done\" to end the game.\n\n",
-          "initial_state": [
-		    "type(crate1,crate)",
+        "game_id": 2,
+        "variant": "basic",
+        "prompt": 'You are playing a text adventure game. I will describe what you can perceive in the game. You write the single action you want to take in the game starting with >. Only reply with an action.\nFor example:\n> open cupboard\n\nYou can have up to two objects in your inventory at the same time.\n\nYour goal for this game is to brew a potion following the potion recipe.\n\nOnce you have achieved your goal, write "> done" to end the game.\n\n',
+        "initial_state": [
+            "type(crate1,crate)",
             "at(crate1,storage1)",
             "support(crate1)",
-		    "type(workbench1,workbench)",
+            "type(workbench1,workbench)",
             "at(workbench1,workshop1)",
             "support(workbench1)",
-			"type(gardenbench1,gardenbench)",
+            "type(gardenbench1,gardenbench)",
             "at(gardenbench1,garden1)",
             "support(gardenbench1)",
-			"type(plantingtable1,plantingtable)",
+            "type(plantingtable1,plantingtable)",
             "at(plantingtable1,conservatory1)",
             "support(plantingtable1)",
-			"type(utilityshelf1,utilityshelf)",
+            "type(utilityshelf1,utilityshelf)",
             "at(utilityshelf1,broomcloset1)",
             "support(utilityshelf1)",
-			"type(ingredientrack1,ingredientrack)",
+            "type(ingredientrack1,ingredientrack)",
             "at(ingredientrack1,pantry1)",
             "support(ingredientrack1)",
-			"type(orrery1,orrery)",
+            "type(orrery1,orrery)",
             "at(orrery1,workshop1)",
             "support(orrery1)",
             "type(kitchen1floor1,floor)",
@@ -3836,123 +4200,39 @@ if __name__ == "__main__":
             "tool(fairywand1)",
             "tool(zulpowand1)",
             "readable(potionrecipe1)",
-            "text(potionrecipe1,Hungro's potion\nIngredients: Water, spider egg, sandwich, eye of newt.\n1. Pour water into your cauldron.\n2. Swirl a fire wand at your cauldron.\n3. Add the sandwich into your cauldron.\n4. Wave a ice wand at your cauldron.\n5. Add the eye of newt into your cauldron.\n6. Add the spider egg into your cauldron.\n)"
-          ],
-          "goal_state": [
-            "at(potion1,kitchen1)"
-          ],
-          "max_turns": 50,
-          "optimal_turns": 25,
-          "optimal_solution": [
-            [
-              "go",
-              "readingroom1"
-            ],
-            [
-              "go",
-              "garden1"
-            ],
-            [
-              "take",
-              "waterbucket1"
-            ],
-            [
-              "go",
-              "storage1"
-            ],
-            [
-              "go",
-              "cellar1"
-            ],
-            [
-              "take",
-              "spideregg1"
-            ],
-            [
-              "go",
-              "hallway1"
-            ],
-            [
-              "go",
-              "workshop1"
-            ],
-            [
-              "take",
-              "icewand1"
-            ],
-            [
-              "take",
-              "firewand1"
-            ],
-            [
-              "go",
-              "kitchen1"
-            ],
-            [
-              "dump",
-              "waterbucket1",
-              "cauldron1"
-            ],
-            [
-              "go",
-              "pantry1"
-            ],
-            [
-              "open",
-              "icebox1"
-            ],
-            [
-              "take",
-              "eyeofnewt1"
-            ],
-            [
-              "go",
-              "kitchen1"
-            ],
-            [
-              "wave",
-              "cauldron1",
-              "firewand1"
-            ],
-            [
-              "go",
-              "pantry1"
-            ],
-            [
-              "take",
-              "sandwich1"
-            ],
-            [
-              "go",
-              "kitchen1"
-            ],
-            [
-              "wave",
-              "cauldron1",
-              "icewand1"
-            ],
-            [
-              "put",
-              "sandwich1",
-              "cauldron1"
-            ],
-            [
-              "put",
-              "spideregg1",
-              "cauldron1"
-            ],
-            [
-              "put",
-              "eyeofnewt1",
-              "cauldron1"
-            ],
-            [
-              "put",
-              "spideregg1",
-              "cauldron1"
-            ]
-          ],
-          "optimal_commands": [
+            "text(potionrecipe1,Hungro's potion\nIngredients: Water, spider egg, sandwich, eye of newt.\n1. Pour water into your cauldron.\n2. Swirl a fire wand at your cauldron.\n3. Add the sandwich into your cauldron.\n4. Wave a ice wand at your cauldron.\n5. Add the eye of newt into your cauldron.\n6. Add the spider egg into your cauldron.\n)",
+        ],
+        "goal_state": ["at(potion1,kitchen1)"],
+        "max_turns": 50,
+        "optimal_turns": 25,
+        "optimal_solution": [
+            ["go", "readingroom1"],
+            ["go", "garden1"],
+            ["take", "waterbucket1"],
+            ["go", "storage1"],
+            ["go", "cellar1"],
+            ["take", "spideregg1"],
+            ["go", "hallway1"],
+            ["go", "workshop1"],
+            ["take", "icewand1"],
+            ["take", "firewand1"],
+            ["go", "kitchen1"],
+            ["dump", "waterbucket1", "cauldron1"],
+            ["go", "pantry1"],
+            ["open", "icebox1"],
+            ["take", "eyeofnewt1"],
+            ["go", "kitchen1"],
+            ["wave", "cauldron1", "firewand1"],
+            ["go", "pantry1"],
+            ["take", "sandwich1"],
+            ["go", "kitchen1"],
+            ["wave", "cauldron1", "icewand1"],
+            ["put", "sandwich1", "cauldron1"],
+            ["put", "spideregg1", "cauldron1"],
+            ["put", "eyeofnewt1", "cauldron1"],
+            ["put", "spideregg1", "cauldron1"],
+        ],
+        "optimal_commands": [
             "take potion recipe",
             "read potion recipe",
             "go to reading room",
@@ -4002,84 +4282,78 @@ if __name__ == "__main__":
             "go to pantry",
             "go to kitchen",
             "go to hallway",
-            "go to pantry"
-          ],
-          "action_definitions": [
-            "witch_actions_core.json"
-          ],
-          "room_definitions": [
-            "witch_rooms.json"
-          ],
-          "entity_definitions": [
-            "witch_entities.json"
-          ],
-		  "domain_definitions": ["witch_domain_core.json"],
-          "event_definitions": [
+            "go to pantry",
+        ],
+        "action_definitions": ["witch_actions_core.json"],
+        "room_definitions": ["witch_rooms.json"],
+        "entity_definitions": ["witch_entities.json"],
+        "domain_definitions": ["witch_domain_core.json"],
+        "event_definitions": [
             {
-              "type_name": "workshop_antigravity_objects",
-              "pddl": "(:event ANTIGRAVITY_OBJECTS\n    :parameters (?e - entity ?h - receptacle ?c - ceiling ?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?e ?r)\n        (at ?p ?r)\n        (not (type ?h ceiling))\n        (or\n            (on ?e ?h)\n            (and\n                (in ?e ?h)\n                (open ?h)\n                )\n            )\n        (type ?c ceiling)\n        )\n    :effect (and\n        (when\n            (and\n                (in ?e ?h)\n                (open ?h)\n                )\n            (and\n                (not (in ?e ?h))\n                (on ?e ?c)\n                )\n            )\n        (when\n            (on ?e ?h)\n            (and\n                (not (on ?e ?h))\n                (on ?e ?c)\n                )\n            )\n        )\n    )",
-              "event_feedback": "The {{ e }} floats up to the ceiling.",
-              "asp": ""
+                "type_name": "workshop_antigravity_objects",
+                "pddl": "(:event ANTIGRAVITY_OBJECTS\n    :parameters (?e - entity ?h - receptacle ?c - ceiling ?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?e ?r)\n        (at ?p ?r)\n        (not (type ?h ceiling))\n        (or\n            (on ?e ?h)\n            (and\n                (in ?e ?h)\n                (open ?h)\n                )\n            )\n        (type ?c ceiling)\n        )\n    :effect (and\n        (when\n            (and\n                (in ?e ?h)\n                (open ?h)\n                )\n            (and\n                (not (in ?e ?h))\n                (on ?e ?c)\n                )\n            )\n        (when\n            (on ?e ?h)\n            (and\n                (not (on ?e ?h))\n                (on ?e ?c)\n                )\n            )\n        )\n    )",
+                "event_feedback": "The {{ e }} floats up to the ceiling.",
+                "asp": "",
             },
             {
-              "type_name": "workshop_antigravity_player_float_start",
-              "pddl": "(:event ANTIGRAVPLAYERSTART\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?p ?r)\n        (not (floating ?p))\n        )\n    :effect (and\n        (floating ?p)\n        )\n    )",
-              "event_feedback": "Magical experiments have reversed and dampened gravity in this room. You begin to float in the air.",
-              "asp": ""
+                "type_name": "workshop_antigravity_player_float_start",
+                "pddl": "(:event ANTIGRAVPLAYERSTART\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (room ?r workshop)\n        (at ?p ?r)\n        (not (floating ?p))\n        )\n    :effect (and\n        (floating ?p)\n        )\n    )",
+                "event_feedback": "Magical experiments have reversed and dampened gravity in this room. You begin to float in the air.",
+                "asp": "",
             },
             {
-              "type_name": "workshop_antigravity_player_float_stop",
-              "pddl": "(:event ANTIGRAVPLAYERSTOP\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (not (room ?r workshop))\n        (at ?p ?r)\n        (floating ?p)\n        )\n    :effect (and\n        (not (floating ?p))\n        )\n    )",
-              "event_feedback": "Gravity behaves normally in this room. You stop floating in the air.",
-              "asp": ""
+                "type_name": "workshop_antigravity_player_float_stop",
+                "pddl": "(:event ANTIGRAVPLAYERSTOP\n    :parameters (?r - room ?p - player)\n    :precondition (and\n        (not (room ?r workshop))\n        (at ?p ?r)\n        (floating ?p)\n        )\n    :effect (and\n        (not (floating ?p))\n        )\n    )",
+                "event_feedback": "Gravity behaves normally in this room. You stop floating in the air.",
+                "asp": "",
             },
             {
-              "type_name": "outhouse_teleport",
-              "pddl": "(:event OUTHOUSETELEPORT\n    :parameters (?r - room ?p - player ?i - inventory)\n    :precondition (and\n        (room ?r outhouse)\n        (at ?p ?r)\n        )\n    :effect (and\n        (at ?p kitchen1)\n        (not (at ?p ?r))\n        (forall (?e - takeable)\n            (when\n                (in ?e ?i)\n                (and\n                    (at ?e kitchen1)\n                    (not (at ?e ?r))\n                )\n            )\n        )\n    )\n)",
-              "event_feedback": "The world twists around you, and you suddenly find yourself elsewhere. {{ room_desc }}",
-              "asp": "",
-              "randomize": {
-                "initial_value": "kitchen1",
-                "replace_type": "room",
-                "not_replacer": [
-                  "outhouse1"
-                ]
-              }
+                "type_name": "outhouse_teleport",
+                "pddl": "(:event OUTHOUSETELEPORT\n    :parameters (?r - room ?p - player ?i - inventory)\n    :precondition (and\n        (room ?r outhouse)\n        (at ?p ?r)\n        )\n    :effect (and\n        (at ?p kitchen1)\n        (not (at ?p ?r))\n        (forall (?e - takeable)\n            (when\n                (in ?e ?i)\n                (and\n                    (at ?e kitchen1)\n                    (not (at ?e ?r))\n                )\n            )\n        )\n    )\n)",
+                "event_feedback": "The world twists around you, and you suddenly find yourself elsewhere. {{ room_desc }}",
+                "asp": "",
+                "randomize": {
+                    "initial_value": "kitchen1",
+                    "replace_type": "room",
+                    "not_replacer": ["outhouse1"],
+                },
             },
             {
-              "type_name": "potion_step_1",
-              "pddl": "(:event POTIONSTEP1\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l water)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid1 liquid)\n\t\t(at liquid1 ?r)\n\t\t(in liquid1 ?c)\n\t\t(accessible liquid1)\n\t\t)\n\t)",
-              "event_feedback": "The water in the hot cauldron bubbles with a puff of vaporleaving a liquid.",
-              "asp": "event_t(TURN,potion_step_1,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,water1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,water1,cauldron1), hot_t(TURN,cauldron1).\ntype(liquid1,liquid) :- event_t(TURN,potion_step_1,ROOM).\nat_t(TURN,liquid1,ROOM) :- event_t(TURN,potion_step_1,ROOM).\nin_t(TURN,liquid1,cauldron1) :- event_t(TURN,potion_step_1,ROOM).\naccessible_t(TURN,liquid1) :- event_t(TURN,potion_step_1,ROOM).\nat_t(TURN+1,liquid1,ROOM) :- at_t(TURN,liquid1,ROOM), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid1,cauldron1) :- in_t(TURN,liquid1,cauldron1), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid1) :- accessible_t(TURN,liquid1), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,water1,ROOM) :- turn(TURN), at_t(TURN,water1,ROOM), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\nin_t(TURN+1,water1,cauldron1) :- turn(TURN), in_t(TURN,water1,cauldron1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\naccessible_t(TURN+1,water1) :- turn(TURN), accessible_t(TURN,water1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\nhot_t(TURN+1,cauldron1) :- turn(TURN), hot_t(TURN,cauldron1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_)."
+                "type_name": "potion_step_1",
+                "pddl": "(:event POTIONSTEP1\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?l ?r)\n\t\t(at ?c ?r)\n\t\t(in ?l ?c)\n\t\t(type ?c cauldron)\n\t\t(type ?l water)\n\t\t(hot ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at ?l ?r))\n\t\t(not (in ?l ?c))\n\t\t(not (accessible ?l))\n\t\t(type liquid1 liquid)\n\t\t(at liquid1 ?r)\n\t\t(in liquid1 ?c)\n\t\t(accessible liquid1)\n\t\t)\n\t)",
+                "event_feedback": "The water in the hot cauldron bubbles with a puff of vaporleaving a liquid.",
+                "asp": "event_t(TURN,potion_step_1,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,water1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,water1,cauldron1), hot_t(TURN,cauldron1).\ntype(liquid1,liquid) :- event_t(TURN,potion_step_1,ROOM).\nat_t(TURN,liquid1,ROOM) :- event_t(TURN,potion_step_1,ROOM).\nin_t(TURN,liquid1,cauldron1) :- event_t(TURN,potion_step_1,ROOM).\naccessible_t(TURN,liquid1) :- event_t(TURN,potion_step_1,ROOM).\nat_t(TURN+1,liquid1,ROOM) :- at_t(TURN,liquid1,ROOM), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid1,cauldron1) :- in_t(TURN,liquid1,cauldron1), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid1) :- accessible_t(TURN,liquid1), not event_t(TURN,potion_step_2,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,water1,ROOM) :- turn(TURN), at_t(TURN,water1,ROOM), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\nin_t(TURN+1,water1,cauldron1) :- turn(TURN), in_t(TURN,water1,cauldron1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\naccessible_t(TURN+1,water1) :- turn(TURN), accessible_t(TURN,water1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).\nhot_t(TURN+1,cauldron1) :- turn(TURN), hot_t(TURN,cauldron1), not event_t(TURN,potion_step_1,ROOM), room(ROOM,_).",
             },
             {
-              "type_name": "potion_step_2",
-              "pddl": "(:event POTIONSTEP2\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid1 ?r)\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i sandwich)\n\t\t(in ?i ?c)\n\t\t(in liquid1 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type liquid1 liquid))\n\t\t(not (at liquid1 ?r))\n\t\t(not (in liquid1 ?c))\n\t\t(not (accessible liquid1))\n\t\t(not (at ?i ?r))\n\t\t(not (in ?i ?c))\n\t\t(not (type ?i sandwich))\n\t\t(type liquid2 liquid)\n\t\t(at liquid2  ?r)\n\t\t(in liquid2  ?c)\n\t\t(accessible liquid2 )\n\t\t)\n\t)",
-              "event_feedback": "The sandwich combines with the liquid in the cauldron with a swirling pattern.",
-              "asp": "event_t(TURN,potion_step_2,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,sandwich1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid1,cauldron1), in_t(TURN,sandwich1,cauldron1).\ntype(liquid2,liquid) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN,liquid2,ROOM) :- event_t(TURN,potion_step_2,ROOM).\nin_t(TURN,liquid2,cauldron1) :- event_t(TURN,potion_step_2,ROOM).\naccessible_t(TURN,liquid2) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN+1,liquid2,ROOM) :- at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid1,ROOM) :- turn(TURN), at_t(TURN,liquid1,ROOM), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid1,cauldron1) :- turn(TURN), in_t(TURN,liquid1,cauldron1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid1) :- turn(TURN), accessible_t(TURN,liquid1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nat_t(TURN+1,sandwich1,ROOM) :- turn(TURN), at_t(TURN,sandwich1,ROOM), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nin_t(TURN+1,sandwich1,cauldron1) :- turn(TURN), in_t(TURN,sandwich1,cauldron1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_)."
+                "type_name": "potion_step_2",
+                "pddl": "(:event POTIONSTEP2\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid1 ?r)\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i sandwich)\n\t\t(in ?i ?c)\n\t\t(in liquid1 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type liquid1 liquid))\n\t\t(not (at liquid1 ?r))\n\t\t(not (in liquid1 ?c))\n\t\t(not (accessible liquid1))\n\t\t(not (at ?i ?r))\n\t\t(not (in ?i ?c))\n\t\t(not (type ?i sandwich))\n\t\t(type liquid2 liquid)\n\t\t(at liquid2  ?r)\n\t\t(in liquid2  ?c)\n\t\t(accessible liquid2 )\n\t\t)\n\t)",
+                "event_feedback": "The sandwich combines with the liquid in the cauldron with a swirling pattern.",
+                "asp": "event_t(TURN,potion_step_2,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,sandwich1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid1,cauldron1), in_t(TURN,sandwich1,cauldron1).\ntype(liquid2,liquid) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN,liquid2,ROOM) :- event_t(TURN,potion_step_2,ROOM).\nin_t(TURN,liquid2,cauldron1) :- event_t(TURN,potion_step_2,ROOM).\naccessible_t(TURN,liquid2) :- event_t(TURN,potion_step_2,ROOM).\nat_t(TURN+1,liquid2,ROOM) :- at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid1,ROOM) :- turn(TURN), at_t(TURN,liquid1,ROOM), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid1,cauldron1) :- turn(TURN), in_t(TURN,liquid1,cauldron1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid1) :- turn(TURN), accessible_t(TURN,liquid1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nat_t(TURN+1,sandwich1,ROOM) :- turn(TURN), at_t(TURN,sandwich1,ROOM), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).\nin_t(TURN+1,sandwich1,cauldron1) :- turn(TURN), in_t(TURN,sandwich1,cauldron1), not event_t(TURN,potion_step_2,ROOM), room(ROOM,_).",
             },
             {
-              "type_name": "potion_step_3",
-              "pddl": "(:event POTIONSTEP3\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid2 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid2 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid2 liquid)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid2 ?r))\n\t\t(not (in liquid2 ?c))\n\t\t(not (accessible liquid2))\n\t\t(type liquid3 liquid)\n\t\t(at liquid3 ?r)\n\t\t(in liquid3 ?c)\n\t\t(accessible liquid3)\n\t\t)\n\t)",
-              "event_feedback": "The liquid in the cold cauldron swirls with a puff of vapor.",
-              "asp": "event_t(TURN,potion_step_3,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid2,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid2,cauldron1), cold_t(TURN,cauldron1).\ntype(liquid3,liquid) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN,liquid3,ROOM) :- event_t(TURN,potion_step_3,ROOM).\nin_t(TURN,liquid3,cauldron1) :- event_t(TURN,potion_step_3,ROOM).\naccessible_t(TURN,liquid3) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN+1,liquid3,ROOM) :- at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid2,ROOM) :- turn(TURN), at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- turn(TURN), in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- turn(TURN), accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_)."
+                "type_name": "potion_step_3",
+                "pddl": "(:event POTIONSTEP3\n\t:parameters (?l - liquid ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid2 ?r)\n\t\t(at ?c ?r)\n\t\t(in liquid2 ?c)\n\t\t(type ?c cauldron)\n\t\t(type liquid2 liquid)\n\t\t(cold ?c)\n\t\t)\n\t:effect (and\n\t\t(not (at liquid2 ?r))\n\t\t(not (in liquid2 ?c))\n\t\t(not (accessible liquid2))\n\t\t(type liquid3 liquid)\n\t\t(at liquid3 ?r)\n\t\t(in liquid3 ?c)\n\t\t(accessible liquid3)\n\t\t)\n\t)",
+                "event_feedback": "The liquid in the cold cauldron swirls with a puff of vapor.",
+                "asp": "event_t(TURN,potion_step_3,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,liquid2,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid2,cauldron1), cold_t(TURN,cauldron1).\ntype(liquid3,liquid) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN,liquid3,ROOM) :- event_t(TURN,potion_step_3,ROOM).\nin_t(TURN,liquid3,cauldron1) :- event_t(TURN,potion_step_3,ROOM).\naccessible_t(TURN,liquid3) :- event_t(TURN,potion_step_3,ROOM).\nat_t(TURN+1,liquid3,ROOM) :- at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid2,ROOM) :- turn(TURN), at_t(TURN,liquid2,ROOM), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid2,cauldron1) :- turn(TURN), in_t(TURN,liquid2,cauldron1), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid2) :- turn(TURN), accessible_t(TURN,liquid2), not event_t(TURN,potion_step_3,ROOM), room(ROOM,_).",
             },
             {
-              "type_name": "potion_step_4",
-              "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid3 ?r)\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i eyeofnewt)\n\t\t(in ?i ?c)\n\t\t(in liquid3 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type liquid3 liquid))\n\t\t(not (at liquid3 ?r))\n\t\t(not (in liquid3 ?c))\n\t\t(not (accessible liquid3))\n\t\t(not (at ?i ?r))\n\t\t(not (in ?i ?c))\n\t\t(not (type ?i eyeofnewt))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4  ?r)\n\t\t(in liquid4  ?c)\n\t\t(accessible liquid4 )\n\t\t)\n\t)",
-              "event_feedback": "The eye of newt mingles with the liquid in the cauldron with a gloopy sound.",
-              "asp": "event_t(TURN,potion_step_4,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,eyeofnewt1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid3,cauldron1), in_t(TURN,eyeofnewt1,cauldron1).\ntype(liquid4,liquid) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN,liquid4,ROOM) :- event_t(TURN,potion_step_4,ROOM).\nin_t(TURN,liquid4,cauldron1) :- event_t(TURN,potion_step_4,ROOM).\naccessible_t(TURN,liquid4) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN+1,liquid4,ROOM) :- at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid3,ROOM) :- turn(TURN), at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- turn(TURN), in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- turn(TURN), accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nat_t(TURN+1,eyeofnewt1,ROOM) :- turn(TURN), at_t(TURN,eyeofnewt1,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,eyeofnewt1,cauldron1) :- turn(TURN), in_t(TURN,eyeofnewt1,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_)."
+                "type_name": "potion_step_4",
+                "pddl": "(:event POTIONSTEP4\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at liquid3 ?r)\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i eyeofnewt)\n\t\t(in ?i ?c)\n\t\t(in liquid3 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type liquid3 liquid))\n\t\t(not (at liquid3 ?r))\n\t\t(not (in liquid3 ?c))\n\t\t(not (accessible liquid3))\n\t\t(not (at ?i ?r))\n\t\t(not (in ?i ?c))\n\t\t(not (type ?i eyeofnewt))\n\t\t(type liquid4 liquid)\n\t\t(at liquid4  ?r)\n\t\t(in liquid4  ?c)\n\t\t(accessible liquid4 )\n\t\t)\n\t)",
+                "event_feedback": "The eye of newt mingles with the liquid in the cauldron with a gloopy sound.",
+                "asp": "event_t(TURN,potion_step_4,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,eyeofnewt1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid3,cauldron1), in_t(TURN,eyeofnewt1,cauldron1).\ntype(liquid4,liquid) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN,liquid4,ROOM) :- event_t(TURN,potion_step_4,ROOM).\nin_t(TURN,liquid4,cauldron1) :- event_t(TURN,potion_step_4,ROOM).\naccessible_t(TURN,liquid4) :- event_t(TURN,potion_step_4,ROOM).\nat_t(TURN+1,liquid4,ROOM) :- at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid3,ROOM) :- turn(TURN), at_t(TURN,liquid3,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid3,cauldron1) :- turn(TURN), in_t(TURN,liquid3,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid3) :- turn(TURN), accessible_t(TURN,liquid3), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nat_t(TURN+1,eyeofnewt1,ROOM) :- turn(TURN), at_t(TURN,eyeofnewt1,ROOM), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).\nin_t(TURN+1,eyeofnewt1,cauldron1) :- turn(TURN), in_t(TURN,eyeofnewt1,cauldron1), not event_t(TURN,potion_step_4,ROOM), room(ROOM,_).",
             },
             {
-              "type_name": "potion_step_5",
-              "pddl": "(:event POTIONSTEP5\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i spideregg)\n\t\t(in ?i ?c)\n\t\t(in liquid4 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type spideregg1 spideregg))\n\t\t(not (at spideregg1 ?r))\n\t\t(not (in spideregg1 ?c))\n\t\t(not (accessible spideregg1))\n\t\t(type potion1 potion)\n\t\t(at potion1 ?r)\n\t\t(in potion1 ?c)\n\t\t(accessible potion1)\n\t\t)\n\t)",
-              "event_feedback": "The spider egg mingles with the liquid with a swirling pattern leaving the finished potion in the cauldron.",
-              "asp": "event_t(TURN,potion_step_5,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,spideregg1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid4,cauldron1), in_t(TURN,spideregg1,cauldron1).\ntype(potion1,potion) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN,potion1,ROOM) :- event_t(TURN,potion_step_5,ROOM).\nin_t(TURN,potion1,cauldron1) :- event_t(TURN,potion_step_5,ROOM).\naccessible_t(TURN,potion1) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN+1,potion1,ROOM) :- at_t(TURN,potion1,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,potion1,cauldron1) :- in_t(TURN,potion1,cauldron1), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,potion1) :- accessible_t(TURN,potion1), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid4,ROOM) :- turn(TURN), at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- turn(TURN), in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- turn(TURN), accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nat_t(TURN+1,spideregg1,ROOM) :- turn(TURN), at_t(TURN,spideregg1,ROOM), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nin_t(TURN+1,spideregg1,cauldron1) :- turn(TURN), in_t(TURN,spideregg1,cauldron1), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_)."
-            }
-          ]
-        }
+                "type_name": "potion_step_5",
+                "pddl": "(:event POTIONSTEP5\n\t:parameters (?l - liquid ?i - ingredient ?c - container ?r - room)\n\t:precondition (and\n\t\t(at ?c ?r)\n\t\t(at ?i ?r)\n\t\t(type ?c cauldron)\n\t\t(type ?i spideregg)\n\t\t(in ?i ?c)\n\t\t(in liquid4 ?c)\n\t\t)\n\t:effect (and\n\t\t(not (type spideregg1 spideregg))\n\t\t(not (at spideregg1 ?r))\n\t\t(not (in spideregg1 ?c))\n\t\t(not (accessible spideregg1))\n\t\t(type potion1 potion)\n\t\t(at potion1 ?r)\n\t\t(in potion1 ?c)\n\t\t(accessible potion1)\n\t\t)\n\t)",
+                "event_feedback": "The spider egg mingles with the liquid with a swirling pattern leaving the finished potion in the cauldron.",
+                "asp": "event_t(TURN,potion_step_5,ROOM) :- turn(TURN), room(ROOM,_), at_t(TURN,spideregg1,ROOM), at_t(TURN,cauldron1,ROOM),in_t(TURN,liquid4,cauldron1), in_t(TURN,spideregg1,cauldron1).\ntype(potion1,potion) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN,potion1,ROOM) :- event_t(TURN,potion_step_5,ROOM).\nin_t(TURN,potion1,cauldron1) :- event_t(TURN,potion_step_5,ROOM).\naccessible_t(TURN,potion1) :- event_t(TURN,potion_step_5,ROOM).\nat_t(TURN+1,potion1,ROOM) :- at_t(TURN,potion1,ROOM), turn(TURN), room(ROOM,_).\nin_t(TURN+1,potion1,cauldron1) :- in_t(TURN,potion1,cauldron1), turn(TURN), room(ROOM,_).\naccessible_t(TURN+1,potion1) :- accessible_t(TURN,potion1), turn(TURN), room(ROOM,_).\nat_t(TURN+1,liquid4,ROOM) :- turn(TURN), at_t(TURN,liquid4,ROOM), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nin_t(TURN+1,liquid4,cauldron1) :- turn(TURN), in_t(TURN,liquid4,cauldron1), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\naccessible_t(TURN+1,liquid4) :- turn(TURN), accessible_t(TURN,liquid4), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nat_t(TURN+1,spideregg1,ROOM) :- turn(TURN), at_t(TURN,spideregg1,ROOM), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).\nin_t(TURN+1,spideregg1,cauldron1) :- turn(TURN), in_t(TURN,spideregg1,cauldron1), not event_t(TURN,potion_step_5,ROOM), room(ROOM,_).",
+            },
+        ],
+    }
     # initialize test interpreter:
-    test_interpreter = AdventureIFInterpreter("D:/AdventureClemGame/adventuregame", game_instance_exmpl)
+    test_interpreter = AdventureIFInterpreter(
+        "D:/AdventureClemGame/adventuregame", game_instance_exmpl
+    )
 
     # print("Intialized domain:", test_interpreter.domain)
     # print("Intialized domain mutable states:", test_interpreter.domain['mutable_states'])
