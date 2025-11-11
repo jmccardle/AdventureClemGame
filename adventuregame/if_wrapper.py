@@ -456,9 +456,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             f"{grammar_head}{act_grammar_action_line}"
             f"{act_grammar_larks_str}\n{act_grammar_adj_line}{grammar_foot}"
         )
-        # print grammar in verbose mode for inspection:
+        # Log grammar in verbose mode for inspection:
         if print_lark_grammar:
-            print(act_grammar)
+            logger.debug("Action grammar:\n%s", act_grammar)
         # initialize lark parser with the combined grammar:
         self.act_parser = Lark(act_grammar, start="action")
 
@@ -3047,14 +3047,14 @@ class AdventureIFInterpreter(GameResourceLocator):
         Run through the game_instance's optimal solution.
         Used to verify parity of IF interpreter and solution generation.
         """
-        print(self.get_full_room_desc())
+        logger.info("Starting optimal solution execution")
+        logger.info(self.get_full_room_desc())
         for command in self.game_instance[config.keys["optimal_commands"]]:
-            print(f"> {command}")
+            logger.info("> %s", command)
             goals_achieved, response, fail = self.process_action(command)
-            print(response)
-            print("Goals achieved:", goals_achieved)
-            print("Fail:", fail)
-            print()
+            logger.info(response)
+            logger.info("Goals achieved: %s", goals_achieved)
+            logger.info("Fail: %s", fail)
 
     def execute_plan_sequence(self, command_sequence: list) -> List:
         """
