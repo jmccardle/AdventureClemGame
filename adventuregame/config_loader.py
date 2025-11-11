@@ -34,12 +34,17 @@ class ConfigLoader:
                 self._config: Dict[str, Any] = json.load(f)
         except FileNotFoundError as e:
             from adventuregame.exceptions import ConfigurationError
+
             raise ConfigurationError(f"Configuration file not found: {config_path}") from e
         except json.JSONDecodeError as e:
             from adventuregame.exceptions import ConfigurationError
-            raise ConfigurationError(f"Invalid JSON in configuration file {config_path}: {e}") from e
+
+            raise ConfigurationError(
+                f"Invalid JSON in configuration file {config_path}: {e}"
+            ) from e
         except OSError as e:
             from adventuregame.exceptions import ConfigurationError
+
             raise ConfigurationError(f"Cannot read configuration file {config_path}: {e}") from e
 
     def get(self, *keys: str, default: Any = None) -> Any:

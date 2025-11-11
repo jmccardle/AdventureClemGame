@@ -53,7 +53,6 @@ def action_to_asp(action_def: dict, trait_dict: dict = None):  # type: ignore[as
         f"{mutability['type_list_element']}(THING)" for mutability in important_params
     ]
 
-
     # TODO: make mutability type facts in base ASP solver script
 
     # catch at condition to put on ASP RHS:

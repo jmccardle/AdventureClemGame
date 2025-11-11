@@ -239,9 +239,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                     ]
                 else:
                     # get all other attributes:
-                    self.entity_types[entity_definition["type_name"]][entity_attribute] = (
-                        entity_definition[entity_attribute]
-                    )
+                    self.entity_types[entity_definition["type_name"]][
+                        entity_attribute
+                    ] = entity_definition[entity_attribute]
 
     def initialize_room_types(self) -> None:
         """Load and process room types in this adventure.
@@ -332,9 +332,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             # get all action attributes:
             for action_attribute in action_definition:
                 if not action_attribute == "type_name":
-                    self.action_types[action_definition["type_name"]][action_attribute] = (
-                        action_definition[action_attribute]
-                    )
+                    self.action_types[action_definition["type_name"]][
+                        action_attribute
+                    ] = action_definition[action_attribute]
 
         for action_type in self.action_types:
             cur_action_type = self.action_types[action_type]
@@ -361,7 +361,6 @@ class AdventureIFInterpreter(GameResourceLocator):
         # domain_def = self.game_instance["domain_definition"]
         domain_def = self.game_instance["domain_definitions"][0]
 
-
         domain_preparsed = False
 
         # check if action definition is file name string:
@@ -375,7 +374,6 @@ class AdventureIFInterpreter(GameResourceLocator):
             domain_preparsed = True
             # NOTE: Direct dict handling supports pre-parsed domains;
             # consider adding validation for required domain keys
-
 
         self.domain["mutable_states"]: list = list()
 
@@ -401,11 +399,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # TODO?: full type inheritance as dict or the like?
 
-
         # TRAIT TYPES FROM ENTITY DEFINITIONS
         trait_type_dict = dict()
         for entity_type in self.domain["types"]["entity"]:
-
             if "traits" in self.entity_types[entity_type]:
                 for trait in self.entity_types[entity_type]["traits"]:
                     if trait not in trait_type_dict:
@@ -458,15 +454,14 @@ class AdventureIFInterpreter(GameResourceLocator):
             elif type(event_def) == dict:
                 event_definitions.append(event_def)
 
-
         for event_definition in event_definitions:
             self.event_types[event_definition["type_name"]] = dict()
             # get all action attributes:
             for event_attribute in event_definition:
                 if not event_attribute == "type_name":
-                    self.event_types[event_definition["type_name"]][event_attribute] = (
-                        event_definition[event_attribute]
-                    )
+                    self.event_types[event_definition["type_name"]][
+                        event_attribute
+                    ] = event_definition[event_attribute]
 
         for event_type in self.event_types:
             cur_event_type = self.event_types[event_type]
@@ -477,7 +472,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                 cur_event_type["interaction"] = processed_event_pddl
             else:
                 raise KeyError
-
 
     def initialize_action_parsing(self, print_lark_grammar: bool = False) -> None:
         """Initialize Lark parser for player action input commands.
@@ -1005,10 +999,16 @@ class AdventureIFInterpreter(GameResourceLocator):
         """Generate description of container contents."""
         contained_entities = []
         for fact in self.world_state:
-            if len(fact) == 3 and fact[2] == entity_id and fact[0] == config.predicates["predicate_in"]:
+            if (
+                len(fact) == 3
+                and fact[2] == entity_id
+                and fact[0] == config.predicates["predicate_in"]
+            ):
                 if ("accessible", fact[1]) in self.world_state:
                     contained_entity = self._strip_entity_id_suffix(fact[1])
-                    contained_entities.append(f"a {self.entity_types[contained_entity]['repr_str']}")
+                    contained_entities.append(
+                        f"a {self.entity_types[contained_entity]['repr_str']}"
+                    )
 
         if ("closed", entity_id) in self.world_state:
             return f"You can't see the {self.entity_types[container_entity]['repr_str']}'s contents because it is closed."
@@ -1026,7 +1026,11 @@ class AdventureIFInterpreter(GameResourceLocator):
         """Generate description of entities on support surface."""
         supported_entities = []
         for fact in self.world_state:
-            if len(fact) == 3 and fact[2] == entity_id and fact[0] == config.predicates["predicate_on"]:
+            if (
+                len(fact) == 3
+                and fact[2] == entity_id
+                and fact[0] == config.predicates["predicate_on"]
+            ):
                 supported_entity = self._strip_entity_id_suffix(fact[1])
                 supported_entities.append(f"a {self.entity_types[supported_entity]['repr_str']}")
 
@@ -1070,8 +1074,12 @@ class AdventureIFInterpreter(GameResourceLocator):
             elif fact[0] == config.predicates["openable"]:
                 openable_entity = self._strip_entity_id_suffix(fact[1])
                 openable_state = next(
-                    (f[0] for f in self.world_state if f[1] == entity_id and f[0] in ("open", "closed")),
-                    "unknown"
+                    (
+                        f[0]
+                        for f in self.world_state
+                        if f[1] == entity_id and f[0] in ("open", "closed")
+                    ),
+                    "unknown",
                 )
                 entity_desc_list.append(
                     f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
@@ -1080,14 +1088,16 @@ class AdventureIFInterpreter(GameResourceLocator):
             # Takeable entities
             elif fact[0] == config.predicates["takeable"]:
                 takeable_entity = self._strip_entity_id_suffix(fact[1])
-                entity_desc_list.append(f"The {self.entity_types[takeable_entity]['repr_str']} is takeable.")
+                entity_desc_list.append(
+                    f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
+                )
 
             # Needs support entities
             elif fact[0] == config.predicates["needs_support"]:
                 needs_support_entity = self._strip_entity_id_suffix(fact[1])
                 support_fact = next(
                     (f for f in self.world_state if f[1] == entity_id and f[0] in ("on", "in")),
-                    None
+                    None,
                 )
                 if support_fact:
                     support_state = support_fact[0]
@@ -1112,7 +1122,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             # Container entities
             elif fact[0] == config.predicates["container"]:
                 container_entity = self._strip_entity_id_suffix(fact[1])
-                entity_desc_list.append(self._describe_container_contents(entity_id, container_entity))
+                entity_desc_list.append(
+                    self._describe_container_contents(entity_id, container_entity)
+                )
 
             # Support entities
             elif fact[0] == config.predicates["support"]:
@@ -1503,7 +1515,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                 predicate_arg2 = variable_map[predicate_arg2["variable"]]
             predicate_list.append(predicate_arg2)
 
-
         predicate_arg3 = None
         if predicate["arg3"]:
             predicate_arg3 = predicate["arg3"]
@@ -1612,7 +1623,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                                         type_matched_instances[0],
                                     )
 
-
         return predicate_tuple
 
     def check_conditions(
@@ -1640,15 +1650,25 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         # Dispatch to appropriate handler based on condition type
         if "not" in conditions:
-            return self._check_not_condition(conditions, variable_map, check_precon_idx, precon_trace)
+            return self._check_not_condition(
+                conditions, variable_map, check_precon_idx, precon_trace
+            )
         elif "predicate" in conditions:
-            return self._check_predicate_condition(conditions, variable_map, check_precon_idx, precon_trace)
+            return self._check_predicate_condition(
+                conditions, variable_map, check_precon_idx, precon_trace
+            )
         elif "num_comp" in conditions:
-            return self._check_num_comp_condition(conditions, variable_map, check_precon_idx, precon_trace)
+            return self._check_num_comp_condition(
+                conditions, variable_map, check_precon_idx, precon_trace
+            )
         elif "and" in conditions:
-            return self._check_and_condition(conditions, variable_map, check_precon_idx, precon_trace)
+            return self._check_and_condition(
+                conditions, variable_map, check_precon_idx, precon_trace
+            )
         elif "or" in conditions:
-            return self._check_or_condition(conditions, variable_map, check_precon_idx, precon_trace)
+            return self._check_or_condition(
+                conditions, variable_map, check_precon_idx, precon_trace
+            )
 
         # NOTE: Handling forall conditions not implemented due to time constraints.
         return False
@@ -1811,8 +1831,9 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return value, function_list
 
-    def _perform_numeric_comparison(self, comp_type, arg1_value, arg2_value,
-                                     arg1_function_list, arg2_function_list):
+    def _perform_numeric_comparison(
+        self, comp_type, arg1_value, arg2_value, arg1_function_list, arg2_function_list
+    ):
         """Perform numeric comparison and return result.
 
         Args:
@@ -1996,7 +2017,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                         # assign all matched objects to forall variable map:
                         forall_variable_map[type_list_item_variable] = type_matched_objects
 
-
         # NOTE: For now only covering forall with a single variable/type to iterate over, due to time constraints.
 
         for iterated_variable, iterated_values in forall_variable_map.items():
@@ -2019,7 +2039,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                         forall_results["removed"] += when_results["removed"]
 
                     if "and" in forall_body_element:
-
                         and_items = forall_body_element["and"]
 
                         for and_item in and_items:
@@ -2037,7 +2056,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 forall_results["removed"] += when_results["removed"]
 
                     # TODO?: handle single-predicate forall bodies? -> would need grammar coverage
-
 
         return forall_results
 
@@ -2060,7 +2078,6 @@ class AdventureIFInterpreter(GameResourceLocator):
         # when_items = when_clause['when']
         # get actual content:
         when_clause = when_clause["when"]
-
 
         when_conditions_fulfilled = False
 
@@ -2085,7 +2102,6 @@ class AdventureIFInterpreter(GameResourceLocator):
                 when_results["removed"] += resolve_effect_results["removed"]
         else:
             pass
-
 
         return when_results
 
@@ -2853,9 +2869,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         if "container_content" in event_feedback_template:
             for added_fact in world_state_effects["added"]:
                 if added_fact[0] == "open":
-                    jinja_args["container_content"] = self.get_container_content_desc(
-                        added_fact[1]
-                    )
+                    jinja_args["container_content"] = self.get_container_content_desc(added_fact[1])
                     break
 
         return feedback_jinja.render(jinja_args)
@@ -3095,7 +3109,6 @@ class AdventureIFInterpreter(GameResourceLocator):
             else:
                 logger.info(f"Resolution result: {resolution_result}")
                 base_result_str = resolution_result
-
 
                 # check goal achievement:
                 self.goals_achieved = self.goal_state & self.world_state

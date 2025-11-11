@@ -81,7 +81,9 @@ def generate_winodict_words(
     logger.info("Winodict word generation: Reading morphology from %s", morph_rule_path)
     morph_rules = read_morph_rules(morph_rule_path)
     morphed_examples = add_morphology_to_examples(examples, morph_rules)
-    logger.info("Winodict word generation: Successfully created %s final examples", len(morphed_examples))
+    logger.info(
+        "Winodict word generation: Successfully created %s final examples", len(morphed_examples)
+    )
 
     return list(morphed_examples)
 
