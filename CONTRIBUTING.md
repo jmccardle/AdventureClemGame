@@ -2,6 +2,30 @@
 
 Thank you for your interest in contributing to AdventureGame! This document provides guidelines for contributing to the codebase.
 
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Code Quality Standards](#code-quality-standards)
+- [Testing](#testing)
+- [Pull Request Process](#pull-request-process)
+- [Adding New Features](#adding-new-features)
+
+## Getting Started
+
+AdventureGame is an Interactive Fiction/Text Adventure game built for the clemgame benchmarking framework. Before contributing, familiarize yourself with:
+
+- The [README.md](README.md) for project overview
+- The [CLAUDE.md](CLAUDE.md) for detailed architecture and development commands
+- The [docs/](docs/) directory for specific guides on architecture, PDDL, and development
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Git
+- Basic understanding of PDDL (Planning Domain Definition Language)
+- Familiarity with Clingo ASP solver (for adventure generation)
+
 ## Code Quality Standards
 
 ### Logging Guidelines
@@ -64,6 +88,60 @@ logger.debug(f"State: {state}, count: {count}")
 ```
 
 ## Development Setup
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd AdventureClemGame
+   ```
+
+2. Install runtime dependencies:
+   ```bash
+   pip install -r adventuregame/requirements.txt
+   ```
+
+3. Install development dependencies:
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+
+4. Install pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+
+### Verify Installation
+
+Run the test suite to verify your setup:
+```bash
+pytest tests/ -v
+```
+
+### Code Quality Tools
+
+The project uses several tools to maintain code quality:
+
+- **Black**: Code formatter (line length: 100)
+- **isort**: Import sorting
+- **flake8**: Linting
+- **mypy**: Static type checking
+- **pytest**: Testing framework
+
+Run all checks before committing:
+```bash
+pre-commit run --all-files
+```
+
+Or run individual tools:
+```bash
+black adventuregame/          # Format code
+isort adventuregame/          # Sort imports
+flake8 adventuregame/         # Lint code
+mypy adventuregame/           # Type check
+pytest tests/                 # Run tests
+```
 
 ### Configuration
 
@@ -131,6 +209,65 @@ def generate_adventure(layout: dict, goal_count: int) -> dict:
     logger.info("Generating adventure with %d goals", goal_count)
     # Implementation here
 ```
+
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest tests/ --cov=adventuregame --cov-report=html
+
+# Run specific test file
+pytest tests/test_if_wrapper.py -v
+
+# Run tests matching a pattern
+pytest tests/ -k "test_action"
+```
+
+### Writing Tests
+
+- Place tests in the `tests/` directory
+- Name test files `test_<module>.py`
+- Name test functions `test_<functionality>`
+- Use pytest fixtures for common setup (see `tests/conftest.py`)
+- Aim for >80% code coverage for new code
+
+Example test:
+```python
+def test_action_parsing():
+    """Test basic action parsing functionality."""
+    interpreter = AdventureIFInterpreter(game_instance)
+    result = interpreter.parse_action_input("take orange")
+
+    assert result["valid"] is True
+    assert result["action_name"] == "take"
+    assert "orange" in result["parameters"]
+```
+
+## Adding New Features
+
+### Adding New Adventure Types
+
+See [docs/adding_actions.md](docs/adding_actions.md) for detailed instructions. Quick overview:
+
+1. Define adventure type in `resources/definitions/adventure_types.json`
+2. Create room, entity, and action definitions in `resources/definitions/`
+3. Update `resources/clingo_adventures2-2.py` to handle new type
+4. Generate adventures: `python3 clingo_adventures2-2.py`
+5. Generate instances: `python3 instancegenerator.py`
+6. Add tests for new adventure type
+
+### Modifying Action Definitions
+
+1. Edit PDDL action in `resources/definitions/basic_actions_*.json`
+2. Ensure grammar in `pddl_actions.lark` supports syntax
+3. Update ASP encoding in `resources/pddl_to_asp.py` if needed
+4. Regenerate adventures and instances
+5. Test with sample game runs
 
 ## Git Workflow
 

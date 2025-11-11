@@ -261,7 +261,9 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
                             ][
                                 "domain_definitions"
                             ]  # game parameters
-                            # TODO: de-hardcode the domain difference; just add full domain to home delivery too
+                            # NOTE: new-words and potion adventures include domain definitions;
+                            # home delivery uses default domain. Consider standardizing this
+                            # in adventure generation to include full domain for all types.
                         if adventure_type == config.adventure_types["potion_brewing"]:
                             game_instance["domain_definitions"] = adventures[difficulty][
                                 adventure_id

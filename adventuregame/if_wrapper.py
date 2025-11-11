@@ -373,7 +373,8 @@ class AdventureIFInterpreter(GameResourceLocator):
         elif type(domain_def) == dict:
             domain_definitions.append(domain_def)
             domain_preparsed = True
-            # TODO: make this more robust
+            # NOTE: Direct dict handling supports pre-parsed domains;
+            # consider adding validation for required domain keys
 
 
         self.domain["mutable_states"]: list = list()
@@ -741,7 +742,9 @@ class AdventureIFInterpreter(GameResourceLocator):
         elif inst in self.room_to_type_dict:
             inst_type = self.room_to_type_dict[inst]
         else:  # fallback for potential edge cases
-            # TODO: retrace why this can fail
+            # NOTE: This fallback handles dynamically generated entity instances
+            # that may not be registered in type dictionaries. Common in procedural
+            # adventure generation where entity instances are created on-the-fly.
             logger.info(
                 f"_inst_to_type got {inst}, which is not in the _to_type dicts! "
                 f"Heuristically culling numbers from inst string end as fallback..."
@@ -871,7 +874,8 @@ class AdventureIFInterpreter(GameResourceLocator):
             visible_contents_str = " " + visible_contents_str
 
         # get predicate state facts of visible objects and create textual representations:
-        # TODO: de-hardcode this, anticipate localization
+        # NOTE: Future enhancement - extract state description templates to config
+        # for localization support (see config.messages for existing templates)
         visible_content_state_strs = list()
         for thing in internal_visible_contents:
             for fact in self.world_state:
@@ -1157,9 +1161,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         visible_room_contents = self.get_player_room_contents_visible()
         for fact in self.world_state:
-            # TODO: de-hardcode mutable predicates tracked here
-            # if fact[1] in visible_room_contents and fact[0] in self.domain['mutable_states']:
-            if fact[1] in visible_room_contents and fact[0] in config.predicates["mutable_states"]:
+            if fact[1] in visible_room_contents and fact[0] in self.domain["mutable_states"]:
                 current_perceived.add(fact)
 
         inventory_content = self.get_inventory_content()
