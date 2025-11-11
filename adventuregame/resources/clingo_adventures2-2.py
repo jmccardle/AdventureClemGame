@@ -8,6 +8,9 @@ Adventure type definition file containing task goal settings etc is
 adventuregame/resources/definitions/adventure_types.json
 """
 
+import sys
+sys.path.insert(0, '..')
+
 from typing import List, Tuple, Union, Optional
 import json
 from itertools import permutations
@@ -21,10 +24,14 @@ from lark import Lark, Transformer
 from nltk import elementtree_indent
 from pydantic_core.core_schema import filter_dict_schema
 
+from config_loader import get_config
 from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
 from adventuregame.resources.new_word_generation.new_word_definitions import create_new_words_definitions_set, replace_new_words_definitions_set
 from adventuregame.resources.pddl_util import PDDLDomainTransformer, PDDLActionTransformer
 from adventuregame.resources.pddl_to_asp import augment_action_defs_with_asp
+
+# Load configuration
+config = get_config()
 
 
 def convert_action_to_tuple(action: str) -> Tuple:
@@ -39,10 +46,15 @@ class ClingoAdventureGenerator(object):
     """
     Generates full raw adventures (initial state and goals), solves each to check optimal number of turns.
     """
-    def __init__(self, adventure_type: str = "home_deliver_two", rng_seed: int = 42):
+    def __init__(self, adventure_type: str = None, rng_seed: int = None):
+        if adventure_type is None:
+            adventure_type = config.adventure_types['home_deliver_two']
+        if rng_seed is None:
+            rng_seed = config.random_seeds['default']
+
         self.adv_type: str = adventure_type
         # load adventure type definition:
-        with open(f"definitions{os.sep}adventure_types.json", 'r', encoding='utf-8') as adventure_types_file:
+        with open(config.paths['definition_files']['adventure_types'], 'r', encoding='utf-8') as adventure_types_file:
             adventure_type_definitions = json.load(adventure_types_file)
             self.adv_type_def = adventure_type_definitions[self.adv_type]
 
@@ -63,14 +75,14 @@ class ClingoAdventureGenerator(object):
             if 'event_definitions' in self.adv_type_def:
                 self._load_premade_event_definitions()
         else:
-            if self.adv_type_def['definition_method'] == "create":
-                self.new_word_iterate_idx = 0
+            if self.adv_type_def['definition_method'] == config.generation_settings['definition_methods']['create']:
+                self.new_word_iterate_idx = config.initial_counts['iterator_value']
                 self._create_assign_new_word_definitions()
-            if self.adv_type_def['definition_method'] == "replace":
-                self.new_word_iterate_idx = 0
+            if self.adv_type_def['definition_method'] == config.generation_settings['definition_methods']['replace']:
+                self.new_word_iterate_idx = config.initial_counts['iterator_value']
                 self._replace_assign_new_word_definitions()
 
-        clingo_template_file = "clingo_templates.json"
+        clingo_template_file = config.paths['definition_files']['clingo_templates']
         if 'clingo_templates' in self.adv_type_def:
             clingo_template_file = self.adv_type_def['clingo_templates']
 
@@ -79,51 +91,51 @@ class ClingoAdventureGenerator(object):
             self.clingo_templates = json.load(templates_file)
 
     def _initialize_pddl_definition_parsing(self):
-        with open("pddl_actions.lark", 'r', encoding='utf-8') as pddl_actions_lark_file:
+        with open(config.paths['grammar_files']['pddl_actions'], 'r', encoding='utf-8') as pddl_actions_lark_file:
             action_def_grammar = pddl_actions_lark_file.read()
-        self.action_def_parser = Lark(action_def_grammar, start="action")
+        self.action_def_parser = Lark(action_def_grammar, start=config.parser_settings['action_grammar_start_rule'])
         self.action_def_transformer = PDDLActionTransformer()
 
-        with open("pddl_domain.lark", 'r', encoding='utf-8') as pddl_domain_lark_file:
+        with open(config.paths['grammar_files']['pddl_domain'], 'r', encoding='utf-8') as pddl_domain_lark_file:
             domain_def_grammar = pddl_domain_lark_file.read()
-        self.domain_def_parser = Lark(domain_def_grammar, start="define")
+        self.domain_def_parser = Lark(domain_def_grammar, start=config.parser_settings['domain_grammar_start_rule'])
         self.domain_def_transformer = PDDLDomainTransformer()
 
     def _load_premade_room_definitions(self):
         # load room type definitions:
         room_definitions: list = list()
         for room_def_source in self.adv_type_def["room_definitions"]:
-            with open(f"definitions/{room_def_source}", 'r', encoding='utf-8') as rooms_file:
+            with open(f"{config.paths['definitions_dir']}{room_def_source}", 'r', encoding='utf-8') as rooms_file:
                 room_definitions += json.load(rooms_file)
 
         self.room_definitions = dict()
         for type_def in room_definitions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.room_definitions[type_def['type_name']] = type_def_dict
+            self.room_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
     def _load_premade_entity_definitions(self):
         # load entity type definitions:
         entity_definitions: list = list()
         for entity_def_source in self.adv_type_def["entity_definitions"]:
-            with open(f"definitions/{entity_def_source}", 'r', encoding='utf-8') as entities_file:
+            with open(f"{config.paths['definitions_dir']}{entity_def_source}", 'r', encoding='utf-8') as entities_file:
                 entity_definitions += json.load(entities_file)
 
         self.entity_definitions = dict()
         for type_def in entity_definitions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.entity_definitions[type_def['type_name']] = type_def_dict
+            self.entity_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
     def _load_premade_action_definitions(self):
         # load action type definitions:
         action_definitions: list = list()
         for action_def_source in self.adv_type_def["action_definitions"]:
-            with open(f"definitions/{action_def_source}", 'r', encoding='utf-8') as actions_file:
+            with open(f"{config.paths['definitions_dir']}{action_def_source}", 'r', encoding='utf-8') as actions_file:
                 action_definitions += json.load(actions_file)
 
         # testing asp generation:
@@ -135,15 +147,15 @@ class ClingoAdventureGenerator(object):
         for type_def in action_definitions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.action_definitions[type_def['type_name']] = type_def_dict
+            self.action_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
     def _load_premade_event_definitions(self):
         # load event type definitions:
         event_definitions: list = list()
         for event_def_source in self.adv_type_def["event_definitions"]:
-            with open(f"definitions/{event_def_source}", 'r', encoding='utf-8') as events_file:
+            with open(f"{config.paths['definitions_dir']}{event_def_source}", 'r', encoding='utf-8') as events_file:
                 event_definitions += json.load(events_file)
 
         # testing asp generation:
@@ -155,23 +167,23 @@ class ClingoAdventureGenerator(object):
         for type_def in event_definitions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.event_definitions[type_def['type_name']] = type_def_dict
+            self.event_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
     def _load_premade_domain_definition(self):
         # load domain definition:
         # domain_definitions: list = list()
         # for domain_def_source in self.adv_type_def["domain_definitions"]:
-        #    with open(f"definitions/{domain_def_source}", 'r', encoding='utf-8') as domain_file:
+        #    with open(f"{config.paths['definitions_dir']}{domain_def_source}", 'r', encoding='utf-8') as domain_file:
         #        domain_definitions += json.load(domain_file)
 
-        with open(f"definitions/{self.adv_type_def['domain_definitions'][0]}", 'r', encoding='utf-8') as domain_file:
+        with open(f"{config.paths['definitions_dir']}{self.adv_type_def['domain_definitions'][0]}", 'r', encoding='utf-8') as domain_file:
             domain_definition = json.load(domain_file)
 
         # currently hardcoded to only use the first listed domain
         # print(domain_definition)
-        domain_definition_pddl = domain_definition['pddl_domain']
+        domain_definition_pddl = domain_definition[config.keys['pddl']]
         parsed_domain_definition_pddl = self.domain_def_parser.parse(domain_definition_pddl)
         self.domain_def = self.domain_def_transformer.transform(parsed_domain_definition_pddl)
 
@@ -195,17 +207,17 @@ class ClingoAdventureGenerator(object):
         for type_def in new_rooms:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.room_definitions[type_def['type_name']] = type_def_dict
+            self.room_definitions[type_def[config.keys['type_name']]] = type_def_dict
         # assign entity definitions:
         self.entity_definitions = dict()
         for type_def in new_entities:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.entity_definitions[type_def['type_name']] = type_def_dict
+            self.entity_definitions[type_def[config.keys['type_name']]] = type_def_dict
         # add ASP from PDDL to created action definitions:
         new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
         # assign action definitions:
@@ -213,9 +225,9 @@ class ClingoAdventureGenerator(object):
         for type_def in new_actions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.action_definitions[type_def['type_name']] = type_def_dict
+            self.action_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
         if 'add_basic_actions' in self.adv_type_def:
             if self.adv_type_def['add_basic_actions']:
@@ -227,7 +239,7 @@ class ClingoAdventureGenerator(object):
 
     def _replace_assign_new_word_definitions(self):
         # sample seed value for new-word replacement to not replace same definitions every time:
-        replace_seed: int = self.rng.integers(9223372036854775808)
+        replace_seed: int = self.rng.integers(config.random_seeds['max_seed'])
         # create new-words definitions:
         new_rooms, new_entities, new_actions, new_domain, \
         trait_dict, replacement_dict, last_new_word_idx = replace_new_words_definitions_set(
@@ -256,17 +268,17 @@ class ClingoAdventureGenerator(object):
         for type_def in new_rooms:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.room_definitions[type_def['type_name']] = type_def_dict
+            self.room_definitions[type_def[config.keys['type_name']]] = type_def_dict
         # assign entity definitions:
         self.entity_definitions = dict()
         for type_def in new_entities:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.entity_definitions[type_def['type_name']] = type_def_dict
+            self.entity_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
         # print("self.entity_definitions:", self.entity_definitions)
 
@@ -278,9 +290,9 @@ class ClingoAdventureGenerator(object):
         for type_def in new_actions:
             type_def_dict = dict()
             for type_key, type_value in type_def.items():
-                if not type_key == 'type_name':
+                if not type_key == config.keys['type_name']:
                     type_def_dict[type_key] = type_value
-            self.action_definitions[type_def['type_name']] = type_def_dict
+            self.action_definitions[type_def[config.keys['type_name']]] = type_def_dict
 
         if 'add_basic_actions' in self.adv_type_def:
             if self.adv_type_def['add_basic_actions']:
@@ -307,15 +319,15 @@ class ClingoAdventureGenerator(object):
             # Ex: room(kitchen1,kitchen) = there is a room with internal ID kitchen1 which has the room type kitchen
             clingo_str += "\n" + type_atom
 
-            add_floors = True
+            add_floors = config.clingo_settings['add_floors_default']
             if 'add_floors_to_rooms' in self.adv_type_def['initial_state_config']:
                 if not self.adv_type_def['initial_state_config']['add_floors_to_rooms']:
                     add_floors = False
 
             if add_floors:
                 # add floor to room:
-                floor_id = f"{room_id}floor1"
-                floor_atom = f"type({floor_id},floor)."
+                floor_id = f"{room_id}{config.entities['floor_id_suffix']}"
+                floor_atom = f"type({floor_id},{config.entities['floor_type']})."
                 # Ex: type(kitchen1floor,floor) = there is an entity kitchen1floor which has the entity type floor
                 clingo_str += "\n" + floor_atom
                 # add at() for room floor:
@@ -359,7 +371,7 @@ class ClingoAdventureGenerator(object):
             exit_rule = exit_rule.replace("$MAXCONNECTIONS$", str(room_type_values['max_connections']))
             clingo_str += "\n" + exit_rule
         # exit pairing rule:
-        pair_exits = True  # exits are paired by default
+        pair_exits = config.clingo_settings['pair_exits_default']  # exits are paired by default
         # unpaired exits for witch house:
         if 'unpaired_exits' in self.adv_type_def['initial_state_config']:
             if self.adv_type_def['initial_state_config']['unpaired_exits']:
@@ -388,11 +400,11 @@ class ClingoAdventureGenerator(object):
         clingo_str += cur_layout
 
         # add player type fact:
-        player_fact = "type(player1,player)."
+        player_fact = f"type({config.entities['player_id']},player)."
         clingo_str += "\n" + player_fact
 
         # add rule for random player start location:
-        player_location_rule = "1 { at(player1,ROOM):room(ROOM,_) } 1."
+        player_location_rule = f"1 {{ at({config.entities['player_id']},ROOM):room(ROOM,_) }} 1."
         # = there can be at() facts for the player for each room and there must be exactly one at() fact for the player
         # witch house constant starting location:
         if 'constant_start_room' in self.adv_type_def['initial_state_config']:
@@ -520,7 +532,7 @@ class ClingoAdventureGenerator(object):
         # print("task_config:", task_config)
         goal_count = self.adv_type_def['goal_count']
 
-        if task_config['task'] == "deliver":
+        if task_config['task'] == config.generation_settings['task_types']['deliver']:
             # get initial in/on of takeables:
             takeables: dict = dict()
             holders: dict = dict()
@@ -530,7 +542,7 @@ class ClingoAdventureGenerator(object):
                         takeables[fact[1]] = {'type': id_to_type_dict[fact[1]]['type']}
                     else:
                         takeables[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
-                if fact[0] in ["on", "in"]:
+                if fact[0] in [config.predicates['predicate_on'], config.predicates['predicate_in']]:
                     if fact[1] not in takeables:
                         takeables[fact[1]] = {'state': fact[0], 'holder': fact[2]}
                     else:
@@ -544,7 +556,7 @@ class ClingoAdventureGenerator(object):
                         holders[fact[1]]['holder_type'] = fact[0]
 
             # hard difficulty goal object filter:
-            if task_config['difficulty'] == "hard":
+            if task_config['difficulty'] == config.generation_settings['difficulty_levels']['hard']:
                 # check for closed state of holders:
                 for fact in initial_facts:
                     if fact[0] == "closed":
@@ -552,11 +564,11 @@ class ClingoAdventureGenerator(object):
                 takeables_to_remove: list = list()
                 # candidate takeables must be in closed containers:
                 for takeable, takeable_values in takeables.items():
-                    if takeable_values['state'] == "in":
+                    if takeable_values['state'] == config.predicates['predicate_in']:
                         if 'closed' not in holders[takeable_values['holder']]:
                             # del takeables[takeable]
                             takeables_to_remove.append(takeable)
-                    elif takeable_values['state'] == "on":
+                    elif takeable_values['state'] == config.predicates['predicate_on']:
                         # del takeables[takeable]
                         takeables_to_remove.append(takeable)
                 for bad_takeable in takeables_to_remove:
@@ -566,13 +578,13 @@ class ClingoAdventureGenerator(object):
             if not task_config['deliver_to_floor']:
                 bad_holders: list = list()
                 for holder, holder_values in holders.items():
-                    if holder_values['type'] == "floor":
+                    if holder_values['type'] == config.entities['floor_type']:
                         bad_holders.append(holder)
                 for bad_holder in bad_holders:
                     del holders[bad_holder]
 
             # add room locations for hard difficulty checks:
-            if task_config['difficulty'] == "hard":
+            if task_config['difficulty'] == config.generation_settings['difficulty_levels']['hard']:
                 for fact in initial_facts:
                     for takeable, takeable_values in takeables.items():
                         if fact[0] == "at" and fact[1] == takeable:
@@ -588,7 +600,7 @@ class ClingoAdventureGenerator(object):
                     if not takeable_values['holder'] == holder:
 
                         # hard difficulty non-same room source and target:
-                        if task_config['difficulty'] == "hard":
+                        if task_config['difficulty'] == config.generation_settings['difficulty_levels']['hard']:
                             if holder_values['location'] == takeable_values['location']:
                                 continue
 
@@ -601,9 +613,9 @@ class ClingoAdventureGenerator(object):
             for takeable, destinations in possible_destinations.items():
                 for destination in destinations:
                     if holders[destination]['holder_type'] == "container":
-                        pred_type = "in"
+                        pred_type = config.predicates['predicate_in']
                     elif holders[destination]['holder_type'] == "support":
-                        pred_type = "on"
+                        pred_type = config.predicates['predicate_on']
                     goal_str: str = f"{pred_type}({takeable},{destination})"
                     goal_tuple: tuple = (pred_type, takeable, destination)
                     all_possible_goals.append(goal_tuple)
@@ -621,7 +633,7 @@ class ClingoAdventureGenerator(object):
                         # goal_strs.append(f"{goal[0]}({goal[1]},{goal[2]})")
                     else:
                         duplicate = True
-                    if task_config['difficulty'] == "hard":
+                    if task_config['difficulty'] == config.generation_settings['difficulty_levels']['hard']:
                         if goal[2] not in goal_targets:
                             goal_targets.append(goal[2])
                         else:
@@ -643,7 +655,7 @@ class ClingoAdventureGenerator(object):
                         takeables[fact[1]] = {'type': id_to_type_dict[fact[1]]['type']}
                     else:
                         takeables[fact[1]]['type'] = id_to_type_dict[fact[1]]['type']
-                if fact[0] in ["on", "in"]:
+                if fact[0] in [config.predicates['predicate_on'], config.predicates['predicate_in']]:
                     if fact[1] not in takeables:
                         takeables[fact[1]] = {'state': fact[0], 'holder': fact[2]}
                     else:
@@ -659,7 +671,7 @@ class ClingoAdventureGenerator(object):
             if not task_config['deliver_to_floor']:
                 bad_holders: list = list()
                 for holder, holder_values in holders.items():
-                    if holder_values['type'] == "floor":
+                    if holder_values['type'] == config.entities['floor_type']:
                         bad_holders.append(holder)
                 for bad_holder in bad_holders:
                     del holders[bad_holder]
@@ -692,9 +704,9 @@ class ClingoAdventureGenerator(object):
                         goal_takeable_count += 1
 
                     if holders[destination]['holder_type'] == "container":
-                        pred_type = "in"
+                        pred_type = config.predicates['predicate_in']
                     elif holders[destination]['holder_type'] == "support":
-                        pred_type = "on"
+                        pred_type = config.predicates['predicate_on']
 
                     receptacle_replaced = False
                     if destination[:-1] in self.replacement_dict['entities'].values() and goal_takeable_count > 1:
@@ -702,13 +714,13 @@ class ClingoAdventureGenerator(object):
 
                         # make sure there's at least one 'in' and 'on' goal each if fitting receptacles are assured:
                         # replacing sufficient amount of receptacles is assured by new-word definition creation
-                        if self.adv_type_def['replace_counts']['entities'] > 4:
+                        if self.adv_type_def['replace_counts']['entities'] > config.thresholds['entity_replacement_threshold']:
                             # print("more than four entity replacement, splitting targets")
-                            if goal_in_count == 0 and pred_type == "in":
+                            if goal_in_count == 0 and pred_type == config.predicates['predicate_in']:
                                 # print("goal_in_count == 0 and pred_type == 'in'")
                                 receptacle_replaced = True
                                 goal_in_count += 1
-                            if goal_on_count == 0 and pred_type == "on":
+                            if goal_on_count == 0 and pred_type == config.predicates['predicate_on']:
                                 # print("goal_on_count == 0 and pred_type == 'on'")
                                 receptacle_replaced = True
                                 goal_on_count += 1
@@ -721,7 +733,7 @@ class ClingoAdventureGenerator(object):
                     goal_str: str = f"{pred_type}({takeable},{destination})"
                     goal_tuple: tuple = (pred_type, takeable, destination)
                     if takeable_replaced or receptacle_replaced:
-                        if self.adv_type_def['replace_counts']['entities'] > 4:
+                        if self.adv_type_def['replace_counts']['entities'] > config.thresholds['entity_replacement_threshold']:
                             if goal_in_count >= 1 and goal_on_count >= 1:
                                 all_possible_goals.append(goal_tuple)
                                 # print(f"added goal tuple: {goal_tuple}")
@@ -1107,9 +1119,11 @@ class ClingoAdventureGenerator(object):
 
         return actions_abstract, len(action_tuples), action_commands
 
-    def _generate_room_layouts(self, limit: int = 128):
+    def _generate_room_layouts(self, limit: int = None):
+        if limit is None:
+            limit = config.clingo_settings['default_layout_generation_limit']
         # init room layout clingo controller:
-        room_layout_clingo: Control = Control(["0"])  # ["0"] argument to return all models
+        room_layout_clingo: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
         # generate room layout ASP encoding:
         room_layout_asp: str = self._generate_room_layouts_asp()
         # print(room_layout_asp)
@@ -1143,7 +1157,7 @@ class ClingoAdventureGenerator(object):
         # iterate over room layouts:
         for room_layout in result_layouts:
             # init initial state clingo controller:
-            initial_states_clingo: Control = Control(["0"])  # ["0"] argument to return all models
+            initial_states_clingo: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
             # generate initial state ASP encoding:
             cur_initial_states_asp = self._generate_initial_states_asp(room_layout)
             # print("cur_initial_states_asp:", cur_initial_states_asp)
@@ -1156,7 +1170,7 @@ class ClingoAdventureGenerator(object):
             initial_states_per_layout_count: int = 0
             with initial_states_clingo.solve(yield_=True) as solve:
                 satisfiable = str(solve.get())
-                if satisfiable == "SAT":
+                if satisfiable == config.clingo_settings['status_sat']:
                     # print("intial state generation clingo solvable")
                     pass
                 else:
@@ -1174,12 +1188,25 @@ class ClingoAdventureGenerator(object):
 
         return initial_states
 
-    def generate_adventures(self, initial_states_per_layout: int = 2, initial_state_picking: str = "iterative",
-                            initial_state_limit: int = 30,
-                            adventures_per_initial_state: int = 1,
-                            goal_set_picking: str = "iterative",
-                            target_adventure_count: int = 16,
+    def generate_adventures(self, initial_states_per_layout: int = None, initial_state_picking: str = None,
+                            initial_state_limit: int = None,
+                            adventures_per_initial_state: int = None,
+                            goal_set_picking: str = None,
+                            target_adventure_count: int = None,
                             save_to_file: bool = True, indent_output_json: bool = True):
+        # Apply defaults from config
+        if initial_states_per_layout is None:
+            initial_states_per_layout = config.clingo_settings['default_initial_states_per_layout']
+        if initial_state_picking is None:
+            initial_state_picking = config.clingo_settings['picking_strategies']['iterative']
+        if initial_state_limit is None:
+            initial_state_limit = config.clingo_settings['default_initial_state_limit']
+        if adventures_per_initial_state is None:
+            adventures_per_initial_state = config.clingo_settings['default_adventures_per_initial_state']
+        if goal_set_picking is None:
+            goal_set_picking = config.clingo_settings['picking_strategies']['iterative']
+        if target_adventure_count is None:
+            target_adventure_count = config.clingo_settings['default_target_adventure_count']
         """
         Generate raw adventures based on various parameters. Main purpose of the parameters is to limit the runtime of
         adventure generation - even for simple v1 deliver-three without adjectives the number of possible adventures is
@@ -1239,7 +1266,7 @@ class ClingoAdventureGenerator(object):
             # print(list(range(initial_state_limit)))
 
             # get initial states to generate adventures with:
-            if initial_state_picking == "iterative":
+            if initial_state_picking == config.clingo_settings['picking_strategies']['iterative']:
                 if initial_state_limit:
                     print("range(initial_state_limit):", list(range(initial_state_limit)))
                     # print("initial_states:", initial_states)
@@ -1247,7 +1274,7 @@ class ClingoAdventureGenerator(object):
                     initial_states_used = [initial_states[idx] for idx in range(initial_state_limit)]
                 else:
                     initial_states_used = initial_states
-            elif initial_state_picking == "random":
+            elif initial_state_picking == config.clingo_settings['picking_strategies']['random']:
                 assert initial_state_limit > 0, (
                     "Random initial state picking without a limit is equivalent to getting all"
                     " iteratively.")
@@ -1273,11 +1300,11 @@ class ClingoAdventureGenerator(object):
 
                     print("Goals generated.")
 
-                    if goal_set_picking == "iterative":
+                    if goal_set_picking == config.clingo_settings['picking_strategies']['iterative']:
                         goal_set = cur_all_goals[goal_set_idx]
                         goal_set_idx += 1
 
-                    elif goal_set_picking == "random":
+                    elif goal_set_picking == config.clingo_settings['picking_strategies']['random']:
                         goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
 
                     print("Current goal set:", goal_set)
@@ -1286,17 +1313,17 @@ class ClingoAdventureGenerator(object):
                     if self.adv_type_def['task_config']['task'] == 'potion':
                         from potion_adventures import generate_potion_recipe, create_potion_recipe_events
                         potion_recipe = generate_potion_recipe(self.domain_def, self.entity_definitions,
-                                                               rng_seed=self.rng.integers(9223372036854775808))
+                                                               rng_seed=self.rng.integers(config.random_seeds['max_seed']))
                         # print("potion recipe:\n", potion_recipe)
                         # print("potion recipe text:\n", potion_recipe['text'])
                         potion_events = create_potion_recipe_events(potion_recipe,
                                                                     self.domain_def, self.entity_definitions,
-                                                                    rng_seed=self.rng.integers(9223372036854775808))
+                                                                    rng_seed=self.rng.integers(config.random_seeds['max_seed']))
                         # print("potion events:\n", potion_events)
                         # load event type definitions:
                         event_definitions: list = list()
                         for event_def_source in self.adv_type_def["event_definitions"]:
-                            with open(f"definitions/{event_def_source}", 'r', encoding='utf-8') as events_file:
+                            with open(f"{config.paths['definitions_dir']}{event_def_source}", 'r', encoding='utf-8') as events_file:
                                 event_definitions += json.load(events_file)
                         # add potion step events to event definitions list:
                         event_definitions += potion_events
@@ -1309,7 +1336,7 @@ class ClingoAdventureGenerator(object):
 
                     print("solve ASP:\n", solve_asp)
                     # init fresh clingo controller:
-                    cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                    cur_adv_solve_control: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
                     # add adventure solving asp encoding:
                     cur_adv_solve_control.add(solve_asp)
                     # ground clingo controller:
@@ -1325,9 +1352,9 @@ class ClingoAdventureGenerator(object):
                             # print(model)
                         satisfiable = str(solve.get())
                         # print("satisfiable:", satisfiable)
-                        if satisfiable == "SAT":
+                        if satisfiable == config.clingo_settings['status_sat']:
                             solvable = True
-                        elif satisfiable == "UNSAT":
+                        elif satisfiable == config.clingo_settings['status_unsat']:
                             solvable = False
 
                     print("Adventure solving performed.")
@@ -1357,7 +1384,7 @@ class ClingoAdventureGenerator(object):
                             visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
                             # print("visit ASP:\n", visit_asp)
                             # init fresh clingo controller:
-                            visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                            visit_solve_control: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
                             # add adventure solving asp encoding:
                             visit_solve_control.add(visit_asp)
                             # ground clingo controller:
@@ -1373,9 +1400,9 @@ class ClingoAdventureGenerator(object):
                                     # print(model)
                                 satisfiable = str(solve.get())
                                 # print("satisfiable:", satisfiable)
-                                if satisfiable == "SAT":
+                                if satisfiable == config.clingo_settings['status_sat']:
                                     solvable = True
-                                elif satisfiable == "UNSAT":
+                                elif satisfiable == config.clingo_settings['status_unsat']:
                                     solvable = False
 
                             print("Visiting solving performed.")
@@ -1406,7 +1433,7 @@ class ClingoAdventureGenerator(object):
                         for goal in goal_set:
                             goal_tuples.append(fact_str_to_tuple(goal))
 
-                        if task_config['task'] == 'deliver':
+                        if task_config['task'] == config.generation_settings['task_types']['deliver']:
                             goal_strings: list = list()
                             for goal_tuple in goal_tuples:
                                 # get string representations of delivery item and target:
@@ -1439,12 +1466,12 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = f"Put {goal_strings[0]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                             if len(goal_strings) == 2:
-                                goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
                             # full raw adventure data:
                             viable_adventure = {
@@ -1493,12 +1520,12 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = f"Put {goal_strings[0]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                             if len(goal_strings) == 2:
-                                goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
                             # convert new-word definitions to default format and store in adventure:
                             final_action_definitions = list()
@@ -1603,7 +1630,7 @@ class ClingoAdventureGenerator(object):
                             }
 
                         if task_config['task'] == 'potion':
-                            goal_desc = "Brew the potion."
+                            goal_desc = config.goal_settings['potion_goal_description']
                             # add recipe text fact:
                             initial_state.append(f"text(potionrecipe1,{potion_recipe['text']})")
                             # full raw adventure data:
@@ -1639,7 +1666,7 @@ class ClingoAdventureGenerator(object):
             dict_by_difficulty = {"undefined": generated_adventures}
 
         if save_to_file:
-            with open(f"generated_{self.adv_type}_adventures.json", 'w', encoding='utf-8') as out_adv_file:
+            with open(config.output_settings['output_filename_template'].format(adv_type=self.adv_type), 'w', encoding='utf-8') as out_adv_file:
                 if indent_output_json:
                     out_adv_file.write(json.dumps(dict_by_difficulty, indent=2))
                 else:
@@ -1662,7 +1689,7 @@ class ClingoAdventureGenerator(object):
         # solve current adventure:
         solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
         # init fresh clingo controller:
-        cur_adv_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+        cur_adv_solve_control: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
         # add adventure solving asp encoding:
         cur_adv_solve_control.add(solve_asp)
         # ground clingo controller:
@@ -1674,9 +1701,9 @@ class ClingoAdventureGenerator(object):
             for model in solve:
                 cur_adv_solutions.append(model.__str__())
             satisfiable = str(solve.get())
-            if satisfiable == "SAT":
+            if satisfiable == config.clingo_settings['status_sat']:
                 solvable = True
-            elif satisfiable == "UNSAT":
+            elif satisfiable == config.clingo_settings['status_unsat']:
                 solvable = False
         # skip this raw adventure if it is not solvable under the defined constraints:
         if not solvable:
@@ -1693,7 +1720,7 @@ class ClingoAdventureGenerator(object):
             visit_asp: str = self._pre_explore_asp(initial_state, goal_set)
             # print("visit ASP:\n", visit_asp)
             # init fresh clingo controller:
-            visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+            visit_solve_control: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
             # add adventure solving asp encoding:
             visit_solve_control.add(visit_asp)
             # ground clingo controller:
@@ -1709,9 +1736,9 @@ class ClingoAdventureGenerator(object):
                     # print(model)
                 satisfiable = str(solve.get())
                 # print("satisfiable:", satisfiable)
-                if satisfiable == "SAT":
+                if satisfiable == config.clingo_settings['status_sat']:
                     solvable = True
-                elif satisfiable == "UNSAT":
+                elif satisfiable == config.clingo_settings['status_unsat']:
                     solvable = False
 
             print("Visiting solving performed.")
@@ -1775,12 +1802,12 @@ class ClingoAdventureGenerator(object):
                     goal_strings.append(goal_str)
 
                 if len(goal_strings) == 1:
-                    goal_desc: str = f"Put {goal_strings[0]}."
+                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                 if len(goal_strings) == 2:
-                    goal_desc: str = f"Put {goal_strings[0]} and {goal_strings[1]}."
+                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                 if len(goal_strings) >= 3:
                     goal_listing_str: str = ", ".join(goal_strings[:-1])
-                    goal_desc: str = f"Put {goal_listing_str} and {goal_strings[-1]}."
+                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
             viable_adventure = {
                 'adventure_type': self.adv_type,
@@ -1796,7 +1823,7 @@ class ClingoAdventureGenerator(object):
             }
 
             if save_to_file:
-                timestamp: str = datetime.now().strftime("%Y%m%d-%H%M%S")
+                timestamp: str = datetime.now().strftime(config.output_settings['timestamp_format'])
                 with open(f"adventure_{timestamp}.json", 'w', encoding='utf-8') as out_adv_file:
                     if indent_output_json:
                         out_adv_file.write(json.dumps(viable_adventure, indent=2))
@@ -1846,7 +1873,7 @@ class ClingoAdventureGenerator(object):
                 visit_asp: str = self._pre_explore_asp(cur_initial_state, cur_goal_set)
                 # print("visit ASP:\n", visit_asp)
                 # init fresh clingo controller:
-                visit_solve_control: Control = Control(["0"])  # ["0"] argument to return all models
+                visit_solve_control: Control = Control(config.clingo_settings['control_all_models'])  # ["0"] argument to return all models
                 # add adventure solving asp encoding:
                 visit_solve_control.add(visit_asp)
                 # ground clingo controller:
@@ -1862,9 +1889,9 @@ class ClingoAdventureGenerator(object):
                         # print(model)
                     satisfiable = str(solve.get())
                     # print("satisfiable:", satisfiable)
-                    if satisfiable == "SAT":
+                    if satisfiable == config.clingo_settings['status_sat']:
                         solvable = True
-                    elif satisfiable == "UNSAT":
+                    elif satisfiable == config.clingo_settings['status_unsat']:
                         solvable = False
 
                 print("Visiting solving performed.")
