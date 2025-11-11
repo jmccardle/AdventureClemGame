@@ -25,7 +25,9 @@ for instance in instances:
                             if not fact2[2] == f"{fact1[2]}floor1":
                                 logger.warning(
                                     "Instance %s has mismatched at/on floor: %s %s",
-                                    instance['game_id'], fact1, fact2
+                                    instance["game_id"],
+                                    fact1,
+                                    fact2,
                                 )
                         if fact2[0] == "in" and fact2[1] == fact[1]:
                             pass

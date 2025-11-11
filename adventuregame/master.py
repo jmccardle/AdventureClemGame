@@ -143,7 +143,9 @@ class AdventureGameMaster(DialogueGameMaster):
         # check game variant; 'basic' or 'planning':
         self.if_variant: str = self.game_instance["variant"]
         # initialize IF interpreter:
-        self.if_interpreter: AdventureIFInterpreter = AdventureIFInterpreter(self.game_path, self.game_instance)
+        self.if_interpreter: AdventureIFInterpreter = AdventureIFInterpreter(
+            self.game_path, self.game_instance
+        )
         # create clem player:
         self.player: AdventurePlayer = AdventurePlayer(self.player_models[0])
         # Add the players: these will be logged to the records interactions.json
@@ -559,7 +561,9 @@ class AdventureGameScorer(GameScorer):
     for downstream analysis.
     """
 
-    def __init__(self, game_name: str, experiment: Dict[str, Any], game_instance: Dict[str, Any]) -> None:
+    def __init__(
+        self, game_name: str, experiment: Dict[str, Any], game_instance: Dict[str, Any]
+    ) -> None:
         """Initialize the AdventureGameScorer.
 
         Args:
@@ -571,7 +575,17 @@ class AdventureGameScorer(GameScorer):
 
     def _extract_turn_metrics(
         self, episode_interactions: Dict[str, Any]
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, int]], List[int], List[Dict[str, Any]], List[Dict[str, Any]], bool, List[str], bool, str]:
+    ) -> Tuple[
+        List[Dict[str, Any]],
+        List[Dict[str, int]],
+        List[int],
+        List[Dict[str, Any]],
+        List[Dict[str, Any]],
+        bool,
+        List[str],
+        bool,
+        str,
+    ]:
         """Extract and aggregate turn-level metrics from episode interactions.
 
         Processes each turn's events to extract action failures, goal scores,
@@ -633,7 +647,9 @@ class AdventureGameScorer(GameScorer):
                         hallucination = 1
                 if action["type"] == config.event_types["action_fail"]:
                     if action["content"][config.keys["fail_type"]] not in fail_types:
-                        logger.info(f"Unlisted fail type: {action['content'][config.keys['fail_type']]}")
+                        logger.info(
+                            f"Unlisted fail type: {action['content'][config.keys['fail_type']]}"
+                        )
                     turn_fail[action["content"]["phase"]] = 1
                     turn_fail[action["content"][config.keys["fail_type"]]] = 1
 
@@ -643,14 +659,24 @@ class AdventureGameScorer(GameScorer):
                 ):
                     exploration_info = action["content"]["exploration_info"]
                     logger.info(f"exploration_info: {exploration_info}")
-                    turn_exploration["epistemic_action"] = 1 if exploration_info["action_epistemic"] else 0
-                    turn_exploration["pragmatic_action"] = 1 if exploration_info["action_pragmatic"] else 0
+                    turn_exploration["epistemic_action"] = (
+                        1 if exploration_info["action_epistemic"] else 0
+                    )
+                    turn_exploration["pragmatic_action"] = (
+                        1 if exploration_info["action_pragmatic"] else 0
+                    )
                     turn_exploration["effective_epistemic_gain_amount"] = exploration_info[
                         "effective_epistemic_gain_amount"
                     ]
-                    turn_exploration["known_entities_ratio"] = exploration_info["known_entities_ratio"]
-                    turn_exploration["visited_rooms_ratio"] = exploration_info["visited_rooms_ratio"]
-                    turn_exploration["known_goal_entities_ratio"] = exploration_info["known_goal_entities_ratio"]
+                    turn_exploration["known_entities_ratio"] = exploration_info[
+                        "known_entities_ratio"
+                    ]
+                    turn_exploration["visited_rooms_ratio"] = exploration_info[
+                        "visited_rooms_ratio"
+                    ]
+                    turn_exploration["known_goal_entities_ratio"] = exploration_info[
+                        "known_goal_entities_ratio"
+                    ]
 
                 if action["type"] in plan_types:
                     plan_record[action["type"]] = action["content"]
@@ -660,7 +686,9 @@ class AdventureGameScorer(GameScorer):
                 if action["type"] == config.event_types["goal_status"]:
                     turn_score["goal_score"] = action["content"][config.keys["turn_goal_score"]]
                 if action["type"] == config.event_types["game_result"]:
-                    successfully_finished = action["content"][config.keys["game_successfully_finished"]]
+                    successfully_finished = action["content"][
+                        config.keys["game_successfully_finished"]
+                    ]
                     final_goals_achieved = action["content"][config.keys["goal_states_achieved"]]
 
             if invalid_format:
@@ -735,9 +763,17 @@ class AdventureGameScorer(GameScorer):
             turn_exploration: Dict[str, Any] = turn_explorations[turn_idx]
             plan_record: Dict[str, Any] = plan_records[turn_idx]
 
-            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"])
-            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"])
-            self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_VIOLATED, turn_score["violated_request_count"])
+            self.log_round_score(
+                turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"]
+            )
+            self.log_round_score(
+                turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"]
+            )
+            self.log_round_score(
+                turn_idx,
+                metrics.METRIC_REQUEST_COUNT_VIOLATED,
+                turn_score["violated_request_count"],
+            )
 
             if invalid_format == config.parse_errors["command_tag_missing"]:
                 self.log_round_score(turn_idx, config.parse_errors["command_tag_missing"], 1)
@@ -762,15 +798,27 @@ class AdventureGameScorer(GameScorer):
             self.log_round_score(turn_idx, "goal_score", turn_score["goal_score"])
 
             if turn_exploration:
-                self.log_round_score(turn_idx, "epistemic_action", turn_exploration["epistemic_action"])
-                self.log_round_score(turn_idx, "pragmatic_action", turn_exploration["pragmatic_action"])
                 self.log_round_score(
-                    turn_idx, "effective_epistemic_gain_amount", turn_exploration["effective_epistemic_gain_amount"]
+                    turn_idx, "epistemic_action", turn_exploration["epistemic_action"]
                 )
-                self.log_round_score(turn_idx, "known_entities_ratio", turn_exploration["known_entities_ratio"])
-                self.log_round_score(turn_idx, "visited_rooms_ratio", turn_exploration["visited_rooms_ratio"])
                 self.log_round_score(
-                    turn_idx, "known_goal_entities_ratio", turn_exploration["known_goal_entities_ratio"]
+                    turn_idx, "pragmatic_action", turn_exploration["pragmatic_action"]
+                )
+                self.log_round_score(
+                    turn_idx,
+                    "effective_epistemic_gain_amount",
+                    turn_exploration["effective_epistemic_gain_amount"],
+                )
+                self.log_round_score(
+                    turn_idx, "known_entities_ratio", turn_exploration["known_entities_ratio"]
+                )
+                self.log_round_score(
+                    turn_idx, "visited_rooms_ratio", turn_exploration["visited_rooms_ratio"]
+                )
+                self.log_round_score(
+                    turn_idx,
+                    "known_goal_entities_ratio",
+                    turn_exploration["known_goal_entities_ratio"],
                 )
 
             for plan_type in plan_types:
@@ -816,7 +864,9 @@ class AdventureGameScorer(GameScorer):
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_PARSED, parsed_request_count)
         request_count: int = sum([turn["request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT, request_count)
-        self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count)
+        self.log_episode_score(
+            metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count
+        )
 
         # Hallucination scores
         hallucination_count: int = sum(turn_hallucinations)
@@ -894,7 +944,9 @@ class AdventureGameScorer(GameScorer):
         plan_followed_ratio: float = plan_followed_count / turn_count
         self.log_episode_score("plan_followed_ratio", plan_followed_ratio)
 
-        plan_viability_sum: float = sum([turn["plan_command_success_ratio"] for turn in plan_records])
+        plan_viability_sum: float = sum(
+            [turn["plan_command_success_ratio"] for turn in plan_records]
+        )
         plan_average_viability_ratio: float = plan_viability_sum / turn_count
         self.log_episode_score("plan_average_viability_ratio", plan_average_viability_ratio)
 
@@ -990,7 +1042,9 @@ class AdventureGameBenchmark(GameBenchmark):
         """
         return "Interactive Fiction clemgame"
 
-    def create_game_master(self, experiment: Dict[str, Any], player_models: List[Model]) -> GameMaster:
+    def create_game_master(
+        self, experiment: Dict[str, Any], player_models: List[Model]
+    ) -> GameMaster:
         """Create a game master for running an episode.
 
         Args:
@@ -1002,7 +1056,9 @@ class AdventureGameBenchmark(GameBenchmark):
         """
         return AdventureGameMaster(self.game_name, self.game_path, experiment, player_models)
 
-    def create_game_scorer(self, experiment: Dict[str, Any], game_instance: Dict[str, Any]) -> GameScorer:
+    def create_game_scorer(
+        self, experiment: Dict[str, Any], game_instance: Dict[str, Any]
+    ) -> GameScorer:
         """Create a game scorer for computing episode scores.
 
         Args:

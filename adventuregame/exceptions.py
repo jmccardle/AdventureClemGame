@@ -13,6 +13,7 @@ class AdventureGameError(Exception):
     base class. This allows catching all AdventureGame-specific errors with a
     single except clause if needed.
     """
+
     pass
 
 
@@ -25,6 +26,7 @@ class PDDLParseError(AdventureGameError):
     - PDDL event definitions
     - Action input commands
     """
+
     pass
 
 
@@ -37,6 +39,7 @@ class ActionResolutionError(AdventureGameError):
     - Preconditions not met
     - Effect application failures
     """
+
     pass
 
 
@@ -49,6 +52,7 @@ class InvalidStateError(AdventureGameError):
     - Entity references are invalid
     - Room connections are malformed
     """
+
     pass
 
 
@@ -61,6 +65,7 @@ class ConfigurationError(AdventureGameError):
     - Required configuration keys missing
     - Configuration values out of valid range
     """
+
     pass
 
 
@@ -73,6 +78,7 @@ class InstanceGenerationError(AdventureGameError):
     - Missing required instance components
     - Goal generation failures
     """
+
     pass
 
 
@@ -85,6 +91,7 @@ class ClingoSolverError(AdventureGameError):
     - Solver timeout
     - Memory exhaustion
     """
+
     pass
 
 
@@ -97,6 +104,7 @@ class EventProcessingError(AdventureGameError):
     - Event randomization errors
     - Recursive event triggering issues
     """
+
     pass
 
 
@@ -109,4 +117,5 @@ class ValidationError(AdventureGameError):
     - Constraint violations
     - Invariant violations
     """
+
     pass

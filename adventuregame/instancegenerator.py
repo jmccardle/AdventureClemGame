@@ -51,11 +51,7 @@ class AdventureGameInstanceGenerator(GameInstanceGenerator):
         super().__init__(os.path.dirname(os.path.abspath(__file__)))
         self.rng = np.random.default_rng(seed=config.random_seeds["default"])
 
-    def on_generate(
-        self,
-        raw_adventures_files: List[str],
-        variants: List[str] = ["basic"]
-    ) -> None:
+    def on_generate(self, raw_adventures_files: List[str], variants: List[str] = ["basic"]) -> None:
         """Generate game instances from raw adventures for specified variants.
 
         This method processes raw adventure JSON files and creates game instances for each

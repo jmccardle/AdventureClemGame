@@ -225,9 +225,14 @@ class ClingoAdventureGenerator(object):
 
     def _create_assign_new_word_definitions(self):
         # create new-words definitions:
-        new_rooms, new_entities, new_actions, new_domain, trait_dict, last_new_word_idx = (
-            create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
-        )
+        (
+            new_rooms,
+            new_entities,
+            new_actions,
+            new_domain,
+            trait_dict,
+            last_new_word_idx,
+        ) = create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
 
         logger.debug("new_word_iterate_idx before new assigned: %s", self.new_word_iterate_idx)
 
@@ -325,7 +330,6 @@ class ClingoAdventureGenerator(object):
                 if not type_key == config.keys["type_name"]:
                     type_def_dict[type_key] = type_value
             self.entity_definitions[type_def[config.keys["type_name"]]] = type_def_dict
-
 
         # add ASP from PDDL to created action definitions:
         # new_actions = augment_action_defs_with_asp(new_actions, self.interaction_traits)
@@ -461,7 +465,6 @@ class ClingoAdventureGenerator(object):
             if self.adv_type_def["initial_state_config"]["constant_start_room"]:
                 player_location_rule = f"at(player1,{self.adv_type_def['initial_state_config']['constant_start_room']})."
         clingo_str += "\n" + player_location_rule
-
 
         for entity_type_name, entity_type_values in self.entity_definitions.items():
             # do not create type fact for entities to be omitted from initial states:
@@ -674,7 +677,6 @@ class ClingoAdventureGenerator(object):
             for takeable, takeable_values in takeables.items():
                 for holder, holder_values in holders.items():
                     if not takeable_values["holder"] == holder:
-
                         # hard difficulty non-same room source and target:
                         if (
                             task_config["difficulty"]
@@ -773,7 +775,6 @@ class ClingoAdventureGenerator(object):
                         else:
                             possible_destinations[takeable].append(holder)
 
-
             all_possible_goals: list = list()
             goal_takeable_count: int = 0
             goal_in_count: int = 0
@@ -796,7 +797,6 @@ class ClingoAdventureGenerator(object):
                         destination[:-1] in self.replacement_dict["entities"].values()
                         and goal_takeable_count > 1
                     ):
-
                         # make sure there's at least one 'in' and 'on' goal each if fitting receptacles are assured:
                         # replacing sufficient amount of receptacles is assured by new-word definition creation
                         if (
@@ -833,8 +833,6 @@ class ClingoAdventureGenerator(object):
                             all_possible_goals.append(goal_tuple)
                     # all_possible_goals.append(goal_tuple)
 
-
-
             goal_permutations = list(permutations(all_possible_goals, goal_count))
 
             good_goal_permutations: list = list()
@@ -853,7 +851,6 @@ class ClingoAdventureGenerator(object):
                         good_goal_permutations.append(goal_combo)
             else:
                 good_goal_permutations = goal_permutations
-
 
             # prevent goal combos with same object at different locations:
             goal_combos = list()
@@ -874,7 +871,6 @@ class ClingoAdventureGenerator(object):
             # TODO?: externalize (more) goal parameters?
 
             # get mutable predicates from domain:
-
 
             mutables = [predicate["predicate_id"] for predicate in self.domain_def["predicates"]]
             mutabilities = dict()
@@ -957,7 +953,6 @@ class ClingoAdventureGenerator(object):
                             """
 
                     if goal_mutability not in goal_mutabilities:
-
                         for goal_mut2 in goal_mutabilities:
                             if goal_mutability[0] == goal_mut2[0]:
                                 duplicate = True
@@ -1520,9 +1515,11 @@ class ClingoAdventureGenerator(object):
                     # last yielded model is optimal solution:
                     cur_optimal_solution = cur_adv_solutions[-1]
                     # convert optimal solution:
-                    cur_sol_abstract, optimal_turns, cur_sol_cmds = (
-                        self._convert_adventure_solution(cur_optimal_solution)
-                    )
+                    (
+                        cur_sol_abstract,
+                        optimal_turns,
+                        cur_sol_cmds,
+                    ) = self._convert_adventure_solution(cur_optimal_solution)
                     # check if optimal turns within bounds:
                     if min_optimal_turns <= optimal_turns <= max_optimal_turns:
                         pre_explore = True
@@ -1570,9 +1567,11 @@ class ClingoAdventureGenerator(object):
                             # last yielded model is optimal solution:
                             visit_optimal_solution = visit_solutions[-1]
                             # convert optimal solution:
-                            visiting_abstract, visiting_turns, visiting_cmds = (
-                                self._convert_adventure_solution(visit_optimal_solution)
-                            )
+                            (
+                                visiting_abstract,
+                                visiting_turns,
+                                visiting_cmds,
+                            ) = self._convert_adventure_solution(visit_optimal_solution)
 
                             logger.debug("visiting_cmds: %s", visiting_cmds)
 
@@ -1624,18 +1623,12 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                             if len(goal_strings) == 2:
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
                             # full raw adventure data:
                             viable_adventure = {
@@ -1690,18 +1683,12 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                             if len(goal_strings) == 2:
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = (
-                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
-                                )
+                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
                             # convert new-word definitions to default format and store in adventure:
                             final_action_definitions = list()
@@ -2019,14 +2006,10 @@ class ClingoAdventureGenerator(object):
                         f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                     )
                 if len(goal_strings) == 2:
-                    goal_desc: str = (
-                        f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
-                    )
+                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
                 if len(goal_strings) >= 3:
                     goal_listing_str: str = ", ".join(goal_strings[:-1])
-                    goal_desc: str = (
-                        f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
-                    )
+                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
 
             viable_adventure = {
                 "adventure_type": self.adv_type,
@@ -2135,11 +2118,9 @@ class ClingoAdventureGenerator(object):
                     visit_optimal_solution
                 )
 
-
                 raw_adv["visiting_turns"] = visiting_turns
                 raw_adv["visiting_solution"] = visiting_abstract
                 raw_adv["visiting_commands"] = visiting_cmds
-
 
                 # break
             # break
@@ -2158,7 +2139,6 @@ if __name__ == "__main__":
     # adventure_generator = ClingoAdventureGenerator(adventure_type="new-words_home-delivery_medium")
     # adventure_generator = ClingoAdventureGenerator(adventure_type="potion_brewing")
     adventure_generator = ClingoAdventureGenerator(adventure_type="home_deliver_three_hard")
-
 
     # adventure_generator._generate_room_layouts(limit=1)
 

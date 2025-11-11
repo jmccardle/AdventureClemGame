@@ -112,9 +112,9 @@ def new_word_rooms_create(
         new_word_idx += 1
         new_room_type_dict["type_name"] = new_room_type_name
         new_room_type_dict["repr_str"] = new_room_type_name
-        new_room_type_dict["exit_targets"] = (
-            []
-        )  # left empty here due to incomplete info about all room types
+        new_room_type_dict[
+            "exit_targets"
+        ] = []  # left empty here due to incomplete info about all room types
         new_room_type_dict["max_connections"] = int(rng.integers(min_connections, max_connections))
         new_room_definitions.append(new_room_type_dict)
         new_room_type_names.append(new_room_type_name)
@@ -515,7 +515,6 @@ def new_word_actions_create(
     # new_words_source = read_new_words_file("new_words.tsv")
     new_word_idx = last_new_words_idx
 
-
     # get mutable state applicability traits and create mutable state sets:
     mutable_state_sets = dict()
     if not trait_pool:
@@ -577,7 +576,6 @@ def new_word_actions_create(
             mutable_state_interaction_idx = 0
 
         trait_dict[trait] = cur_trait_dict
-
 
     # TODO?: single-action pair/chain progression?
 
@@ -1223,20 +1221,22 @@ def create_new_words_definitions_set(
     new_room_definitions, last_new_word_idx = new_word_rooms_create(
         last_new_words_idx=initial_new_word_idx, seed=seed
     )
-    new_entity_definitions, last_new_word_idx, trait_pool, adjective_pool = (
-        new_word_entities_create(
-            new_room_definitions,
-            add_traits=True,
-            limited_trait_pool=3,
-            min_traits=1,
-            last_new_words_idx=last_new_word_idx,
-            seed=seed,
-        )
+    (
+        new_entity_definitions,
+        last_new_word_idx,
+        trait_pool,
+        adjective_pool,
+    ) = new_word_entities_create(
+        new_room_definitions,
+        add_traits=True,
+        limited_trait_pool=3,
+        min_traits=1,
+        last_new_words_idx=last_new_word_idx,
+        seed=seed,
     )
     new_action_definitions, trait_dict, last_new_word_idx = new_word_actions_create(
         new_entity_definitions, last_new_words_idx=last_new_word_idx, seed=seed
     )
-
 
     if verbose:
         num_defs_created = (
@@ -1251,11 +1251,17 @@ def create_new_words_definitions_set(
         logger.info(
             "%s new-words used to create %s definitions (%s room types, %s entity types, "
             "%s action types) with %s mutable predicates under %s mutability traits.",
-            last_new_word_idx+1, num_defs_created, len(new_room_definitions),
-            len(new_entity_definitions), len(new_action_definitions),
-            len(mutables_created), len(mutabilities_created)
+            last_new_word_idx + 1,
+            num_defs_created,
+            len(new_room_definitions),
+            len(new_entity_definitions),
+            len(new_action_definitions),
+            len(mutables_created),
+            len(mutabilities_created),
         )
-        logger.info("Mutable predicates: %s; mutability traits: %s", mutables_created, mutabilities_created)
+        logger.info(
+            "Mutable predicates: %s; mutability traits: %s", mutables_created, mutabilities_created
+        )
 
     new_domain_definition = process_to_pddl_domain(
         "new_words", new_room_definitions, new_entity_definitions, trait_dict
@@ -1345,8 +1351,10 @@ def replace_new_words_definitions_set(
         logger.info(
             "%s new-words used to replace definitions (%s room types, %s entity types, "
             "%s action types).",
-            last_new_word_idx+1, len(new_room_definitions),
-            len(new_entity_definitions), len(new_action_definitions)
+            last_new_word_idx + 1,
+            len(new_room_definitions),
+            len(new_entity_definitions),
+            len(new_action_definitions),
         )
         logger.info("Rooms replaced: %s", rooms_replaced)
         logger.info("Entities replaced: %s", entities_replaced)

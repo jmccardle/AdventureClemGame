@@ -16,7 +16,6 @@ class PDDLActionTransformer(Transformer):
     """
 
     def action(self, content):
-
         # action_def_dict = {'action_name': content[1].value, 'content': content[3:]}
         action_def_dict = {"action_name": content[1].value.lower()}
 
@@ -157,7 +156,6 @@ class PDDLActionTransformer(Transformer):
         return {"variable": content[0].value}
 
     def function(self, content):
-
         function_dict = dict()
 
         if content[0].type == "NUMBER":
@@ -166,86 +164,69 @@ class PDDLActionTransformer(Transformer):
             function_dict["function_id"] = content[0].value
             function_dict["function_variable"] = content[2]
 
-
         return function_dict
 
     def equal(self, content):
-
         equal_dict = {"num_comp": "equal"}
 
         equal_dict["arg1"] = content[2]
         equal_dict["arg2"] = content[4]
 
-
         return equal_dict
 
     def greater(self, content):
-
         greater_dict = {"num_comp": "greater"}
 
         greater_dict["arg1"] = content[2]
         greater_dict["arg2"] = content[4]
 
-
         return greater_dict
 
     def greq(self, content):
-
         greq_dict = {"num_comp": "greq"}
 
         greq_dict["arg1"] = content[2]
         greq_dict["arg2"] = content[4]
 
-
         return greq_dict
 
     def less(self, content):
-
         less_dict = {"num_comp": "less"}
 
         less_dict["arg1"] = content[2]
         less_dict["arg2"] = content[4]
 
-
         return less_dict
 
     def leq(self, content):
-
         leq_dict = {"num_comp": "leq"}
 
         leq_dict["arg1"] = content[2]
         leq_dict["arg2"] = content[4]
 
-
         return leq_dict
 
     def assign(self, content):
-
         assign_dict = {"function_change": "assign"}
 
         assign_dict["arg1"] = content[2]
         assign_dict["arg2"] = content[4]
 
-
         return assign_dict
 
     def increase(self, content):
-
         increase_dict = {"function_change": "increase"}
 
         increase_dict["arg1"] = content[2]
         increase_dict["arg2"] = content[4]
 
-
         return increase_dict
 
     def decrease(self, content):
-
         decrease_dict = {"function_change": "decrease"}
 
         decrease_dict["arg1"] = content[2]
         decrease_dict["arg2"] = content[4]
-
 
         return decrease_dict
 
@@ -257,7 +238,6 @@ class PDDLDomainTransformer(Transformer):
     """
 
     def define(self, content):
-
         # domain_def_dict = {'domain_name': content[1].value.lower()}
         domain_def_dict = dict()
 
@@ -441,7 +421,6 @@ class PDDLDomainTransformer(Transformer):
         return functions_dict
 
     def function_list_element(self, content):
-
         # for function_item in content:
 
         function_def_predicate = content[0].value
@@ -459,7 +438,6 @@ class PDDLDomainTransformer(Transformer):
         return function_dict
 
     def function(self, content):
-
         function_dict = dict()
 
         if content[0].type == "NUMBER":
@@ -468,11 +446,9 @@ class PDDLDomainTransformer(Transformer):
             function_dict["function_id"] = content[0].value
             function_dict["function_variable"] = content[2]
 
-
         return function_dict
 
     def event(self, content):
-
         event_id = content[2].value
 
         event_dict = {"event_id": content[2].value}
@@ -485,86 +461,69 @@ class PDDLDomainTransformer(Transformer):
             if "effect" in event_item:
                 event_dict["event_effect"] = event_item["effect"]
 
-
         return event_dict
 
     def equal(self, content):
-
         equal_dict = {"num_comp": "equal"}
 
         equal_dict["arg1"] = content[2]
         equal_dict["arg2"] = content[4]
 
-
         return equal_dict
 
     def greater(self, content):
-
         greater_dict = {"num_comp": "greater"}
 
         greater_dict["arg1"] = content[2]
         greater_dict["arg2"] = content[4]
 
-
         return greater_dict
 
     def greq(self, content):
-
         greq_dict = {"num_comp": "greq"}
 
         greq_dict["arg1"] = content[2]
         greq_dict["arg2"] = content[4]
 
-
         return greq_dict
 
     def less(self, content):
-
         less_dict = {"num_comp": "less"}
 
         less_dict["arg1"] = content[2]
         less_dict["arg2"] = content[4]
 
-
         return less_dict
 
     def leq(self, content):
-
         leq_dict = {"num_comp": "leq"}
 
         leq_dict["arg1"] = content[2]
         leq_dict["arg2"] = content[4]
 
-
         return leq_dict
 
     def assign(self, content):
-
         assign_dict = {"function_change": "assign"}
 
         assign_dict["arg1"] = content[2]
         assign_dict["arg2"] = content[4]
 
-
         return assign_dict
 
     def increase(self, content):
-
         increase_dict = {"function_change": "increase"}
 
         increase_dict["arg1"] = content[2]
         increase_dict["arg2"] = content[4]
 
-
         return increase_dict
 
     def decrease(self, content):
-
         decrease_dict = {"function_change": "decrease"}
 
         decrease_dict["arg1"] = content[2]
         decrease_dict["arg2"] = content[4]
-
 
         return decrease_dict
 
@@ -607,7 +566,6 @@ if __name__ == "__main__":
 
     # parsed_action_pddl = action_def_parser.parse(sample_pddl)
     # processed_action_pddl = action_def_transformer.transform(parsed_action_pddl)
-
 
     """
     (define\n
