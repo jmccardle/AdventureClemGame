@@ -1533,284 +1533,285 @@ class AdventureIFInterpreter(GameResourceLocator):
     ) -> bool:
         """Check if a passed condition 'and'/'or' clause is true.
         Full action preconditions must have a root 'and' clause!
+
+        This is the main dispatcher that routes to specialized handlers
+        for each condition type.
         """
-        # print()
-        # print("check_conditions input conditions:", conditions)
-
+        # Dispatch to appropriate handler based on condition type
         if "not" in conditions:
-            # print("'Not' phrase condition.")
+            return self._check_not_condition(conditions, variable_map, check_precon_idx, precon_trace)
+        elif "predicate" in conditions:
+            return self._check_predicate_condition(conditions, variable_map, check_precon_idx, precon_trace)
+        elif "num_comp" in conditions:
+            return self._check_num_comp_condition(conditions, variable_map, check_precon_idx, precon_trace)
+        elif "and" in conditions:
+            return self._check_and_condition(conditions, variable_map, check_precon_idx, precon_trace)
+        elif "or" in conditions:
+            return self._check_or_condition(conditions, variable_map, check_precon_idx, precon_trace)
 
-            not_dict = {"not": dict()}
+        # NOTE: Handling forall conditions not implemented due to time constraints.
+        return False
 
-            conditions_polarity = False
-            inner_condition = conditions["not"]
-            # print("'not' phrase inner_condition:", inner_condition)
-            inner_condition_is_fact = self.check_conditions(
-                inner_condition,
+    def _check_not_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+        """Check NOT condition - inverts the result of inner condition.
+
+        Args:
+            conditions: Condition dict with "not" key
+            variable_map: Variable bindings
+            check_precon_idx: Whether to track precondition indices
+            precon_trace: Whether to return detailed trace dict
+
+        Returns:
+            bool or dict depending on precon_trace flag
+        """
+        conditions_polarity = False
+        inner_condition = conditions["not"]
+        inner_condition_is_fact = self.check_conditions(
+            inner_condition,
+            variable_map,
+            check_precon_idx=check_precon_idx,
+            precon_trace=precon_trace,
+        )
+
+        if precon_trace:
+            not_dict = {"not": inner_condition_is_fact}
+            not_true = inner_condition_is_fact["fulfilled"] == conditions_polarity
+            not_dict["fulfilled"] = not_true
+            self.precon_trace.append(not_dict)
+            return not_dict
+
+        return inner_condition_is_fact == conditions_polarity
+
+    def _check_predicate_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+        """Check simple predicate condition against world state.
+
+        Args:
+            conditions: Condition dict with "predicate" key
+            variable_map: Variable bindings
+            check_precon_idx: Whether to track precondition indices
+            precon_trace: Whether to return detailed trace dict
+
+        Returns:
+            bool or dict depending on precon_trace flag
+        """
+        predicate_tuple = self.predicate_to_tuple(conditions, variable_map)
+        is_fact = self.check_fact(predicate_tuple)
+
+        if check_precon_idx:
+            self.precon_idx += 1
+            self.precon_tuples.append((predicate_tuple, is_fact, self.precon_idx))
+
+        if precon_trace:
+            predicate_dict = {
+                "predicate_tuple": predicate_tuple,
+                "fulfilled": is_fact,
+                "precon_idx": self.precon_idx,
+            }
+            return predicate_dict
+
+        return is_fact
+
+    def _check_num_comp_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+        """Check numeric comparison condition (=, <, <=, >, >=).
+
+        Args:
+            conditions: Condition dict with "num_comp" key
+            variable_map: Variable bindings
+            check_precon_idx: Whether to track precondition indices
+            precon_trace: Whether to return detailed trace dict
+
+        Returns:
+            bool or dict depending on precon_trace flag
+        """
+        # Extract and resolve arg1 value
+        arg1_value, arg1_function_list = self._resolve_num_comp_argument(
+            conditions["arg1"], variable_map
+        )
+
+        # Extract and resolve arg2 value
+        arg2_value, arg2_function_list = self._resolve_num_comp_argument(
+            conditions["arg2"], variable_map
+        )
+
+        # Perform numerical comparison
+        num_comp_type = conditions["num_comp"]
+        fulfilled, predicate_tuple = self._perform_numeric_comparison(
+            num_comp_type, arg1_value, arg2_value, arg1_function_list, arg2_function_list
+        )
+
+        if check_precon_idx:
+            self.precon_idx += 1
+            self.precon_tuples.append((tuple(predicate_tuple), fulfilled, self.precon_idx))
+
+        if precon_trace:
+            predicate_dict = {
+                "predicate_tuple": tuple(predicate_tuple),
+                "fulfilled": fulfilled,
+                "precon_idx": self.precon_idx,
+            }
+            return predicate_dict
+
+        return fulfilled
+
+    def _resolve_num_comp_argument(self, arg, variable_map):
+        """Resolve a numeric comparison argument to its value.
+
+        Args:
+            arg: Argument dict from num_comp condition
+            variable_map: Variable bindings
+
+        Returns:
+            Tuple of (value, function_list) where function_list is empty for direct numbers
+        """
+        function_list = []
+
+        if "function_number" in arg:
+            # Direct number value
+            value = arg["function_number"]
+            if "." in value:
+                value = float(value)
+            else:
+                value = int(value)
+        elif "function_id" in arg:
+            # Function fact reference - need to look up in world state
+            function_list.append(arg["function_id"])
+            function_var = arg["function_variable"]["variable"]
+            function_object = variable_map[function_var]
+            function_list.append(function_object)
+
+            # Get numerical value from world state
+            value = None
+            for fact in self.world_state:
+                if fact[0] == function_list[0] and fact[1] == function_list[1]:
+                    function_list.append(fact[2])
+                    value = fact[2]
+                    break
+        else:
+            value = None
+
+        return value, function_list
+
+    def _perform_numeric_comparison(self, comp_type, arg1_value, arg2_value,
+                                     arg1_function_list, arg2_function_list):
+        """Perform numeric comparison and return result.
+
+        Args:
+            comp_type: Comparison type (equal, less, leq, greater, greq)
+            arg1_value: First argument value
+            arg2_value: Second argument value
+            arg1_function_list: Function list for arg1 (for failure reporting)
+            arg2_function_list: Function list for arg2 (for failure reporting)
+
+        Returns:
+            Tuple of (fulfilled, predicate_tuple)
+        """
+        predicate_tuple = []
+        fulfilled = False
+
+        match comp_type:
+            case "equal":
+                fulfilled = arg1_value == arg2_value
+            case "less":
+                fulfilled = arg1_value < arg2_value
+            case "leq":
+                fulfilled = arg1_value <= arg2_value
+            case "greater":
+                fulfilled = arg1_value > arg2_value
+            case "greq":
+                fulfilled = arg1_value >= arg2_value
+
+        # If comparison failed, record which function was being checked
+        if not fulfilled:
+            if arg1_function_list:
+                predicate_tuple = arg1_function_list
+            elif arg2_function_list:
+                predicate_tuple = arg2_function_list
+
+        return fulfilled, predicate_tuple
+
+    def _check_and_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+        """Check AND condition - all sub-conditions must be satisfied.
+
+        Args:
+            conditions: Condition dict with "and" key
+            variable_map: Variable bindings
+            check_precon_idx: Whether to track precondition indices
+            precon_trace: Whether to return detailed trace dict
+
+        Returns:
+            bool or dict depending on precon_trace flag
+        """
+        and_conditions_checklist = []
+        conditions_list = conditions["and"]
+
+        if precon_trace:
+            and_dict = {"and": []}
+
+        for and_condition in conditions_list:
+            fulfilled = self.check_conditions(
+                and_condition,
                 variable_map,
                 check_precon_idx=check_precon_idx,
                 precon_trace=precon_trace,
             )
-            # print("inner_condition_is_fact:", inner_condition_is_fact)
 
             if precon_trace:
-                not_dict["not"] = inner_condition_is_fact
-                not_true = False
-                if inner_condition_is_fact["fulfilled"] == conditions_polarity:
-                    not_true = True
-                not_dict["fulfilled"] = not_true
-                self.precon_trace.append(not_dict)
-
-                # print("not_dict:", not_dict)
-
-                return not_dict
-
-            if inner_condition_is_fact == conditions_polarity:
-                return True
+                and_conditions_checklist.append(fulfilled["fulfilled"])
+                and_dict["and"].append(fulfilled)
             else:
-                return False
+                and_conditions_checklist.append(fulfilled)
 
-        if "predicate" in conditions:
-            # logger.info(f"IF.check_conditions() bare predicate condition: {conditions}")
-            # print(f"IF.check_conditions() bare predicate condition: {conditions}")
-            predicate_tuple = self.predicate_to_tuple(conditions, variable_map)
-            # print("predicate_tuple:", predicate_tuple)
-            if check_precon_idx:
-                # print("Current self.precon_idx:", self.precon_idx)
-                pass
-            is_fact = self.check_fact(predicate_tuple)
-            # print("is_fact:", is_fact)
-            if check_precon_idx:
-                self.precon_idx += 1
-                self.precon_tuples.append((predicate_tuple, is_fact, self.precon_idx))
+        # All conditions must be true for AND
+        all_true = False not in and_conditions_checklist
+
+        if precon_trace:
+            and_dict["fulfilled"] = all_true
+            self.precon_trace.append(and_dict)
+            return and_dict
+
+        return all_true
+
+    def _check_or_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+        """Check OR condition - at least one sub-condition must be satisfied.
+
+        Args:
+            conditions: Condition dict with "or" key
+            variable_map: Variable bindings
+            check_precon_idx: Whether to track precondition indices
+            precon_trace: Whether to return detailed trace dict
+
+        Returns:
+            bool or dict depending on precon_trace flag
+        """
+        or_conditions_checklist = []
+        conditions_list = conditions["or"]
+
+        if precon_trace:
+            or_dict = {"or": []}
+
+        for or_condition in conditions_list:
+            fulfilled = self.check_conditions(
+                or_condition,
+                variable_map,
+                check_precon_idx=check_precon_idx,
+                precon_trace=precon_trace,
+            )
 
             if precon_trace:
-                predicate_dict = {
-                    "predicate_tuple": predicate_tuple,
-                    "fulfilled": is_fact,
-                    "precon_idx": self.precon_idx,
-                }
-                # logger.info(f"predicate condition precon_trace predicate_dict: {predicate_dict}")
-                return predicate_dict
-
-            return is_fact
-
-        if "num_comp" in conditions:
-            # logger.info(f"IF.check_conditions() num_comp condition: {conditions}")
-
-            # get direct number argument values or function fact argument values:
-            arg1_function_list = list()
-            arg1_is_number = False
-            if "function_number" in conditions["arg1"]:
-                arg1_is_number = True
-            elif "function_id" in conditions["arg1"]:
-                arg1_function_list.append(conditions["arg1"]["function_id"])
-                # logger.info(f"arg1_function_list: {arg1_function_list}")
-                arg1_function_var = conditions["arg1"]["function_variable"]["variable"]
-                # logger.info(f"arg1_function_var: {arg1_function_var}")
-                arg1_function_object = variable_map[arg1_function_var]
-                # logger.info(f"num_comp condition arg1 function object: {arg1_function_object}")
-                arg1_function_list.append(arg1_function_object)
-
-            if not arg1_is_number:
-                # logger.info(f"num_comp condition arg1 is function")
-                arg1_function_fact_found = False
-                # get numerical value of first argument from function fact:
-                for fact in self.world_state:
-                    if fact[0] == arg1_function_list[0] and fact[1] == arg1_function_list[1]:
-                        # logger.info(f"Found world state fact '{fact}' matching arg1_function_list '{arg1_function_list}")
-                        arg1_function_fact_found = True
-                        arg1_function_list.append(fact[2])
-                        arg1_value = fact[2]
-                if not arg1_function_fact_found:
-                    # logger.info(f"No world state fact matching arg1_function_list '{arg1_function_list}' found!")
-                    pass
+                or_conditions_checklist.append(fulfilled["fulfilled"])
+                or_dict["or"].append(fulfilled)
             else:
-                arg1_value = conditions["arg1"]["function_number"]
-                if "." in arg1_value:
-                    arg1_value = float(arg1_value)
-                else:
-                    arg1_value = int(arg1_value)
+                or_conditions_checklist.append(fulfilled)
 
-            arg2_function_list = list()
-            arg2_is_number = False
-            if "function_number" in conditions["arg2"]:
-                arg2_is_number = True
-            elif "function_id" in conditions["arg2"]:
-                arg2_function_list.append(conditions["arg2"]["function_id"])
-                arg2_function_var = conditions["arg2"]["function_variable"]["variable"]
-                arg2_function_object = variable_map[arg2_function_var]
-                # logger.info(f"num_comp condition arg2 function object: {arg2_function_object}")
-                arg2_function_list.append(arg2_function_object)
+        # At least one condition must be true for OR
+        any_true = True in or_conditions_checklist
 
-            if not arg2_is_number:
-                # get numerical value of second argument from function fact:
-                for fact in self.world_state:
-                    if fact[0] == arg2_function_list[0] and fact[1] == arg2_function_list[1]:
-                        arg2_function_list.append(fact[2])
-                        arg2_value = fact[2]
-            else:
-                arg2_value = conditions["arg2"]["function_number"]
-                if "." in arg2_value:
-                    arg2_value = float(arg2_value)
-                else:
-                    arg2_value = int(arg2_value)
+        if precon_trace:
+            or_dict["fulfilled"] = any_true
+            self.precon_trace.append(or_dict)
+            return or_dict
 
-            # get numerical comparison type:
-            num_comp_type = conditions["num_comp"]
-
-            # numerical comparison:
-            predicate_tuple = list()
-            fulfilled = False
-            match num_comp_type:
-                case "equal":
-                    if arg1_value == arg2_value:
-                        fulfilled = True
-                    else:
-                        if arg1_function_list:
-                            predicate_tuple = arg1_function_list
-                        elif arg2_function_list:
-                            predicate_tuple = arg2_function_list
-                case "less":
-                    if arg1_value < arg2_value:
-                        fulfilled = True
-                    else:
-                        if arg1_function_list:
-                            predicate_tuple = arg1_function_list
-                        elif arg2_function_list:
-                            predicate_tuple = arg2_function_list
-                case "leq":
-                    if arg1_value <= arg2_value:
-                        fulfilled = True
-                    else:
-                        if arg1_function_list:
-                            predicate_tuple = arg1_function_list
-                        elif arg2_function_list:
-                            predicate_tuple = arg2_function_list
-                case "greater":
-                    if arg1_value > arg2_value:
-                        fulfilled = True
-                    else:
-                        if arg1_function_list:
-                            predicate_tuple = arg1_function_list
-                        elif arg2_function_list:
-                            predicate_tuple = arg2_function_list
-                case "greq":
-                    if arg1_value >= arg2_value:
-                        fulfilled = True
-                    else:
-                        if arg1_function_list:
-                            predicate_tuple = arg1_function_list
-                        elif arg2_function_list:
-                            predicate_tuple = arg2_function_list
-
-            if check_precon_idx:
-                self.precon_idx += 1
-                self.precon_tuples.append((tuple(predicate_tuple), fulfilled, self.precon_idx))
-
-            if precon_trace:
-                predicate_dict = {
-                    "predicate_tuple": tuple(predicate_tuple),
-                    "fulfilled": fulfilled,
-                    "precon_idx": self.precon_idx,
-                }
-                # logger.info(f"num_comp condition precon_trace predicate_dict: {predicate_dict}")
-                return predicate_dict
-
-            return fulfilled
-
-        if "and" in conditions:
-            and_dict = {"and": list()}
-
-            and_conditions_checklist = list()
-            # print("And conditions:", conditions)
-            conditions = conditions["and"]
-            # print("Extracted and conditions list:", conditions)
-            for and_condition in conditions:
-                # print("and_condition:", and_condition)
-
-                # fulfilled = self.check_conditions(and_condition, variable_map, check_precon_idx=check_precon_idx, precon_trace=precon_trace)
-
-                fulfilled = self.check_conditions(
-                    and_condition,
-                    variable_map,
-                    check_precon_idx=check_precon_idx,
-                    precon_trace=precon_trace,
-                )
-                # print("and item fulfilled:", fulfilled)
-                # since all facts need to check out for 'and' clauses, immediately return failure:
-                # if not fulfilled:
-                #    return False
-                if precon_trace:
-                    and_conditions_checklist.append(fulfilled["fulfilled"])
-                    and_dict["and"].append(fulfilled)
-                else:
-                    and_conditions_checklist.append(fulfilled)
-                # print()
-            # print("and_conditions_checklist:", and_conditions_checklist)
-
-            # check if all conditions are true:
-            if precon_trace:
-                and_phrase_true = False
-                if not False in and_conditions_checklist:
-                    and_phrase_true = True
-                and_dict["fulfilled"] = and_phrase_true
-                self.precon_trace.append(and_dict)
-                # print("and_dict:", and_dict)
-                return and_dict
-            else:
-                if not False in and_conditions_checklist:
-                    return True
-                else:
-                    return False
-
-        if "or" in conditions:
-
-            or_dict = {"or": list()}
-
-            or_conditions_checklist = list()
-            # print("Or conditions:", conditions)
-            conditions = conditions["or"]
-            # print("Extracted or conditions list:", conditions)
-            for or_condition in conditions:
-                # print("or_condition:", or_condition)
-                fulfilled = self.check_conditions(
-                    or_condition,
-                    variable_map,
-                    check_precon_idx=check_precon_idx,
-                    precon_trace=precon_trace,
-                )
-                # print("or item fulfilled:", fulfilled)
-
-                if precon_trace:
-                    or_conditions_checklist.append(fulfilled["fulfilled"])
-                    # print("or_conditions_checklist:", or_conditions_checklist)
-                    or_dict["or"].append(fulfilled)
-                else:
-                    or_conditions_checklist.append(fulfilled)
-                # print()
-            # print("or_conditions_checklist:", or_conditions_checklist)
-
-            # check if any condition is true:
-            if precon_trace:
-                or_phrase_true = False
-                # print("or_conditions_checklist:", or_conditions_checklist)
-                if True in or_conditions_checklist:
-                    or_phrase_true = True
-                or_dict["fulfilled"] = or_phrase_true
-                self.precon_trace.append(or_dict)
-                return or_dict
-            else:
-                if True in or_conditions_checklist:
-                    return True
-                else:
-                    return False
-
-        # NOTE: Handling forall conditions not implemented due to time constraints.
-
-        # print()
-
-        return False
+        return any_true
 
     def resolve_forall(self, forall_clause, variable_map):
         # print("forall effect:", forall_clause)
@@ -2493,305 +2494,307 @@ class AdventureIFInterpreter(GameResourceLocator):
         return True, feedback_str, {"world_state_effects": world_state_effects}
 
     def run_events(self):
-        # deepcopy the world state to prevent referential interaction:
+        """Check and trigger applicable events based on current world state.
+
+        Iterates through all defined events, checks if their preconditions are
+        satisfied for any variable binding, and triggers the first matching event.
+
+        Returns:
+            Tuple of (triggered, feedback_str, result_dict)
+            - triggered: Boolean indicating if an event was triggered
+            - feedback_str: Event feedback message (empty if no event)
+            - result_dict: World state effects dict (empty if no event)
+        """
         prior_world_state = deepcopy(self.world_state)
 
-        # iterate over defined events:
+        # Iterate over all defined events
         for cur_event_type in self.event_types:
             cur_event_def = self.event_types[cur_event_type]
-            # print("cur_event_def:", cur_event_def)
-            # logger.info(f"cur_event_type: {cur_event_type}")
-            # print(f"cur_event_type: {cur_event_type}")
 
-            # PARAMETERS
-            variable_map = dict()
-            parameters_base = cur_event_def["interaction"]["parameters"]
-            # print("parameters_base:", parameters_base)
-            # check that parameters key correctly contains a PDDL type_list:
-            if not "type_list" in parameters_base:
-                raise KeyError
+            # Build variable type map from event parameters
+            cur_var_type_map = self._build_event_variable_type_map(cur_event_def)
 
-            # get parameters list:
-            parameters = parameters_base["type_list"]
-            # print("parameters:", parameters)
-            # logger.info(f"parameters: {parameters}")
-            cur_var_type_map: dict = dict()
-            for parameter in parameters:
-                # print("\nparameter:", parameter)
-                cur_parameter_type = parameter["type_list_element"]
-                # print("cur_parameter_type:", cur_parameter_type)
+            # Get all candidate entity combinations matching parameter types
+            candidate_combos = self._get_event_candidate_combos(cur_var_type_map)
 
-                # go over variables in parameter:
-                for variable in parameter["items"]:
-                    # print("variable:", variable)
-                    # logger.info(f"variable: {variable}")
-                    var_id = variable["variable"]
-                    # print("var_id:", var_id)
-
-                    # use parameter mapping to resolve variable:
-                    # cur_var_map = cur_event_pddl_map[f'?{var_id}']
-                    # print("cur_var_map:", cur_var_map)
-                    if var_id not in cur_var_type_map:
-                        # print(f"{var_id} not in cur_var_type_map")
-                        cur_var_type_map[var_id] = [cur_parameter_type]
-                    else:
-                        cur_var_type_map[var_id].append(cur_parameter_type)
-
-            # print("cur_var_type_map:", cur_var_type_map)
-            # get all type-matching entities:
-            cur_var_candidates: dict = dict()
-            for key, value in cur_var_type_map.items():
-                # print(key, value)
-                candidate_types: list = list()
-                for cur_type in value:
-                    # print(self.domain['types'])
-                    # print(type(self.domain['types']))
-                    # get domain supertypes:
-                    if cur_type in self.domain["types"]:
-                        # value is domain supertype
-                        candidate_types += self.domain["types"][cur_type]
-                    else:
-                        candidate_types.append(cur_type)
-                cur_var_candidates[key] = [
-                    type_fact[1]
-                    for type_fact in self.world_state
-                    if type_fact[0] in ["type", "room"] and type_fact[2] in candidate_types
-                ]
-
-            # print("cur_var_candidates:", cur_var_candidates)
-            candidates_lists = list(cur_var_candidates.values())
-            # logger.info(f"candidates_lists before cleanup: {candidates_lists}")
-            for candidates_list_idx, candidates_list in enumerate(candidates_lists):
-                if not candidates_list:
-                    candidates_lists.pop(candidates_list_idx)
-            # logger.info(f"candidates_lists after cleanup: {candidates_lists}")
-
-            # print(candidates_lists)
-            candidate_combos = list(itertools.product(*candidates_lists))
-            # print("candidate_combos:", candidate_combos)
-            # logger.info(f"candidate_combos: {candidate_combos}")
-            # iterate over candidate combos:
+            # Try each candidate combination to see if event should trigger
             for candidate_combo in candidate_combos:
-                variable_map = deepcopy(cur_var_type_map)
-                key_iterator = 0
-                for value in candidate_combo:
-                    variable_map[list(variable_map.keys())[key_iterator]] = value
-                    key_iterator += 1
-                # print("variable_map:", variable_map)
-                # check event precondition:
-                # PRECONDITION
-                preconditions: list = cur_event_def["interaction"]["precondition"][0]
-                # if cur_event_type in ["outhouse_teleport"]:
-                #     logger.info(f"Event preconditions before check_preconditions: {preconditions}")
-                # print("preconditions/cur_action_def['interaction']['precondition'][0]:", preconditions)
-                self.precon_idx = -1
-                # self.precon_idx = 0
-                self.precon_tuples = list()
-                self.precon_trace = list()
-                checked_conditions = self.check_conditions(preconditions, variable_map)
-                # print("Event checked_conditions:",checked_conditions)
-                # if cur_event_type in ["outhouse_teleport"]:
-                #    logger.info(f"Event checked_conditions: {checked_conditions}")
-                # print("Checked precon tuples:", self.precon_tuples)
-                # if cur_event_type in ["outhouse_teleport"]:
-                #    logger.info(f"Checked precon tuples: {self.precon_tuples}")
+                # Create variable map for this candidate combination
+                variable_map = self._create_variable_map_from_combo(
+                    cur_var_type_map, candidate_combo
+                )
 
-                # if checked_conditions:
-                if self.precon_trace[-1]["fulfilled"]:
-                    # if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
-                    #                          "workshop_antigravity_player_float_start",
-                    #                          "workshop_antigravity_player_float_stop"]:
-                    #     logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
-                    # print("Event preconditions fulfilled!")
-                    # logger.info(f"{cur_event_type}: Event preconditions fulfilled!")
+                # Check if event preconditions are satisfied
+                if not self._check_event_preconditions(cur_event_def, variable_map):
+                    continue
 
-                    # EFFECT
-                    # IMPORTANT: Events MUST change their precondition to not be true (in the same way) after they have
-                    # been triggered!
-                    effects: list = cur_event_def["interaction"]["effect"]
-                    if (
-                        "and" in effects[0]
-                    ):  # handle multi-predicate effect, but allow non-and single predicate effect
-                        effects: list = cur_event_def["interaction"]["effect"][0]["and"]
-                    # print("effects:", effects)
+                # Event triggered! Apply effects
+                world_state_effects = self._apply_event_effects(cur_event_def, variable_map)
 
-                    world_state_effects = {"added": [], "removed": []}
+                # Update world state history
+                self.world_state_history.append(deepcopy(self.world_state))
 
-                    for effect in effects:
-                        # if cur_event_type in ["outhouse_teleport"]:
-                        #    logger.info(f"{cur_event_type} event effect: {effect}")
-                        # print("effect:", effect)
-                        if "forall" in effect:
-                            forall_results = self.resolve_forall(effect, variable_map)
-                            world_state_effects["added"] += forall_results["added"]
-                            world_state_effects["removed"] += forall_results["removed"]
-                        elif "when" in effect:
-                            when_results = self.resolve_when(effect, variable_map)
-                            world_state_effects["added"] += when_results["added"]
-                            world_state_effects["removed"] += when_results["removed"]
-                        else:
-                            resolve_effect_results = self.resolve_effect(effect, variable_map)
-                            world_state_effects["added"] += resolve_effect_results["added"]
-                            world_state_effects["removed"] += resolve_effect_results["removed"]
+                # Log world state changes
+                self._log_event_state_changes(prior_world_state)
 
-                    # print("world_state_effects:", world_state_effects)
+                # Generate event feedback
+                feedback_str = self._generate_event_feedback(
+                    cur_event_def, variable_map, world_state_effects
+                )
 
-                    # print("World state after effects:", self.world_state)
+                # Handle event randomization (for specific adventure types)
+                self._handle_event_randomization(cur_event_type, cur_event_def)
 
-                    # add deepcopy of new current world state to world state history:
-                    self.world_state_history.append(deepcopy(self.world_state))
+                return True, feedback_str, {"world_state_effects": world_state_effects}
 
-                    # TODO?: handle world state history properly; only needed for planning, ie not for current work
-
-                    # get all changed facts:
-                    post_world_state = deepcopy(self.world_state)
-                    post_resolution_changes = post_world_state.difference(prior_world_state)
-                    if prior_world_state == self.world_state_history[-2]:
-                        logger.info(
-                            f"Prior world state matches second to last world state in history"
-                        )
-                    logger.info(f"Event world state changes: {post_resolution_changes}")
-
-                    # EVENT FEEDBACK
-
-                    # type word variable map instead of instance ID:
-                    clean_feedback_variable_map = deepcopy(variable_map)
-                    for key in clean_feedback_variable_map:
-                        if clean_feedback_variable_map[key]:
-                            if clean_feedback_variable_map[key].endswith(
-                                ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                            ):
-                                clean_feedback_variable_map[key] = self._get_inst_str(
-                                    clean_feedback_variable_map[key]
-                                )
-
-                    event_feedback_template = cur_event_def["event_feedback"]
-                    # print("event_feedback_template:", event_feedback_template)
-
-                    feedback_jinja = jinja2.Template(event_feedback_template)
-
-                    # jinja_args: dict = {}
-                    jinja_args: dict = clean_feedback_variable_map
-                    if "room_desc" in event_feedback_template:
-                        jinja_args["room_desc"] = self.get_full_room_desc()
-                    if "inventory_desc" in event_feedback_template:
-                        jinja_args["inventory_desc"] = self.get_inventory_desc()
-                    if "prep" in event_feedback_template:
-                        # get preposition fact from world state effects:
-                        for added_fact in world_state_effects["added"]:
-                            if added_fact[0] in ["in", "on"]:
-                                jinja_args["prep"] = added_fact[0]
-                                break
-                    if "container_content" in event_feedback_template:
-                        # get opened container fact from world state effects:
-                        for added_fact in world_state_effects["added"]:
-                            if added_fact[0] == "open":
-                                opened_container_id = added_fact[1]
-                                break
-                        jinja_args["container_content"] = self.get_container_content_desc(
-                            opened_container_id
-                        )
-
-                    feedback_str = feedback_jinja.render(jinja_args)
-                    # feedback_str = feedback_str.capitalize()
-
-                    # print("feedback_str:", feedback_str)
-
-                    # randomize event effect after first trigger:
-                    # currently tailor-made for potion brewing adventures teleporting outhouse
-                    # would need to be made a lot more extensive and properly recursive to handle any possible event
-                    if "randomize" in cur_event_def:
-                        if not hasattr(self, "event_randomization"):
-                            self.event_randomization: dict = dict()
-                        if not cur_event_type in self.event_randomization:
-                            # set predefined initial value as prior value to replace next time:
-                            self.event_randomization[cur_event_type] = cur_event_def["randomize"][
-                                "initial_value"
-                            ]
-                        if "replace_type" in cur_event_def["randomize"]:
-                            replace_candidates: list = list()
-                            for fact in self.world_state:
-                                if fact[0] == cur_event_def["randomize"]["replace_type"]:
-                                    if fact[1] not in cur_event_def["randomize"]["not_replacer"]:
-                                        replace_candidates.append(fact[1])
-                            random_replacement = self.rng.choice(replace_candidates)
-                            # replace prior value with random replacement in effects:
-                            effects: list = cur_event_def["interaction"]["effect"]
-                            if "and" in effects[0]:
-                                # handle multi-predicate effect, but allow non-and single predicate effect
-                                effects: list = cur_event_def["interaction"]["effect"][0]["and"]
-                            # print("effects:", effects)
-                            for effect in effects:
-                                # print("effect:", effect)
-                                if "predicate" in effect:
-                                    if type(effect["arg1"]) == str:
-                                        if (
-                                            effect["arg1"]
-                                            == self.event_randomization[cur_event_type]
-                                        ):
-                                            effect["arg1"] = random_replacement
-                                    if type(effect["arg2"]) == str:
-                                        if (
-                                            effect["arg2"]
-                                            == self.event_randomization[cur_event_type]
-                                        ):
-                                            effect["arg2"] = random_replacement
-                                    if type(effect["arg3"]) == str:
-                                        if (
-                                            effect["arg3"]
-                                            == self.event_randomization[cur_event_type]
-                                        ):
-                                            effect["arg3"] = random_replacement
-                                if "forall" in effect:
-                                    forall_body = effect["body"]
-                                    # logger.info(f"forall_body: {forall_body}")
-                                    for forall_effect in forall_body:
-                                        if "when" in forall_effect:
-                                            # logger.info(f"when forall_effect: {forall_effect}")
-                                            # when_effects = forall_effect[1]
-                                            when_effects = forall_effect["when"]
-                                            for when_effect in when_effects:
-                                                if "predicate" in when_effect:
-                                                    if type(when_effect["arg1"]) == str:
-                                                        if (
-                                                            when_effect["arg1"]
-                                                            == self.event_randomization[
-                                                                cur_event_type
-                                                            ]
-                                                        ):
-                                                            when_effect["arg1"] = random_replacement
-                                                    if type(when_effect["arg2"]) == str:
-                                                        if (
-                                                            when_effect["arg2"]
-                                                            == self.event_randomization[
-                                                                cur_event_type
-                                                            ]
-                                                        ):
-                                                            when_effect["arg2"] = random_replacement
-                                                    if type(when_effect["arg3"]) == str:
-                                                        if (
-                                                            when_effect["arg3"]
-                                                            == self.event_randomization[
-                                                                cur_event_type
-                                                            ]
-                                                        ):
-                                                            when_effect["arg3"] = random_replacement
-                            # store this randomization's random value for the next time to replace:
-                            self.event_randomization[cur_event_type] = random_replacement
-
-                    return True, feedback_str, {"world_state_effects": world_state_effects}
-                else:
-                    # if cur_event_type in ["outhouse_teleport"]:
-                    #    logger.info(f"{cur_event_type}: Event preconditions not fulfilled.")
-                    # logger.info(f"{cur_event_type}: Event preconditions not fulfilled!")
-                    # if cur_event_type not in ["outhouse_teleport", "workshop_antigravity_objects",
-                    #                          "workshop_antigravity_player_float_start",
-                    #                          "workshop_antigravity_player_float_stop"]:
-                    #     logger.info(f"{cur_event_type}: Event preconditions not fulfilled!")
-                    pass
-
-        # since no event triggered, return[0] = False:
+        # No event triggered
         return False, "", {}
+
+    def _build_event_variable_type_map(self, event_def: dict) -> dict:
+        """Build mapping of variables to their types from event parameters.
+
+        Args:
+            event_def: Event definition dictionary
+
+        Returns:
+            Dictionary mapping variable names to list of types
+        """
+        parameters_base = event_def["interaction"]["parameters"]
+        if "type_list" not in parameters_base:
+            raise KeyError("Event parameters must contain type_list")
+
+        parameters = parameters_base["type_list"]
+        var_type_map = {}
+
+        for parameter in parameters:
+            parameter_type = parameter["type_list_element"]
+            for variable in parameter["items"]:
+                var_id = variable["variable"]
+                if var_id not in var_type_map:
+                    var_type_map[var_id] = [parameter_type]
+                else:
+                    var_type_map[var_id].append(parameter_type)
+
+        return var_type_map
+
+    def _get_event_candidate_combos(self, var_type_map: dict) -> list:
+        """Get all possible entity combinations matching variable types.
+
+        Args:
+            var_type_map: Dictionary mapping variables to their types
+
+        Returns:
+            List of candidate tuples (each tuple is one possible variable binding)
+        """
+        var_candidates = {}
+
+        for var_id, var_types in var_type_map.items():
+            candidate_types = []
+            for cur_type in var_types:
+                # Get domain supertypes if available
+                if cur_type in self.domain["types"]:
+                    candidate_types += self.domain["types"][cur_type]
+                else:
+                    candidate_types.append(cur_type)
+
+            # Find all entities matching these types
+            var_candidates[var_id] = [
+                type_fact[1]
+                for type_fact in self.world_state
+                if type_fact[0] in ["type", "room"] and type_fact[2] in candidate_types
+            ]
+
+        # Create all combinations of candidate entities
+        candidates_lists = [candidates for candidates in var_candidates.values() if candidates]
+        if not candidates_lists:
+            return []
+
+        return list(itertools.product(*candidates_lists))
+
+    def _create_variable_map_from_combo(self, var_type_map: dict, candidate_combo: tuple) -> dict:
+        """Create variable map from a candidate combination.
+
+        Args:
+            var_type_map: Variable type map template
+            candidate_combo: Tuple of entity values for each variable
+
+        Returns:
+            Dictionary mapping variable names to entity values
+        """
+        variable_map = deepcopy(var_type_map)
+        for idx, var_id in enumerate(variable_map.keys()):
+            variable_map[var_id] = candidate_combo[idx]
+        return variable_map
+
+    def _check_event_preconditions(self, event_def: dict, variable_map: dict) -> bool:
+        """Check if event preconditions are satisfied.
+
+        Args:
+            event_def: Event definition dictionary
+            variable_map: Variable bindings
+
+        Returns:
+            True if preconditions satisfied, False otherwise
+        """
+        preconditions = event_def["interaction"]["precondition"][0]
+
+        self.precon_idx = -1
+        self.precon_tuples = []
+        self.precon_trace = []
+
+        self.check_conditions(preconditions, variable_map)
+
+        return self.precon_trace[-1]["fulfilled"]
+
+    def _apply_event_effects(self, event_def: dict, variable_map: dict) -> dict:
+        """Apply event effects to world state.
+
+        Args:
+            event_def: Event definition dictionary
+            variable_map: Variable bindings
+
+        Returns:
+            Dictionary with 'added' and 'removed' fact lists
+        """
+        effects = event_def["interaction"]["effect"]
+        if "and" in effects[0]:
+            effects = effects[0]["and"]
+
+        return self._apply_action_effects(effects, variable_map)
+
+    def _log_event_state_changes(self, prior_world_state: set):
+        """Log changes to world state after event.
+
+        Args:
+            prior_world_state: World state before event
+        """
+        post_world_state = deepcopy(self.world_state)
+        post_resolution_changes = post_world_state.difference(prior_world_state)
+
+        if prior_world_state == self.world_state_history[-2]:
+            logger.info("Prior world state matches second to last world state in history")
+
+        logger.info(f"Event world state changes: {post_resolution_changes}")
+
+    def _generate_event_feedback(
+        self, event_def: dict, variable_map: dict, world_state_effects: dict
+    ) -> str:
+        """Generate feedback text for triggered event.
+
+        Args:
+            event_def: Event definition dictionary
+            variable_map: Variable bindings
+            world_state_effects: Dictionary of added/removed facts
+
+        Returns:
+            Formatted feedback string
+        """
+        clean_feedback_variable_map = self._prepare_feedback_variable_map(variable_map)
+
+        event_feedback_template = event_def["event_feedback"]
+        feedback_jinja = jinja2.Template(event_feedback_template)
+
+        jinja_args = clean_feedback_variable_map
+
+        # Add template-specific arguments
+        if "room_desc" in event_feedback_template:
+            jinja_args["room_desc"] = self.get_full_room_desc()
+        if "inventory_desc" in event_feedback_template:
+            jinja_args["inventory_desc"] = self.get_inventory_desc()
+        if "prep" in event_feedback_template:
+            for added_fact in world_state_effects["added"]:
+                if added_fact[0] in ["in", "on"]:
+                    jinja_args["prep"] = added_fact[0]
+                    break
+        if "container_content" in event_feedback_template:
+            for added_fact in world_state_effects["added"]:
+                if added_fact[0] == "open":
+                    jinja_args["container_content"] = self.get_container_content_desc(
+                        added_fact[1]
+                    )
+                    break
+
+        return feedback_jinja.render(jinja_args)
+
+    def _handle_event_randomization(self, event_type: str, event_def: dict):
+        """Handle event randomization for repeated triggering.
+
+        This is currently specialized for potion brewing adventures with
+        teleporting outhouses. Would need expansion for general use.
+
+        Args:
+            event_type: Event type identifier
+            event_def: Event definition dictionary
+        """
+        if "randomize" not in event_def:
+            return
+
+        # Initialize randomization tracking
+        if not hasattr(self, "event_randomization"):
+            self.event_randomization = {}
+
+        if event_type not in self.event_randomization:
+            self.event_randomization[event_type] = event_def["randomize"]["initial_value"]
+
+        if "replace_type" not in event_def["randomize"]:
+            return
+
+        # Find replacement candidates from world state
+        replace_candidates = [
+            fact[1]
+            for fact in self.world_state
+            if fact[0] == event_def["randomize"]["replace_type"]
+            and fact[1] not in event_def["randomize"]["not_replacer"]
+        ]
+
+        if not replace_candidates:
+            return
+
+        random_replacement = self.rng.choice(replace_candidates)
+
+        # Replace prior value with random replacement in effects
+        effects = event_def["interaction"]["effect"]
+        if "and" in effects[0]:
+            effects = effects[0]["and"]
+
+        self._replace_in_effects(effects, self.event_randomization[event_type], random_replacement)
+
+        # Store new random value for next time
+        self.event_randomization[event_type] = random_replacement
+
+    def _replace_in_effects(self, effects: list, old_value: str, new_value: str):
+        """Replace old value with new value in effect definitions.
+
+        Helper for event randomization. Recursively handles predicates,
+        forall, and when constructs.
+
+        Args:
+            effects: List of effect dictionaries
+            old_value: Value to replace
+            new_value: Replacement value
+        """
+        for effect in effects:
+            if "predicate" in effect:
+                # Replace in predicate arguments
+                for arg_key in ["arg1", "arg2", "arg3"]:
+                    if arg_key in effect and isinstance(effect[arg_key], str):
+                        if effect[arg_key] == old_value:
+                            effect[arg_key] = new_value
+
+            elif "forall" in effect:
+                # Handle forall body
+                forall_body = effect["body"]
+                for forall_effect in forall_body:
+                    if "when" in forall_effect:
+                        when_effects = forall_effect["when"]
+                        for when_effect in when_effects:
+                            if "predicate" in when_effect:
+                                for arg_key in ["arg1", "arg2", "arg3"]:
+                                    if arg_key in when_effect and isinstance(
+                                        when_effect[arg_key], str
+                                    ):
+                                        if when_effect[arg_key] == old_value:
+                                            when_effect[arg_key] = new_value
 
     def get_exploration_info(
         self, action_type=None, full_exploration_state=False, full_exploration_history=False
