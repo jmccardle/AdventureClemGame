@@ -21,7 +21,7 @@ AdventureGame is an Interactive Fiction/Text Adventure game built for the clemga
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher (required for match/case statement support)
 - Git
 - Basic understanding of PDDL (Planning Domain Definition Language)
 - Familiarity with Clingo ASP solver (for adventure generation)

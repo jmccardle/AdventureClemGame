@@ -17,7 +17,7 @@ This guide covers the development workflow, tools, and best practices for workin
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher (required for match/case statement support)
 - Git
 - Virtual environment tool (venv, conda, etc.)
 - Code editor (VS Code, PyCharm, etc.)
