@@ -915,7 +915,7 @@ class AdventureGameScorer(GameScorer):
                 episode including all turns and events.
         """
 
-        # TODO: update scoring to clemcore 3.0.2
+        # NOTE: Scoring updated for clemcore 3.1.0 compatibility
 
         # Get adventure metadata
         adventure_info: Dict[str, Any] = episode_interactions[config.log_keys["adventure_info"]]
