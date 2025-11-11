@@ -18,11 +18,15 @@ from clemcore.clemgame import GameResourceLocator
 import logging
 
 from adv_util import fact_str_to_tuple, fact_tuple_to_str
+from config_loader import get_config
 
-PATH = "games/adventuregame/"
-RESOURCES_SUBPATH = "resources/"
+# Load configuration
+config = get_config()
 
-GAME_NAME = "adventuregame"
+PATH = config.paths['game_module_path']
+RESOURCES_SUBPATH = config.paths['resources_dir']
+
+GAME_NAME = config.game_constants['game_name']
 
 logger = logging.getLogger(__name__)
 
@@ -639,7 +643,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load entity type definitions in game instance:
         entity_definitions: list = list()
 
-        for entity_def in self.game_instance["entity_definitions"]:
+        for entity_def in self.game_instance[config.keys['entity_definitions']]:
             # check if entity definition is file name string:
             if type(entity_def) == str:
                 entities_file = self.load_json(f"resources{os.sep}definitions{os.sep}{entity_def[:-5]}")
@@ -667,7 +671,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load room type definitions in game instance:
         room_definitions: list = list()
 
-        for room_def in self.game_instance["room_definitions"]:
+        for room_def in self.game_instance[config.keys['room_definitions']]:
             # check if room definition is file name string:
             if type(room_def) == str:
                 rooms_file = self.load_json(f"resources{os.sep}definitions{os.sep}{room_def[:-5]}")
@@ -688,13 +692,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                         room_attribute]
 
     def initialize_pddl_definition_parsing(self):
-        action_def_grammar = self.load_file(f"resources{os.sep}pddl_actions.lark")
-        self.action_def_parser = Lark(action_def_grammar, start="action")
-        domain_def_grammar = self.load_file(f"resources{os.sep}pddl_domain.lark")
-        self.domain_def_parser = Lark(domain_def_grammar, start="define")
-        if "event_definitions" in self.game_instance:
-            event_def_grammar = self.load_file(f"resources{os.sep}pddl_events.lark")
-            self.event_def_parser = Lark(event_def_grammar, start="event")
+        action_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_actions']}")
+        self.action_def_parser = Lark(action_def_grammar, start=config.parser_settings['action_grammar_start_rule'])
+        domain_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_domain']}")
+        self.domain_def_parser = Lark(domain_def_grammar, start=config.parser_settings['domain_grammar_start_rule'])
+        if config.keys['event_definitions'] in self.game_instance:
+            event_def_grammar = self.load_file(f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_events']}")
+            self.event_def_parser = Lark(event_def_grammar, start=config.parser_settings['event_grammar_start_rule'])
 
     def initialize_action_types(self):
         """
@@ -704,7 +708,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load action type definitions in game instance:
         action_definitions: list = list()
 
-        for action_def in self.game_instance["action_definitions"]:
+        for action_def in self.game_instance[config.keys['action_definitions']]:
             # check if action definition is file name string:
             if type(action_def) == str:
                 actions_file = self.load_json(f"resources{os.sep}definitions{os.sep}{action_def[:-5]}")
@@ -777,7 +781,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     # print("mutable states in domain file")
                     self.domain['mutable_states'] = domain_definition['mutable_states']
                 else:
-                    self.domain['mutable_states'] = ["open", "closed", "at", "in", "on"]
+                    self.domain['mutable_states'] = config.predicates['mutable_states']
         else:
             processed_domain_pddl = domain_definitions[-1]
             # for now assume only one domain definition:
@@ -831,7 +835,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         if domain_preparsed:
             # mutable states/predicates set from domain:
             mutable_states: list = list()
-            for predicate in self.game_instance['domain_definitions'][0]['predicates']:
+            for predicate in self.game_instance[config.keys['domain_definitions']][0]['predicates']:
                 mutable_states.append(predicate['predicate_id'])
             self.domain['mutable_states'] = mutable_states
 
@@ -842,7 +846,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # load event definitions in game instance:
         event_definitions: list = list()
 
-        for event_def in self.game_instance["event_definitions"]:
+        for event_def in self.game_instance[config.keys['event_definitions']]:
             # check if event definition is file name string:
             if type(event_def) == str:
                 events_file = self.load_json(f"resources{os.sep}definitions{os.sep}{event_def[:-5]}")
@@ -999,11 +1003,11 @@ class AdventureIFInterpreter(GameResourceLocator):
                 facts_to_add.add(('accessible', fact[1]))
             if fact[0] == 'on' and ('support', fact[2]) in self.world_state:
                 facts_to_add.add(('accessible', fact[1]))
-            if fact[0] == 'type' and ('needs_support', fact[1]) not in self.world_state and fact[2] not in (
-            "floor", "player"):
+            if fact[0] == 'type' and ('needs_support', fact[1]) not in self.world_state and fact[2] not in tuple(
+            config.entities['exempt_from_support']):
                 facts_to_add.add(('accessible', fact[1]))
         # make inventory 'accessible' from the start:
-        facts_to_add.add(('accessible', 'inventory'))
+        facts_to_add.add(('accessible', config.entities['inventory_id']))
 
         self.world_state = self.world_state.union(facts_to_add)
 
@@ -1042,20 +1046,20 @@ class AdventureIFInterpreter(GameResourceLocator):
                             self.world_state.add(tuple(augmentable_function_fact))
 
                 # add missing function fact(s) with value 0 for inventory as there is no type fact for inventory:
-                if function_def['function_def_type'] == "inventory":
+                if function_def['function_def_type'] == config.entities['inventory_id']:
                     inventory_function_fact_already_exists = False
                     for fact in self.world_state:
-                        if fact[0] == function_def['function_def_predicate'] and fact[1] == "inventory":
+                        if fact[0] == function_def['function_def_predicate'] and fact[1] == config.entities['inventory_id']:
                             inventory_function_fact_already_exists = True
                     if not inventory_function_fact_already_exists:
-                        self.world_state.add((function_def['function_def_predicate'], "inventory", 0))
+                        self.world_state.add((function_def['function_def_predicate'], config.entities['inventory_id'], 0))
 
         # add initial world state to world state history:
         self.world_state_history.append(deepcopy(self.world_state))
 
         # GOALS
         # get goal state fact set:
-        for fact_string in self.game_instance['goal_state']:
+        for fact_string in self.game_instance[config.keys['goal_state']]:
             self.goal_state.add(fact_str_to_tuple(fact_string))
 
     def _get_inst_str(self, inst) -> str:
@@ -1200,7 +1204,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         # create room description start:
         room_repr_str = self.room_types[self.room_to_type_dict[player_room]]['repr_str']
         # using simple type surface string due to v1 not having multiple rooms of the same type:
-        player_at_str = f"You are in a {room_repr_str} now."
+        player_at_str = config.messages['room_description_template'].format(room_repr_str=room_repr_str)
 
         # get visible room content:
         internal_visible_contents = self.get_player_room_contents_visible()
@@ -1212,15 +1216,16 @@ class AdventureIFInterpreter(GameResourceLocator):
         # create visible room content description:
         visible_contents_str = str()
         if len(visible_contents) >= 3:
-            comma_list = ", a ".join(visible_contents[:-1])
-            and_last = f"and a {visible_contents[-1]}"
-            visible_contents_str = f"There are a {comma_list} {and_last}."
+            comma_list = f"{config.delimiters['list_separator']}".join(visible_contents[:-1])
+            and_last = f"{config.delimiters['list_last_conjunction']}{visible_contents[-1]}"
+            items_str = f"{comma_list} {and_last}"
+            visible_contents_str = config.messages['multi_item_description'].format(items=items_str)
             visible_contents_str = " " + visible_contents_str
         elif len(visible_contents) == 2:
-            visible_contents_str = f"There are a {visible_contents[0]} and a {visible_contents[1]}."
+            visible_contents_str = config.messages['two_item_description'].format(item1=visible_contents[0], item2=visible_contents[1])
             visible_contents_str = " " + visible_contents_str
         elif len(visible_contents) == 1:
-            visible_contents_str = f"There is a {visible_contents[0]}."
+            visible_contents_str = config.messages['single_item_description'].format(item=visible_contents[0])
             visible_contents_str = " " + visible_contents_str
 
         # get predicate state facts of visible objects and create textual representations:
@@ -1279,7 +1284,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         inv_list = inventory_content
         inv_item_cnt = len(inv_list)
         if inv_item_cnt == 0:
-            inv_desc = "Your inventory is empty."
+            inv_desc = config.messages['empty_inventory']
             return inv_desc
         elif inv_item_cnt == 1:
             inv_str = f"a {self._get_inst_str(inv_list[0])}"
@@ -1287,7 +1292,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             inv_strs = [f"a {self._get_inst_str(inv_item)}" for inv_item in inv_list]
             inv_str = ", ".join(inv_strs[:-1])
             inv_str += f" and {inv_strs[-1]}"
-        inv_desc = f"In your inventory you have {inv_str}."
+        inv_desc = config.messages['inventory_description'].format(items=inv_str)
 
         return inv_desc
 
@@ -1322,7 +1327,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Used for the EXAMINE action.
         """
         # get inventory description if inventory is examined:
-        if entity == "inventory":
+        if entity == config.entities['inventory_id']:
             return self.get_inventory_desc()
 
         # get entity ID:
@@ -1349,10 +1354,10 @@ class AdventureIFInterpreter(GameResourceLocator):
         for fact in self.world_state:
             if fact[1] == entity_id:
                 # print("entity state fact:", fact)
-                if fact[0] == "text":
+                if fact[0] == config.predicates['text']:
                     entity_desc_list.append("There is writing on it.")
                 # describe 'openable' entity states:
-                if fact[0] == "openable":
+                if fact[0] == config.predicates['openable']:
                     openable_entity: str = fact[1]
                     while openable_entity.endswith(("0","1","2","3","4","5","6","7","8","9")):
                         openable_entity = openable_entity[:-1]
@@ -1365,7 +1370,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     openable_desc = f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
                     entity_desc_list.append(openable_desc)
                 # describe 'takeable' entities:
-                if fact[0] == "takeable":
+                if fact[0] == config.predicates['takeable']:
                     takeable_entity: str = fact[1]
                     while takeable_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                         takeable_entity = takeable_entity[:-1]
@@ -1373,7 +1378,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     takeable_desc = f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
                     entity_desc_list.append(takeable_desc)
                 # describe the container or support state of 'needs_support' entities:
-                if fact[0] == "needs_support":
+                if fact[0] == config.predicates['needs_support']:
                     needs_support_entity: str = fact[1]
                     while needs_support_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                         needs_support_entity = needs_support_entity[:-1]
@@ -1387,13 +1392,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                             # print("supporter_entity:", supporter_entity)
                             break
 
-                    if supporter_entity == "inventory":
-                        supporter_entity = "inventory"
+                    if supporter_entity == config.entities['inventory_id']:
+                        supporter_entity = config.entities['inventory_id']
                     else:
                         while supporter_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                             supporter_entity = supporter_entity[:-1]
                         # supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
-                    if supporter_entity.endswith("floor"):
+                    if supporter_entity.endswith(config.entities['floor_type']):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
                     elif supporter_entity.endswith("ceiling"):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
@@ -1401,7 +1406,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the {self.entity_types[supporter_entity]['repr_str']}."
                     entity_desc_list.append(needs_support_desc)
 
-                if fact[0] == "container":
+                if fact[0] == config.predicates['container']:
                     container_entity: str = fact[1]
                     while container_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                         container_entity = container_entity[:-1]
@@ -1411,7 +1416,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     for fact2 in self.world_state:
                         if len(fact2) == 3:
-                            if fact2[2] == entity_id and fact2[0] == "in":
+                            if fact2[2] == entity_id and fact2[0] == config.predicates['predicate_in']:
                                 # print(fact2)
                                 contained_entity = fact2[1]
                                 # print("contained_entity:", contained_entity)
@@ -1440,7 +1445,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     entity_desc_list.append(container_content_desc)
 
-                if fact[0] == "support":
+                if fact[0] == config.predicates['support']:
                     support_entity: str = fact[1]
                     while support_entity.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
                         support_entity = support_entity[:-1]
@@ -1450,7 +1455,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                     for fact2 in self.world_state:
                         if len(fact2) == 3:
-                            if fact2[2] == entity_id and fact2[0] == "on":
+                            if fact2[2] == entity_id and fact2[0] == config.predicates['predicate_on']:
                                 # print(fact2)
                                 supported_entity = fact2[1]
                                 # print("supported_entity:", supported_entity)
@@ -1497,7 +1502,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         for fact in self.world_state:
             if fact[1] == entity_id:
                 # return text fact content:
-                if fact[0] == "text":
+                if fact[0] == config.predicates['text']:
                     return fact[2]
 
     def get_current_perceived(self) -> set:
@@ -1505,21 +1510,21 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         # get player room at fact
         for fact in self.world_state:
-            if fact[0] == 'at' and fact[1] == 'player1':
+            if fact[0] == 'at' and fact[1] == config.entities['player_id']:
                 current_perceived.add(fact)
 
         visible_room_contents = self.get_player_room_contents_visible()
         for fact in self.world_state:
             # TODO: de-hardcode mutable predicates tracked here
             # if fact[1] in visible_room_contents and fact[0] in self.domain['mutable_states']:
-            if fact[1] in visible_room_contents and fact[0] in ["open", "closed", "at", "in", "on"]:
+            if fact[1] in visible_room_contents and fact[0] in config.predicates['mutable_states']:
                 current_perceived.add(fact)
 
         inventory_content = self.get_inventory_content()
         for fact in self.world_state:
             if fact[1] in inventory_content and fact[0] in ("at", "in"):
                 current_perceived.add(fact)
-            if fact[1] == "inventory" and fact[0] == "itemcount":  # TODO: de-hardcode this
+            if fact[1] == config.entities['inventory_id'] and fact[0] == "itemcount":  # TODO: de-hardcode this
                 current_perceived.add(fact)
 
         # current_room_exits = self.get_player_room_exits()
@@ -1619,30 +1624,30 @@ class AdventureIFInterpreter(GameResourceLocator):
         except Exception as exception:
             logger.info(f"Parsing lark exception")
             fail_dict: dict = {'phase': "parsing", 'fail_type': "lark_exception", 'arg': str(exception)}
-            return False, f"I don't know what you mean.", fail_dict
+            return False, config.messages['unknown_command'], fail_dict
         action_dict = self.act_transformer.transform(parsed_command)
 
         # catch 'unknown' action parses:
-        if action_dict['type'] == "unknown":
+        if action_dict['type'] == config.actions['unknown']:
             if action_dict['arg1'] in self.action_types:
                 logger.info(f"Parsing unknown action with defined verb")
                 logger.info(f"{action_dict}")
                 fail_dict: dict = {'phase': "parsing", 'fail_type': "malformed_command", 'arg': str(action_dict)}
-                return False, f"I don't know what you mean.", fail_dict
+                return False, config.messages['unknown_command'], fail_dict
 
         if action_dict['type'] not in self.action_types:
             if 'arg1' in action_dict:
                 logger.info(f"Parsing undefined action with undefined verb")
                 fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_action_verb", 'arg': action_dict['arg1']}
-                return False, f"I don't know how to interpret this '{action_dict['arg1']}' action.", fail_dict
+                return False, config.messages['undefined_action'].format(action=action_dict['arg1']), fail_dict
             else:
                 logger.info(f"Parsing undefined action without verb")
                 fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_action", 'arg': action_input}
-                return False, f"I don't know what you mean.", fail_dict
+                return False, config.messages['unknown_command'], fail_dict
 
         logger.info(f"current parsed action_dict: {action_dict}")
 
-        if action_dict['type'] == "done":
+        if action_dict['type'] == config.actions['done']:
             return True, action_dict, {}
 
         if 'arg1' in action_dict:
@@ -1652,7 +1657,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             else:
                 # in this case, the action is defined, but the first argument isn't, leading to corresponding feedback
                 fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg1']}
-                return False, f"I don't know what '{action_dict['arg1']}' means.", fail_dict
+                return False, config.messages['unknown_entity'].format(arg=action_dict['arg1']), fail_dict
 
             # TODO?: Remove action-type specific hardcode below?; should be handled by PDDL-based resolution now
 
@@ -1665,25 +1670,25 @@ class AdventureIFInterpreter(GameResourceLocator):
                         fail_dict: dict = {'phase': "parsing", 'fail_type': "manipulating_room",
                                            'arg': action_dict['arg1']}
                         if action_dict['type'] == "take":
-                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
+                            fail_response = config.messages['cannot_take'].format(action=action_dict['type'], arg=action_dict['arg1'])
                         elif action_dict['type'] == "put":
-                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}' anywhere."
+                            fail_response = config.messages['cannot_put'].format(action=action_dict['type'], arg=action_dict['arg1'])
                         elif action_dict['type'] == "open":
-                            fail_response = f"You don't need to {action_dict['type']} the '{action_dict['arg1']}'."
+                            fail_response = config.messages['no_need_open'].format(action=action_dict['type'], arg=action_dict['arg1'])
                         elif action_dict['type'] == "close":
-                            fail_response = f"You can't {action_dict['type']} the '{action_dict['arg1']}'."
+                            fail_response = config.messages['cannot_close'].format(action=action_dict['type'], arg=action_dict['arg1'])
                         return False, fail_response, fail_dict
                 else:
                     logger.info(f"Action arg1 {action_dict['arg1']} is not a room either")
                     fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_argument_type",
                                        'arg': action_dict['arg1']}
-                    return False, f"I don't know what a '{action_dict['arg1']}' is.", fail_dict
+                    return False, config.messages['unknown_item_type'].format(arg=action_dict['arg1']), fail_dict
 
 
         if 'arg2' in action_dict:
             if action_dict['type'] == "take":
                 # handle unnecessary inventory interaction:
-                if action_dict['arg2'] == "inventory":
+                if action_dict['arg2'] == config.entities['inventory_id']:
                     # TODO: remove 'taking from inventory', now handled via PDDL precondition
                     #  but PDDL handling does it via precondition (not (in <item> inventory)), not by checking for the
                     #  second argument, so check if this handling here might still be useful
@@ -1694,9 +1699,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                         if self.inst_to_type_dict[inventory_item] == action_dict['arg1']:
                             fail_dict: dict = {'phase': "resolution", 'fail_type': "taking_from_inventory",
                                                'arg': action_dict['arg1']}
-                            return False, f"The {self.entity_types[action_dict['arg1']]['repr_str']} is already in your inventory.", fail_dict
+                            return False, config.messages['already_in_inventory'].format(item=self.entity_types[action_dict['arg1']]['repr_str']), fail_dict
                     fail_dict: dict = {'phase': "parsing", 'fail_type': "taking_from_inventory", 'arg': action_dict['arg2']}
-                    return False, f"You don't need to take things from your inventory.", fail_dict
+                    return False, config.messages['cannot_take_from_inventory'], fail_dict
             if action_dict['arg2'] in self.repr_str_to_type_dict:
                 # convert arg1 from repr to internal type:
                 action_dict['arg2'] = self.repr_str_to_type_dict[action_dict['arg2']]
@@ -1706,10 +1711,10 @@ class AdventureIFInterpreter(GameResourceLocator):
                     if not action_dict['arg2'] == cur_room_str:
                         fail_dict: dict = {'phase': "parsing", 'fail_type': "other_room_argument",
                                            'arg': action_dict['arg2']}
-                        return False, f"You are not in a {action_dict['arg2']}.", fail_dict
+                        return False, config.messages['not_in_room'].format(room=action_dict['arg2']), fail_dict
             else:
                 fail_dict: dict = {'phase': "parsing", 'fail_type': "undefined_repr_str", 'arg': action_dict['arg2']}
-                return False, f"I don't know what '{action_dict['arg2']}' means.", fail_dict
+                return False, config.messages['unknown_entity'].format(arg=action_dict['arg2']), fail_dict
 
         return True, action_dict, {}
 
@@ -1787,7 +1792,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     #    tuple_arg = tuple_arg[0]
 
                     # if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-                    if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "inventory")):
+                    if not tuple_arg.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", config.entities['inventory_id'])):
                         # print(f"{tuple_arg} is not a type instance ID!")
                         # go over world state facts to find room or type predicate:
                         for fact in self.world_state:
@@ -2448,13 +2453,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                         variable_map[var_id] = self.get_player_room()
                     case 'player':
                         # for now only single-player, so the current player is always player1:
-                        variable_map[var_id] = "player1"
+                        variable_map[var_id] = config.entities['player_id']
                     case 'inventory':
                         # for now only single-player, so the current player inventory is always 'inventory':
-                        variable_map[var_id] = "inventory"
+                        variable_map[var_id] = config.entities['inventory_id']
                     case 'current_room_floor':
                         # floors are always room ID + floor1
-                        variable_map[var_id] = self.get_player_room() + "floor1"
+                        variable_map[var_id] = self.get_player_room() + config.entities['floor_id_suffix']
 
                 # check type match:
                 # assume all world state instance IDs end in numbers:
@@ -2606,7 +2611,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # erroneous non-supported/non-contained TAKE hotfix:
                 # if key == 's' and clean_feedback_variable_map[key] is None:
                 if clean_feedback_variable_map[key] is None:
-                    feedback_str = "You can't do that."
+                    feedback_str = config.messages['cannot_do_that']
                     failed_action_info = {'failed_action_type': action_dict['type'],
                                           'failed_precon_predicate': "?s - receptacle"}
                     # use action def feedback fail type:
@@ -3197,7 +3202,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         Used to verify parity of IF interpreter and solution generation.
         """
         print(self.get_full_room_desc())
-        for command in self.game_instance["optimal_commands"]:
+        for command in self.game_instance[config.keys['optimal_commands']]:
             print(f"> {command}")
             goals_achieved, response, fail = self.process_action(command)
             print(response)
