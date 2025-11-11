@@ -904,199 +904,154 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return content_desc
 
-    def get_entity_desc(self, entity) -> str:
-        """Get a full description of an entity.
-        Used for the EXAMINE action.
+    def _get_entity_id_from_type(self, entity: str) -> str:
         """
-        # get inventory description if inventory is examined:
+        Get entity ID from entity type string.
+
+        Args:
+            entity: Entity type string
+
+        Returns:
+            Entity ID string
+        """
+        for fact in self.world_state:
+            if fact[0] == "type" and fact[2] == entity:
+                return fact[1]
+        return ""
+
+    def _strip_entity_id_suffix(self, entity_id: str) -> str:
+        """Strip numeric suffix from entity ID to get type."""
+        stripped = entity_id
+        while stripped.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
+            stripped = stripped[:-1]
+        return stripped
+
+    def _describe_container_contents(self, entity_id: str, container_entity: str) -> str:
+        """Generate description of container contents."""
+        contained_entities = []
+        for fact in self.world_state:
+            if len(fact) == 3 and fact[2] == entity_id and fact[0] == config.predicates["predicate_in"]:
+                if ("accessible", fact[1]) in self.world_state:
+                    contained_entity = self._strip_entity_id_suffix(fact[1])
+                    contained_entities.append(f"a {self.entity_types[contained_entity]['repr_str']}")
+
+        if ("closed", entity_id) in self.world_state:
+            return f"You can't see the {self.entity_types[container_entity]['repr_str']}'s contents because it is closed."
+
+        if len(contained_entities) == 0:
+            return f"The {self.entity_types[container_entity]['repr_str']} is empty."
+        elif len(contained_entities) == 1:
+            return f"There is {contained_entities[0]} in the {self.entity_types[container_entity]['repr_str']}."
+        elif len(contained_entities) == 2:
+            return f"There are {contained_entities[0]} and {contained_entities[1]} in the {self.entity_types[container_entity]['repr_str']}."
+        else:
+            return f"There are {', '.join(contained_entities[:-1])} and {contained_entities[-1]} in the {self.entity_types[container_entity]['repr_str']}."
+
+    def _describe_support_contents(self, entity_id: str, support_entity: str) -> str:
+        """Generate description of entities on support surface."""
+        supported_entities = []
+        for fact in self.world_state:
+            if len(fact) == 3 and fact[2] == entity_id and fact[0] == config.predicates["predicate_on"]:
+                supported_entity = self._strip_entity_id_suffix(fact[1])
+                supported_entities.append(f"a {self.entity_types[supported_entity]['repr_str']}")
+
+        if len(supported_entities) == 0:
+            return f"There is nothing on the {self.entity_types[support_entity]['repr_str']}."
+        elif len(supported_entities) == 1:
+            return f"There is {supported_entities[0]} on the {self.entity_types[support_entity]['repr_str']}."
+        elif len(supported_entities) == 2:
+            return f"There are {supported_entities[0]} and {supported_entities[1]} on the {self.entity_types[support_entity]['repr_str']}."
+        else:
+            return f"There are {', '.join(supported_entities[:-1])} and {supported_entities[-1]} on the {self.entity_types[support_entity]['repr_str']}."
+
+    def get_entity_desc(self, entity) -> str:
+        """
+        Get a full description of an entity.
+
+        Used for the EXAMINE action. Generates description including base type,
+        properties (openable, takeable, etc.), and contents if applicable.
+
+        Args:
+            entity: Entity type string
+
+        Returns:
+            Formatted description string
+        """
         if entity == config.entities["inventory_id"]:
             return self.get_inventory_desc()
 
-        # get entity ID:
-        # NOTE: This assumes only one instance of any entity type is in any adventure!
-        entity_id = str()
+        entity_id = self._get_entity_id_from_type(entity)
+        entity_desc_list = [f"This is a {self._get_inst_str(entity_id)}."]
+
+        # Iterate through world state facts to build description
         for fact in self.world_state:
-            if fact[0] == "type" and fact[2] == entity:
-                entity_id = fact[1]
-                break
-        # print("entity ID found:", entity_id)
-        entity_desc_list = list()
+            if fact[1] != entity_id:
+                continue
 
-        # basic type description:
-        """
-        stripped_entity_id = deepcopy(entity_id)
-        while stripped_entity_id.endswith(("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")):
-            stripped_entity_id = stripped_entity_id[:-1]
-        base_entity_desc = f"This is a {stripped_entity_id}."
-        """
-        base_entity_desc = f"This is a {self._get_inst_str(entity_id)}."
-        entity_desc_list.append(base_entity_desc)
+            # Text predicate
+            if fact[0] == config.predicates["text"]:
+                entity_desc_list.append("There is writing on it.")
 
-        # get all entity states to describe:
-        for fact in self.world_state:
-            if fact[1] == entity_id:
-                # print("entity state fact:", fact)
-                if fact[0] == config.predicates["text"]:
-                    entity_desc_list.append("There is writing on it.")
-                # describe 'openable' entity states:
-                if fact[0] == config.predicates["openable"]:
-                    openable_entity: str = fact[1]
-                    while openable_entity.endswith(
-                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                    ):
-                        openable_entity = openable_entity[:-1]
-                    # print("openable_entity:", openable_entity)
-                    for fact2 in self.world_state:
-                        if fact2[1] == entity_id and fact2[0] in ("open", "closed"):
-                            openable_state = fact2[0]
-                            # print("openable_state:", openable_state)
-                            break
-                    openable_desc = f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
-                    entity_desc_list.append(openable_desc)
-                # describe 'takeable' entities:
-                if fact[0] == config.predicates["takeable"]:
-                    takeable_entity: str = fact[1]
-                    while takeable_entity.endswith(
-                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                    ):
-                        takeable_entity = takeable_entity[:-1]
-                    # print("takeable_entity:", takeable_entity)
-                    takeable_desc = (
-                        f"The {self.entity_types[takeable_entity]['repr_str']} is takeable."
-                    )
-                    entity_desc_list.append(takeable_desc)
-                # describe the container or support state of 'needs_support' entities:
-                if fact[0] == config.predicates["needs_support"]:
-                    needs_support_entity: str = fact[1]
-                    while needs_support_entity.endswith(
-                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                    ):
-                        needs_support_entity = needs_support_entity[:-1]
-                    # print("needs_support_entity:", needs_support_entity)
+            # Openable entities
+            elif fact[0] == config.predicates["openable"]:
+                openable_entity = self._strip_entity_id_suffix(fact[1])
+                openable_state = next(
+                    (f[0] for f in self.world_state if f[1] == entity_id and f[0] in ("open", "closed")),
+                    "unknown"
+                )
+                entity_desc_list.append(
+                    f"The {self.entity_types[openable_entity]['repr_str']} is openable and currently {openable_state}."
+                )
 
-                    for fact2 in self.world_state:
-                        if fact2[1] == entity_id and fact2[0] in ("on", "in"):
-                            support_state = fact2[0]
-                            # print("support_state:", support_state)
-                            supporter_entity = fact2[2]
-                            # print("supporter_entity:", supporter_entity)
-                            break
+            # Takeable entities
+            elif fact[0] == config.predicates["takeable"]:
+                takeable_entity = self._strip_entity_id_suffix(fact[1])
+                entity_desc_list.append(f"The {self.entity_types[takeable_entity]['repr_str']} is takeable.")
 
-                    if supporter_entity == config.entities["inventory_id"]:
-                        supporter_entity = config.entities["inventory_id"]
-                    else:
-                        while supporter_entity.endswith(
-                            ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                        ):
-                            supporter_entity = supporter_entity[:-1]
-                        # supporter_entity = f"the {self.entity_types[supporter_entity]['repr_str']}"
+            # Needs support entities
+            elif fact[0] == config.predicates["needs_support"]:
+                needs_support_entity = self._strip_entity_id_suffix(fact[1])
+                support_fact = next(
+                    (f for f in self.world_state if f[1] == entity_id and f[0] in ("on", "in")),
+                    None
+                )
+                if support_fact:
+                    support_state = support_fact[0]
+                    supporter_entity = support_fact[2]
+
+                    if supporter_entity != config.entities["inventory_id"]:
+                        supporter_entity = self._strip_entity_id_suffix(supporter_entity)
+
                     if supporter_entity.endswith(config.entities["floor_type"]):
-                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
+                        entity_desc_list.append(
+                            f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the floor."
+                        )
                     elif supporter_entity.endswith("ceiling"):
-                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
+                        entity_desc_list.append(
+                            f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the ceiling."
+                        )
                     else:
-                        needs_support_desc = f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the {self.entity_types[supporter_entity]['repr_str']}."
-                    entity_desc_list.append(needs_support_desc)
+                        entity_desc_list.append(
+                            f"The {self.entity_types[needs_support_entity]['repr_str']} is {support_state} the {self.entity_types[supporter_entity]['repr_str']}."
+                        )
 
-                if fact[0] == config.predicates["container"]:
-                    container_entity: str = fact[1]
-                    while container_entity.endswith(
-                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                    ):
-                        container_entity = container_entity[:-1]
-                    # print("container_entity:", container_entity)
+            # Container entities
+            elif fact[0] == config.predicates["container"]:
+                container_entity = self._strip_entity_id_suffix(fact[1])
+                entity_desc_list.append(self._describe_container_contents(entity_id, container_entity))
 
-                    contained_entities = list()
+            # Support entities
+            elif fact[0] == config.predicates["support"]:
+                support_entity = self._strip_entity_id_suffix(fact[1])
+                entity_desc_list.append(self._describe_support_contents(entity_id, support_entity))
 
-                    for fact2 in self.world_state:
-                        if len(fact2) == 3:
-                            if (
-                                fact2[2] == entity_id
-                                and fact2[0] == config.predicates["predicate_in"]
-                            ):
-                                # print(fact2)
-                                contained_entity = fact2[1]
-                                # print("contained_entity:", contained_entity)
-                                # check if contained entity is accessible:
-                                if ("accessible", contained_entity) not in self.world_state:
-                                    # print()
-                                    continue
-                                # print("contained_entity is accessible")
-
-                                while contained_entity.endswith(
-                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                                ):
-                                    contained_entity = contained_entity[:-1]
-                                # print("contained_entity:", contained_entity)
-                                contained_entities.append(
-                                    f"a {self.entity_types[contained_entity]['repr_str']}"
-                                )
-
-                    if ("closed", fact[1]) in self.world_state:
-                        container_content_desc = f"You can't see the {self.entity_types[container_entity]['repr_str']}'s contents because it is closed."
-                    else:
-                        if len(contained_entities) == 0:
-                            container_content_desc = (
-                                f"The {self.entity_types[container_entity]['repr_str']} is empty."
-                            )
-                        elif len(contained_entities) == 1:
-                            container_content_desc = f"There is {contained_entities[0]} in the {self.entity_types[container_entity]['repr_str']}."
-                        elif len(contained_entities) == 2:
-                            container_content_desc = f"There are {contained_entities[0]} and {contained_entities[1]} in the {self.entity_types[container_entity]['repr_str']}."
-                        elif len(contained_entities) >= 3:
-                            container_content_desc = f"There are {', '.join(contained_entities[:-1])} and {contained_entities[-1]} in the {self.entity_types[container_entity]['repr_str']}."
-
-                    entity_desc_list.append(container_content_desc)
-
-                if fact[0] == config.predicates["support"]:
-                    support_entity: str = fact[1]
-                    while support_entity.endswith(
-                        ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                    ):
-                        support_entity = support_entity[:-1]
-                    # print("support_entity:", support_entity)
-
-                    supported_entities = list()
-
-                    for fact2 in self.world_state:
-                        if len(fact2) == 3:
-                            if (
-                                fact2[2] == entity_id
-                                and fact2[0] == config.predicates["predicate_on"]
-                            ):
-                                # print(fact2)
-                                supported_entity = fact2[1]
-                                # print("supported_entity:", supported_entity)
-
-                                while supported_entity.endswith(
-                                    ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                                ):
-                                    supported_entity = supported_entity[:-1]
-                                # print("supported_entity:", supported_entity)
-                                supported_entities.append(
-                                    f"a {self.entity_types[supported_entity]['repr_str']}"
-                                )
-
-                    if len(supported_entities) == 0:
-                        support_content_desc = f"There is nothing on the {self.entity_types[support_entity]['repr_str']}."
-                    elif len(supported_entities) == 1:
-                        support_content_desc = f"There is {supported_entities[0]} on the {self.entity_types[support_entity]['repr_str']}."
-                    elif len(supported_entities) == 2:
-                        support_content_desc = f"There are {supported_entities[0]} and {supported_entities[1]} on the {self.entity_types[support_entity]['repr_str']}."
-                    elif len(supported_entities) >= 3:
-                        support_content_desc = f"There are {', '.join(supported_entities[:-1])} and {supported_entities[-1]} on the {self.entity_types[support_entity]['repr_str']}."
-
-                    entity_desc_list.append(support_content_desc)
-
-                if self.domain["mutable_states"] and fact[0] in self.domain["mutable_states"]:
-                    if not fact[0] == "at":
-                        mutable_state_entity: str = fact[1]
-                        while mutable_state_entity.endswith(
-                            ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-                        ):
-                            mutable_state_entity = mutable_state_entity[:-1]
-                        mutable_state_desc = f"The {self.entity_types[mutable_state_entity]['repr_str']} is {fact[0]}."
-                        entity_desc_list.append(mutable_state_desc)
+            # Mutable states
+            elif self.domain["mutable_states"] and fact[0] in self.domain["mutable_states"]:
+                if fact[0] != "at":
+                    mutable_state_entity = self._strip_entity_id_suffix(fact[1])
+                    entity_desc_list.append(
+                        f"The {self.entity_types[mutable_state_entity]['repr_str']} is {fact[0]}."
+                    )
 
         return " ".join(entity_desc_list)
 
