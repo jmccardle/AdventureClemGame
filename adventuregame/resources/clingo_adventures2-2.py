@@ -22,12 +22,12 @@ from typing import List, Optional, Tuple, Union
 import lark
 import numpy as np
 from clingo.control import Control
-from config_loader import get_config
 from lark import Lark, Transformer
 from nltk import elementtree_indent
 from pydantic_core.core_schema import filter_dict_schema
 
 from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
+from adventuregame.config.compat import get_config
 from adventuregame.resources.new_word_generation.new_word_definitions import (
     create_new_words_definitions_set,
     replace_new_words_definitions_set,

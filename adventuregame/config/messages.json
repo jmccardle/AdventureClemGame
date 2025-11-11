@@ -1,0 +1,38 @@
+{
+  "_comment": "User-facing message templates for game responses",
+  "initial": {
+    "default_custom_response": "Go",
+    "initial_response": "Nothing has been said yet."
+  },
+  "descriptions": {
+    "room_template": "You are in a {room_repr_str} now.",
+    "multi_item": "There are a {items} here.",
+    "two_items": "There are a {item1} and a {item2} here.",
+    "single_item": "There is a {item} here.",
+    "exit_template": " There are passages to a {exits} here."
+  },
+  "inventory": {
+    "empty": "Your inventory is empty.",
+    "description": "In your inventory you have {items}."
+  },
+  "errors": {
+    "unknown_command": "I don't know what you mean.",
+    "undefined_action": "I don't know how to interpret this '{action}' action.",
+    "unknown_entity": "I don't know what '{arg}' means.",
+    "cannot_take": "You can't {action} the '{arg}'.",
+    "cannot_put": "You can't {action} the '{arg}' anywhere.",
+    "no_need_open": "You don't need to {action} the '{arg}'.",
+    "cannot_close": "You can't {action} the '{arg}'.",
+    "unknown_item_type": "I don't know what a '{arg}' is.",
+    "already_in_inventory": "The {item} is already in your inventory.",
+    "cannot_take_from_inventory": "You don't need to take things from your inventory.",
+    "not_in_room": "You are not in a {room}.",
+    "cannot_do_that": "You can't do that."
+  },
+  "delimiters": {
+    "plan_delimiter": "\\nNext actions:",
+    "plan_separator": ",",
+    "list_separator": ", a ",
+    "list_last_conjunction": "and a "
+  }
+}

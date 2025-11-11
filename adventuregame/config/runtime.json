@@ -1,0 +1,29 @@
+{
+  "_comment": "Runtime configuration: paths, logging, and parser settings",
+  "paths": {
+    "resources_dir": "resources/",
+    "definitions_dir": "definitions/",
+    "instances_dir": "in/",
+    "grammar_files": {
+      "pddl_actions": "pddl_actions.lark",
+      "pddl_domain": "pddl_domain.lark",
+      "pddl_events": "pddl_events.lark",
+      "grammar_core": "grammar_core"
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  },
+  "parser": {
+    "action_start_rule": "action",
+    "domain_start_rule": "define",
+    "event_start_rule": "event"
+  },
+  "game": {
+    "name": "adventuregame",
+    "description": "Interactive Fiction clemgame",
+    "command_prefix": ">",
+    "command_prefix_with_space": "> "
+  }
+}

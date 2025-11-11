@@ -16,8 +16,9 @@ import lark
 import numpy as np
 from adv_util import fact_str_to_tuple, fact_tuple_to_str
 from clemcore.clemgame import GameResourceLocator
-from config_loader import get_config
 from lark import Lark, Transformer
+
+from adventuregame.config.compat import get_config
 
 # Import custom exceptions
 from adventuregame.exceptions import (
