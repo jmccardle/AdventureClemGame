@@ -3,7 +3,11 @@ Script to check correct ASP encoding for adventure solving.
 Was extensively used to create the ASP encodings for action definitions.
 """
 
+import logging
+
 from clingo.control import Control
+
+logger = logging.getLogger(__name__)
 
 # init clingo controller in 'all model output' mode:
 ctl = Control(["0"])
@@ -19,7 +23,7 @@ ctl.add(example_lp)
 ctl.ground()
 
 # report successful grounding:
-print("Grounded!")
+logger.info("Grounded!")
 # for the complexity of these text adventures, even extensive ones, grounding should be finished in under a minutes
 # if it does, the encoding likely needs improvements - some early versions took more than a minute, while the current
 # version, as used for adventure solving and shown in adventure_solve_asp_example.lp, takes milliseconds
@@ -33,9 +37,9 @@ with ctl.solve(yield_=True) as solve:
         models.append(model_split)
     satisfiable = solve.get()
     if satisfiable == "SAT":
-        print("Adventure can be solved.")
+        logger.info("Adventure can be solved.")
     elif satisfiable == "UNSAT":
-        print("Adventure can NOT be solved.")
+        logger.warning("Adventure can NOT be solved.")
 # the last model in the models list is the optimal solution
 
 
@@ -64,7 +68,7 @@ for model_idx, model in enumerate(models):
     actions_list: list = list()
     mutable_list: list = list()
     turns_list: list = list()
-    print(f"\nModel {model_idx}")
+    logger.debug("\nModel %s", model_idx)
     for fact in model:
         if "action_t" in fact:
             actions_list.append(convert_action_to_tuple(fact))
@@ -92,10 +96,10 @@ for model_idx, model in enumerate(models):
             if mutable[1] in mutable_filter and mutable[0] == turn:
                 if mutable_entities:
                     if mutable[2] in mutable_entities:
-                        print("mutabl", mutable)
+                        logger.debug("mutabl %s", mutable)
                 else:
-                    print("mutabl", mutable)
+                    logger.debug("mutabl %s", mutable)
         for action in actions_list:
             if action[1] in actions_filter and action[0] == turn:
-                print("action", action)
-        print()
+                logger.debug("action %s", action)
+        logger.debug("")

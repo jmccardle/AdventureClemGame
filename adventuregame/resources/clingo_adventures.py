@@ -9,6 +9,7 @@ adventuregame/resources/definitions/adventure_types.json
 """
 
 import json
+import logging
 from datetime import datetime
 from itertools import permutations
 from typing import List, Optional, Tuple, Union
@@ -16,6 +17,8 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 from clingo.control import Control
 from games.adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
+
+logger = logging.getLogger(__name__)
 
 
 def convert_action_to_tuple(action: str) -> Tuple:
@@ -770,7 +773,7 @@ class ClingoAdventureGenerator(object):
                 solvable = False
         # skip this raw adventure if it is not solvable under the defined constraints:
         if not solvable:
-            print("Adventure is not solvable!")
+            logger.warning("Adventure is not solvable!")
             return
         # last yielded model is optimal solution:
         cur_optimal_solution = cur_adv_solutions[-1]
@@ -855,7 +858,7 @@ class ClingoAdventureGenerator(object):
             return viable_adventure
 
         else:
-            print(f"Optimal solution length of {optimal_turns} is outside of bounds.")
+            logger.warning("Optimal solution length of %s is outside of bounds.", optimal_turns)
             return
 
     def generate_from_initial_goals_file(self, source_file_path: str):
