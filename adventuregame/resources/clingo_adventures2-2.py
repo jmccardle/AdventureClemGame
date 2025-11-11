@@ -13,6 +13,7 @@ import sys
 sys.path.insert(0, "..")
 
 import json
+import logging
 import os
 from datetime import datetime
 from itertools import permutations
@@ -36,6 +37,9 @@ from adventuregame.resources.pddl_util import PDDLActionTransformer, PDDLDomainT
 
 # Load configuration
 config = get_config()
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def convert_action_to_tuple(action: str) -> Tuple:
@@ -226,11 +230,11 @@ class ClingoAdventureGenerator(object):
             create_new_words_definitions_set(self.new_word_iterate_idx, seed=self.rng_seed)
         )
 
-        print("self.new_word_iterate_idx before new assigned:", self.new_word_iterate_idx)
+        logger.debug("new_word_iterate_idx before new assigned: %s", self.new_word_iterate_idx)
 
         self.new_word_iterate_idx = last_new_word_idx
 
-        print("self.new_word_iterate_idx after new assigned:", self.new_word_iterate_idx)
+        logger.debug("new_word_iterate_idx after new assigned: %s", self.new_word_iterate_idx)
 
         # assign mutabilities and traits:
         self.interaction_traits = trait_dict
@@ -292,14 +296,14 @@ class ClingoAdventureGenerator(object):
             seed=replace_seed,
         )
 
-        print("replacement_dict:", replacement_dict)
+        logger.debug("replacement_dict: %s", replacement_dict)
         self.replacement_dict = replacement_dict
 
-        print("self.new_word_iterate_idx before new assigned:", self.new_word_iterate_idx)
+        logger.debug("new_word_iterate_idx before new assigned: %s", self.new_word_iterate_idx)
 
         self.new_word_iterate_idx = last_new_word_idx
 
-        print("self.new_word_iterate_idx after new assigned:", self.new_word_iterate_idx)
+        logger.debug("new_word_iterate_idx after new assigned: %s", self.new_word_iterate_idx)
 
         # assign mutabilities and traits:
         self.interaction_traits = trait_dict
@@ -1406,8 +1410,8 @@ class ClingoAdventureGenerator(object):
             be saved.
         :param indent_output_json: If True, raw adventures JSON saved will be indented for readability.
         """
-        print(self.adv_type)
-        print(self.adv_type_def)
+        logger.info("Adventure type: %s", self.adv_type)
+        logger.debug("Adventure type definition: %s", self.adv_type_def)
 
         task_config: dict = self.adv_type_def["task_config"]
         min_optimal_turns: int = self.adv_type_def["min_optimal_turns"]
@@ -1421,40 +1425,40 @@ class ClingoAdventureGenerator(object):
             if (
                 self.adv_type == "new-words_created" and total_generated_adventure_count > 0
             ):  # start replacing initial new-words once first init set was used
-                print("Assigning new new-words...")
+                logger.info("Assigning new new-words...")
                 self._create_assign_new_word_definitions()
             if (
                 "new-words_home-delivery" in self.adv_type and total_generated_adventure_count > 0
             ):  # start replacing initial new-words once first init set was used
-                print("Assigning new new-words...")
+                logger.info("Assigning new new-words...")
                 self._replace_assign_new_word_definitions()
 
             # ROOM LAYOUTS
             # NOTE: As the number of room layouts is relatively small, generating all to iterate over is viable.
-            # print(f"{datetime.now()} Generating room layouts...")
+            # logger.debug("%s Generating room layouts...", datetime.now())
             result_layouts = self._generate_room_layouts()
-            print("Room layouts generated.")
-            # print("result_layouts:", result_layouts)
-            print("result_layouts count:", len(result_layouts))
+            logger.info("Room layouts generated.")
+            # logger.debug("result_layouts: %s", result_layouts)
+            logger.info("result_layouts count: %d", len(result_layouts))
 
             # INITIAL STATES
             initial_states = self._generate_initial_states(
                 result_layouts, initial_states_per_layout
             )
-            print("Initial states generated.")
-            # print("initial_states:", initial_states)
-            # print("initial_states count:", len(initial_states))
+            logger.info("Initial states generated.")
+            # logger.debug("initial_states: %s", initial_states)
+            # logger.debug("initial_states count: %d", len(initial_states))
 
-            # print(initial_states)
-            # print(len(initial_states))
-            # print(list(range(initial_state_limit)))
+            # logger.debug("initial_states: %s", initial_states)
+            # logger.debug("len(initial_states): %d", len(initial_states))
+            # logger.debug("range(initial_state_limit): %s", list(range(initial_state_limit)))
 
             # get initial states to generate adventures with:
             if initial_state_picking == config.clingo_settings["picking_strategies"]["iterative"]:
                 if initial_state_limit:
-                    print("range(initial_state_limit):", list(range(initial_state_limit)))
-                    # print("initial_states:", initial_states)
-                    print("length initial_states:", len(initial_states))
+                    logger.debug("range(initial_state_limit): %s", list(range(initial_state_limit)))
+                    # logger.debug("initial_states: %s", initial_states)
+                    logger.debug("length initial_states: %d", len(initial_states))
                     initial_states_used = [
                         initial_states[idx] for idx in range(initial_state_limit)
                     ]
@@ -1472,7 +1476,7 @@ class ClingoAdventureGenerator(object):
 
             # iterate over initial states used:
             for initial_state in initial_states_used:
-                print("initial state:", initial_state)
+                logger.debug("initial state: %s", initial_state)
 
                 cur_adventure_count = 0
                 keep_generating_adventures = True
@@ -1483,10 +1487,10 @@ class ClingoAdventureGenerator(object):
                     cur_all_goals = self._generate_goal_facts(initial_state)
 
                     if not cur_all_goals:
-                        print("No goals generated for current initial state.")
+                        logger.warning("No goals generated for current initial state.")
                         continue
 
-                    print("Goals generated.")
+                    logger.info("Goals generated.")
 
                     if (
                         goal_set_picking
@@ -1498,7 +1502,7 @@ class ClingoAdventureGenerator(object):
                     elif goal_set_picking == config.clingo_settings["picking_strategies"]["random"]:
                         goal_set = self.rng.choice(cur_all_goals, size=1).tolist()[0]
 
-                    print("Current goal set:", goal_set)
+                    logger.debug("Current goal set: %s", goal_set)
 
                     # potion brewing events:
                     if self.adv_type_def["task_config"]["task"] == "potion":
@@ -1541,7 +1545,7 @@ class ClingoAdventureGenerator(object):
                         # solve current adventure ASP encoding:
                         solve_asp: str = self._solve_optimally_asp(initial_state, goal_set)
 
-                    print("solve ASP:\n", solve_asp)
+                    logger.debug("solve ASP:\n%s", solve_asp)
                     # init fresh clingo controller:
                     cur_adv_solve_control: Control = Control(
                         config.clingo_settings["control_all_models"]
@@ -1551,30 +1555,30 @@ class ClingoAdventureGenerator(object):
                     # ground clingo controller:
                     cur_adv_solve_control.ground()
 
-                    print("Adventure solving grounded.")
+                    logger.debug("Adventure solving grounded.")
 
                     cur_adv_solutions = list()
                     solvable: bool = False
                     with cur_adv_solve_control.solve(yield_=True) as solve:
                         for model in solve:
                             cur_adv_solutions.append(model.__str__())
-                            # print(model)
+                            # logger.debug("model: %s", model)
                         satisfiable = str(solve.get())
-                        # print("satisfiable:", satisfiable)
+                        # logger.debug("satisfiable: %s", satisfiable)
                         if satisfiable == config.clingo_settings["status_sat"]:
                             solvable = True
                         elif satisfiable == config.clingo_settings["status_unsat"]:
                             solvable = False
 
-                    print("Adventure solving performed.")
+                    logger.debug("Adventure solving performed.")
 
                     # skip this raw adventure if it is not solvable under the defined constraints:
                     if not solvable:
-                        print("Adventure is NOT solvable.")
+                        logger.warning("Adventure is NOT solvable.")
                         continue
 
-                    print("Adventure is solvable.")
-                    print()
+                    logger.info("Adventure is solvable.")
+                    logger.debug("")
 
                     # last yielded model is optimal solution:
                     cur_optimal_solution = cur_adv_solutions[-1]
@@ -1602,30 +1606,30 @@ class ClingoAdventureGenerator(object):
                             # ground clingo controller:
                             visit_solve_control.ground()
 
-                            print("Visiting solving grounded.")
+                            logger.debug("Visiting solving grounded.")
 
                             visit_solutions = list()
                             solvable: bool = False
                             with visit_solve_control.solve(yield_=True) as solve:
                                 for model in solve:
                                     visit_solutions.append(model.__str__())
-                                    # print(model)
+                                    # logger.debug("model: %s", model)
                                 satisfiable = str(solve.get())
-                                # print("satisfiable:", satisfiable)
+                                # logger.debug("satisfiable: %s", satisfiable)
                                 if satisfiable == config.clingo_settings["status_sat"]:
                                     solvable = True
                                 elif satisfiable == config.clingo_settings["status_unsat"]:
                                     solvable = False
 
-                            print("Visiting solving performed.")
+                            logger.debug("Visiting solving performed.")
 
                             # skip this raw adventure if it is not solvable under the defined constraints:
                             if not solvable:
-                                print("Visiting is NOT solvable.")
+                                logger.warning("Visiting is NOT solvable.")
                                 continue
 
-                            print("Visiting is solvable.")
-                            print()
+                            logger.info("Visiting is solvable.")
+                            logger.debug("")
 
                             # last yielded model is optimal solution:
                             visit_optimal_solution = visit_solutions[-1]
@@ -1634,7 +1638,7 @@ class ClingoAdventureGenerator(object):
                                 self._convert_adventure_solution(visit_optimal_solution)
                             )
 
-                            print("visiting_cmds:", visiting_cmds)
+                            logger.debug("visiting_cmds: %s", visiting_cmds)
 
                         # get tuple world state:
                         world_state: set = set()
@@ -1907,7 +1911,7 @@ class ClingoAdventureGenerator(object):
                                 "prompt_template_set": self.adv_type_def["prompt_template_set"],
                             }
 
-                        print("viable_adventure:", viable_adventure)
+                        logger.debug("viable_adventure: %s", viable_adventure)
 
                         generated_adventures.append(viable_adventure)
                         cur_adventure_count += 1
@@ -1980,7 +1984,7 @@ class ClingoAdventureGenerator(object):
                 solvable = False
         # skip this raw adventure if it is not solvable under the defined constraints:
         if not solvable:
-            print("Adventure is not solvable!")
+            logger.error("Adventure is not solvable!")
             return
         # last yielded model is optimal solution:
         cur_optimal_solution = cur_adv_solutions[-1]
@@ -2003,30 +2007,30 @@ class ClingoAdventureGenerator(object):
             # ground clingo controller:
             visit_solve_control.ground()
 
-            print("Visiting solving grounded.")
+            logger.debug("Visiting solving grounded.")
 
             visit_solutions = list()
             solvable: bool = False
             with visit_solve_control.solve(yield_=True) as solve:
                 for model in solve:
                     visit_solutions.append(model.__str__())
-                    # print(model)
+                    # logger.debug("model: %s", model)
                 satisfiable = str(solve.get())
-                # print("satisfiable:", satisfiable)
+                # logger.debug("satisfiable: %s", satisfiable)
                 if satisfiable == config.clingo_settings["status_sat"]:
                     solvable = True
                 elif satisfiable == config.clingo_settings["status_unsat"]:
                     solvable = False
 
-            print("Visiting solving performed.")
+            logger.debug("Visiting solving performed.")
 
             # skip this raw adventure if it is not solvable under the defined constraints:
             if not solvable:
-                print("Visiting is NOT solvable.")
+                logger.warning("Visiting is NOT solvable.")
                 return
 
-            print("Visiting is solvable.")
-            print()
+            logger.info("Visiting is solvable.")
+            logger.debug("")
 
             # last yielded model is optimal solution:
             visit_optimal_solution = visit_solutions[-1]
@@ -2035,7 +2039,7 @@ class ClingoAdventureGenerator(object):
                 visit_optimal_solution
             )
 
-            print("visiting_cmds:", visiting_cmds)
+            logger.debug("visiting_cmds: %s", visiting_cmds)
 
             # get tuple world state:
             world_state: set = set()
@@ -2121,7 +2125,7 @@ class ClingoAdventureGenerator(object):
             return viable_adventure
 
         else:
-            print(f"Optimal solution length of {optimal_turns} is outside of bounds.")
+            logger.warning("Optimal solution length of %d is outside of bounds.", optimal_turns)
             return
 
     def generate_from_initial_goals_file(self, source_file_path: str):
@@ -2149,12 +2153,12 @@ class ClingoAdventureGenerator(object):
         for difficulty in difficulties:
             dif_raws = raw_adventures[difficulty]
             for raw_idx, raw_adv in enumerate(dif_raws):
-                print(f"Augmenting {difficulty} adventure number {raw_idx}...")
+                logger.info("Augmenting %s adventure number %d...", difficulty, raw_idx)
 
                 cur_initial_state = raw_adv["initial_state"]
-                print(cur_initial_state)
+                logger.debug("cur_initial_state: %s", cur_initial_state)
                 cur_goal_set = raw_adv["goal_state"]
-                print(cur_goal_set)
+                logger.debug("cur_goal_set: %s", cur_goal_set)
 
                 # pre-explore rooms:
                 # solve current adventure pre-exploration:
@@ -2169,30 +2173,30 @@ class ClingoAdventureGenerator(object):
                 # ground clingo controller:
                 visit_solve_control.ground()
 
-                print("Visiting solving grounded.")
+                logger.debug("Visiting solving grounded.")
 
                 visit_solutions = list()
                 solvable: bool = False
                 with visit_solve_control.solve(yield_=True) as solve:
                     for model in solve:
                         visit_solutions.append(model.__str__())
-                        # print(model)
+                        # logger.debug("model: %s", model)
                     satisfiable = str(solve.get())
-                    # print("satisfiable:", satisfiable)
+                    # logger.debug("satisfiable: %s", satisfiable)
                     if satisfiable == config.clingo_settings["status_sat"]:
                         solvable = True
                     elif satisfiable == config.clingo_settings["status_unsat"]:
                         solvable = False
 
-                print("Visiting solving performed.")
+                logger.debug("Visiting solving performed.")
 
                 # skip this raw adventure if it is not solvable under the defined constraints:
                 if not solvable:
-                    print("Visiting is NOT solvable.")
+                    logger.warning("Visiting is NOT solvable.")
                     return
 
-                print("Visiting is solvable.")
-                print()
+                logger.info("Visiting is solvable.")
+                logger.debug("")
 
                 # last yielded model is optimal solution:
                 visit_optimal_solution = visit_solutions[-1]
