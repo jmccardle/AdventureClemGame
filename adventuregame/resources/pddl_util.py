@@ -1,7 +1,10 @@
 """Utilities for PDDL"""
 
+import logging
 import lark
 from lark import Lark, Transformer
+
+logger = logging.getLogger(__name__)
 
 
 class PDDLActionTransformer(Transformer):
@@ -739,7 +742,7 @@ if __name__ == "__main__":
     sample_domain = "(define\n    (domain new_words)\n    (:types\n        unree iness uness cally - room\n        player inventory floor subst scont diale sness mical eness pante inat enticed decte - entity\n        subst scont diale mical inat enticed - dented-able\n        diale sness mical eness pante enticed - unsust-able\n        sness inat decte - mateny-able\n        )\n    (:predicates\n        (dented ?e - dented-able)\n        (unsust ?e - unsust-able)\n        (exper ?e - unsust-able)\n        (mateny ?e - mateny-able)\n        (stord ?e - mateny-able)\n        (aphoned ?e - mateny-able)\n        )\n    )"
 
     parsed_domain_pddl = domain_def_parser.parse(sample_domain)
-    # print(parsed_domain_pddl)
+    # logger.debug("Parsed domain PDDL: %s", parsed_domain_pddl)
     processed_domain_pddl = domain_def_transformer.transform(parsed_domain_pddl)
 
-    print(processed_domain_pddl)
+    logger.info("Processed domain PDDL: %s", processed_domain_pddl)

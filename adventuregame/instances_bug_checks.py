@@ -1,6 +1,9 @@
 import json
+import logging
 
 from adv_util import fact_str_to_tuple
+
+logger = logging.getLogger(__name__)
 
 with open("in/instances.json", "r", encoding="utf-8") as instance_file:
     instances = json.load(instance_file)
@@ -24,10 +27,11 @@ for instance in instances:
                     # print(fact1)
                     for fact2 in cur_init_state_set:
                         if fact2[0] == "on" and fact2[1] == fact[1]:
-                            # print(fact2)
+                            # logger.debug("Fact2: %s", fact2)
                             if not fact2[2] == f"{fact1[2]}floor1":
-                                print(
-                                    f"Instance {instance['game_id']} has mismatched at/on floor: {fact1} {fact2}"
+                                logger.warning(
+                                    "Instance %s has mismatched at/on floor: %s %s",
+                                    instance['game_id'], fact1, fact2
                                 )
                         if fact2[0] == "in" and fact2[1] == fact[1]:
                             # print(fact2)

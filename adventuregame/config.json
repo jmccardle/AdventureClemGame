@@ -5,6 +5,13 @@
     "migration_date": "2025-11-11"
   },
 
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": null,
+    "console": true
+  },
+
   "paths": {
     "game_module_path": "games/adventuregame/",
     "resources_dir": "resources/",
