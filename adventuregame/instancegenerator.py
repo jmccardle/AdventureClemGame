@@ -11,14 +11,14 @@ from typing import Any, Dict, List
 import clemcore
 import numpy as np
 from clemcore.clemgame import GameInstanceGenerator
-from config_loader import ConfigLoader, get_config
 from tqdm import tqdm
 
+from adventuregame.config.compat import CompatConfigLoader, get_config
 from adventuregame.exceptions import ConfigurationError, InstanceGenerationError
 
 logger = logging.getLogger(__name__)
 
-config: ConfigLoader = get_config()
+config: CompatConfigLoader = get_config()
 
 
 class AdventureGameInstanceGenerator(GameInstanceGenerator):

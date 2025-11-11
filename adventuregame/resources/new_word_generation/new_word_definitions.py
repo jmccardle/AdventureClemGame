@@ -112,9 +112,9 @@ def new_word_rooms_create(
         new_word_idx += 1
         new_room_type_dict["type_name"] = new_room_type_name
         new_room_type_dict["repr_str"] = new_room_type_name
-        new_room_type_dict[
-            "exit_targets"
-        ] = []  # left empty here due to incomplete info about all room types
+        new_room_type_dict["exit_targets"] = (
+            []
+        )  # left empty here due to incomplete info about all room types
         new_room_type_dict["max_connections"] = int(rng.integers(min_connections, max_connections))
         new_room_definitions.append(new_room_type_dict)
         new_room_type_names.append(new_room_type_name)

@@ -17,9 +17,9 @@ from clemcore.clemgame import (
 )
 from clemcore.clemgame.master import RuleViolationError
 from clemcore.utils import file_utils
-from config_loader import get_config
 from if_wrapper import AdventureIFInterpreter
 
+from adventuregame.config.compat import get_config
 from adventuregame.exceptions import AdventureGameError, ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -574,9 +574,7 @@ class AdventureGameScorer(GameScorer):
         """
         super().__init__(game_name, experiment, game_instance)
 
-    def _extract_turn_metrics(
-        self, episode_interactions: Dict[str, Any]
-    ) -> Tuple[
+    def _extract_turn_metrics(self, episode_interactions: Dict[str, Any]) -> Tuple[
         List[Dict[str, Any]],
         List[Dict[str, int]],
         List[int],

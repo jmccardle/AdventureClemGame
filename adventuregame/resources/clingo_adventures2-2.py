@@ -22,12 +22,12 @@ from typing import List, Optional, Tuple, Union
 import lark
 import numpy as np
 from clingo.control import Control
-from config_loader import get_config
 from lark import Lark, Transformer
 from nltk import elementtree_indent
 from pydantic_core.core_schema import filter_dict_schema
 
 from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
+from adventuregame.config.compat import get_config
 from adventuregame.resources.new_word_generation.new_word_definitions import (
     create_new_words_definitions_set,
     replace_new_words_definitions_set,
@@ -1623,12 +1623,18 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
+                                )
                             if len(goal_strings) == 2:
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                                )
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                                )
 
                             # full raw adventure data:
                             viable_adventure = {
@@ -1683,12 +1689,18 @@ class ClingoAdventureGenerator(object):
                                 goal_strings.append(goal_str)
 
                             if len(goal_strings) == 1:
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
+                                )
                             if len(goal_strings) == 2:
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                                )
                             if len(goal_strings) >= 3:
                                 goal_listing_str: str = ", ".join(goal_strings[:-1])
-                                goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                                goal_desc: str = (
+                                    f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                                )
 
                             # convert new-word definitions to default format and store in adventure:
                             final_action_definitions = list()
@@ -2006,10 +2018,14 @@ class ClingoAdventureGenerator(object):
                         f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]}."
                     )
                 if len(goal_strings) == 2:
-                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                    goal_desc: str = (
+                        f"{config.goal_settings['goal_delivery_prefix']}{goal_strings[0]} and {goal_strings[1]}."
+                    )
                 if len(goal_strings) >= 3:
                     goal_listing_str: str = ", ".join(goal_strings[:-1])
-                    goal_desc: str = f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                    goal_desc: str = (
+                        f"{config.goal_settings['goal_delivery_prefix']}{goal_listing_str} and {goal_strings[-1]}."
+                    )
 
             viable_adventure = {
                 "adventure_type": self.adv_type,

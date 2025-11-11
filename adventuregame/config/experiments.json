@@ -1,0 +1,50 @@
+{
+  "_comment": "Experiment configuration: parameters researchers modify when running experiments",
+  "random_seed": 42,
+  "max_random_seed": 9223372036854775808,
+  "thresholds": {
+    "loop_detection": 4,
+    "min_plan_history": 2,
+    "bad_plan_viability": 0.0,
+    "exploration_history": 1,
+    "goal_count_min": 1
+  },
+  "turn_limits": {
+    "optimal_solver": 50,
+    "benchmark_default": 50
+  },
+  "scoring": {
+    "success": 100,
+    "failure": 0
+  },
+  "clingo": {
+    "control_all_models": ["0"],
+    "status_sat": "SAT",
+    "status_unsat": "UNSAT",
+    "picking_strategies": {
+      "iterative": "iterative",
+      "random": "random"
+    },
+    "default_layout_generation_limit": 128,
+    "default_initial_states_per_layout": 2,
+    "default_initial_state_limit": 30,
+    "default_adventures_per_initial_state": 1,
+    "default_target_adventure_count": 16,
+    "add_floors_default": true,
+    "pair_exits_default": true
+  },
+  "generation": {
+    "definition_methods": {
+      "create": "create",
+      "replace": "replace"
+    },
+    "adjective_configs": {
+      "none": "none",
+      "optional": "optional",
+      "all": "all"
+    },
+    "difficulty_levels": {
+      "hard": "hard"
+    }
+  }
+}

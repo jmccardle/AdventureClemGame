@@ -16,8 +16,9 @@ import lark
 import numpy as np
 from adv_util import fact_str_to_tuple, fact_tuple_to_str
 from clemcore.clemgame import GameResourceLocator
-from config_loader import get_config
 from lark import Lark, Transformer
+
+from adventuregame.config.compat import get_config
 
 # Import custom exceptions
 from adventuregame.exceptions import (
@@ -239,9 +240,9 @@ class AdventureIFInterpreter(GameResourceLocator):
                     ]
                 else:
                     # get all other attributes:
-                    self.entity_types[entity_definition["type_name"]][
-                        entity_attribute
-                    ] = entity_definition[entity_attribute]
+                    self.entity_types[entity_definition["type_name"]][entity_attribute] = (
+                        entity_definition[entity_attribute]
+                    )
 
     def initialize_room_types(self) -> None:
         """Load and process room types in this adventure.
@@ -332,9 +333,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             # get all action attributes:
             for action_attribute in action_definition:
                 if not action_attribute == "type_name":
-                    self.action_types[action_definition["type_name"]][
-                        action_attribute
-                    ] = action_definition[action_attribute]
+                    self.action_types[action_definition["type_name"]][action_attribute] = (
+                        action_definition[action_attribute]
+                    )
 
         for action_type in self.action_types:
             cur_action_type = self.action_types[action_type]
@@ -459,9 +460,9 @@ class AdventureIFInterpreter(GameResourceLocator):
             # get all action attributes:
             for event_attribute in event_definition:
                 if not event_attribute == "type_name":
-                    self.event_types[event_definition["type_name"]][
-                        event_attribute
-                    ] = event_definition[event_attribute]
+                    self.event_types[event_definition["type_name"]][event_attribute] = (
+                        event_definition[event_attribute]
+                    )
 
         for event_type in self.event_types:
             cur_event_type = self.event_types[event_type]
