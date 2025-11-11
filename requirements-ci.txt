@@ -1,0 +1,16 @@
+# CI-specific requirements
+# Note: clemcore is not available on PyPI and is provided by the clemgame framework
+# These are the dependencies that can be installed in standalone CI environments
+
+# Core dependencies available on PyPI
+lark==1.1.9
+clingo==5.7.1
+
+# Development dependencies
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.12.1
+isort==5.13.2
+flake8==7.0.0
+mypy==1.8.0
+radon==6.0.1

@@ -44,6 +44,8 @@ pre-commit install
 pytest tests/ -v
 ```
 
+> **Important**: This project depends on `clemcore==3.1.0` from the clemgame framework, which is not available on PyPI. The tests above will only run framework-independent tests. For full integration testing, you need to work within the clemgame framework environment. See [clemgame repository](https://github.com/clembench/clemgame) for setup instructions.
+
 ### IDE Configuration
 
 #### VS Code

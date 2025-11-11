@@ -56,6 +56,8 @@ pytest tests/ -v
 pytest tests/ --cov=adventuregame --cov-report=html
 ```
 
+> **Note on clemcore Dependency**: This project depends on `clemcore==3.1.0` from the clemgame framework, which is not available on PyPI. Full test execution requires running within the clemgame framework environment. The CI pipeline runs code quality checks and framework-independent tests only. For complete local testing, install from the [clemgame repository](https://github.com/clembench/clemgame).
+
 ## Architecture Overview
 
 ```
