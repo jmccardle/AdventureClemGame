@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import clemcore.clemgame.metrics as metrics
 import numpy as np
@@ -19,6 +19,7 @@ from clemcore.clemgame.master import RuleViolationError
 from clemcore.utils import file_utils
 from config_loader import get_config
 from if_wrapper import AdventureIFInterpreter
+from adventuregame.exceptions import AdventureGameError, ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -27,30 +28,51 @@ config = get_config()
 
 
 class AdventurePlayer(Player):
+    """Player class for AdventureGame.
 
-    def __init__(self, model: Model):
+    Handles player responses for both model-based and human terminal interactions.
+    Extends the base Player class from clemcore with custom response handling.
+    """
+
+    def __init__(self, model: Model) -> None:
+        """Initialize the AdventurePlayer.
+
+        Args:
+            model: The language model backend for generating responses.
+        """
         super().__init__(model)
 
-    def _custom_response(self, context: Dict) -> str:
-        return config.messages["default_custom_response"]
+    def _custom_response(self, context: Dict[str, Any]) -> str:
+        """Generate a custom response for the player.
 
-    def _terminal_response(self, context: Dict) -> str:
-        """Response for human interaction via terminal.
+        Args:
+            context: The dialogue context dictionary.
+
+        Returns:
+            The default custom response message from configuration.
+        """
+        return str(config.messages["default_custom_response"])
+
+    def _terminal_response(self, context: Dict[str, Any]) -> str:
+        """Generate response for human interaction via terminal.
+
         Adds the '> ' prefix required by the GM to prevent participant fatigue leading to aborted episodes.
         Since the prefix requirement is used to check continuous instruction following *by LLMs*, it is not important
         for human players. This also makes AdventureGame play like classic IF games for human players, since the '>'
         present in gameplay logs from these games are a feature of vintage terminal UIs and did not need to be typed in
         for each command input.
+
         Args:
-            context: The dialogue context to which the player should respond.
+            context: The dialogue context dictionary containing the message to display to the player.
+
         Returns:
-            The human response as text.
+            The human player's action input with the command prefix prepended.
         """
-        latest_response = config.messages["initial_response"]
+        latest_response: str = config.messages["initial_response"]
         if context is not None:
             latest_response = context[config.keys["message_content"]]
         logger.info(latest_response)
-        user_input = input(
+        user_input: str = input(
             f"Type in your action, {config.game_constants['command_prefix']} will be automatically added if missing:\n"
         )
         if not user_input.startswith(config.game_constants["command_prefix"]):
@@ -59,49 +81,88 @@ class AdventurePlayer(Player):
 
 
 class AdventureGameMaster(DialogueGameMaster):
-    """
-    DialogueGameMaster subclass for AdventureGame.
-    Runs the benchmark by prompting the model and passing model outputs to the IF interpreter.
-    Handles prompted format adherence checks and creates episode records.
+    """DialogueGameMaster subclass for AdventureGame.
+
+    Orchestrates game episodes by prompting the model, parsing responses, and interacting
+    with the IF (Interactive Fiction) interpreter. Handles format adherence checks,
+    goal tracking, and creates detailed episode records for scoring.
+
+    Attributes:
+        game_path: Path to the game directory.
+        turns: List of turn success indicators.
+        success: Flag indicating if current turn was successful.
+        invalid_format: Error message for invalid format responses.
+        finished: Flag indicating if all goals were achieved.
+        model_done: Flag indicating if model used DONE action.
+        turn_goal_score: Number of goals achieved in current turn.
+        game_instance: Game instance configuration dictionary.
+        if_variant: Game variant ('basic', 'plan', 'invlimit', etc.).
+        if_interpreter: The Interactive Fiction interpreter instance.
+        player: The AdventurePlayer instance.
+        plan_history: History of planned action sequences (plan variant only).
+        plan_success_ratio_history: History of plan success ratios (plan variant only).
+        pre_explore_inputs: Pre-exploration action sequence (preexplore variants only).
+        goals_required: Set of goal states that must be achieved.
+        goals_required_cnt: Total number of required goals.
+        goals_achieved: Set of goals achieved so far.
+        if_input_history: History of IF inputs for loop detection.
+        loop_detected: Flag indicating if input loop was detected.
     """
 
     def __init__(
-        self, game_name: str, game_path: str, experiment: Dict, player_models: List[Model]
-    ):
+        self, game_name: str, game_path: str, experiment: Dict[str, Any], player_models: List[Model]
+    ) -> None:
+        """Initialize the AdventureGameMaster.
+
+        Args:
+            game_name: Name of the game.
+            game_path: Path to the game directory.
+            experiment: Experiment configuration dictionary.
+            player_models: List of model instances for the players.
+        """
         super().__init__(game_name, game_path, experiment, player_models)
-        self.game_path = game_path
-        self.turns = []
-        self.success = True
+        self.game_path: str = game_path
+        self.turns: List[bool] = []
+        self.success: bool = True
         self.invalid_format: str = ""  # to track responses with invalid format
         self.finished: bool = False  # game finished successfully
-        self.model_done = False  # model used DONE action to end game
-        self.turn_goal_score = 0
+        self.model_done: bool = False  # model used DONE action to end game
+        self.turn_goal_score: int = 0
 
-    def _on_setup(self, **game_instance):
-        self.game_instance = game_instance  # fetch game parameters here
+    def _on_setup(self, **game_instance: Any) -> None:
+        """Set up the game instance before the episode begins.
+
+        Initializes the IF interpreter, creates the player, sets up variant-specific
+        features (planning, pre-exploration), and initializes goal tracking.
+
+        Args:
+            **game_instance: Game instance configuration containing variant, goals,
+                max_turns, optimal_turns, and other game-specific parameters.
+        """
+        self.game_instance: Dict[str, Any] = game_instance  # fetch game parameters here
         # check game variant; 'basic' or 'planning':
-        self.if_variant = self.game_instance["variant"]
+        self.if_variant: str = self.game_instance["variant"]
         # initialize IF interpreter:
-        self.if_interpreter = AdventureIFInterpreter(self.game_path, self.game_instance)
+        self.if_interpreter: AdventureIFInterpreter = AdventureIFInterpreter(self.game_path, self.game_instance)
         # create clem player:
-        self.player = AdventurePlayer(self.player_models[0])
+        self.player: AdventurePlayer = AdventurePlayer(self.player_models[0])
         # Add the players: these will be logged to the records interactions.json
         # Note: During game play the players will be called in the order added here
         self.add_player(self.player)
         # keep history of plans:
         if self.if_variant == config.variants["plan"]:
-            self.plan_history: list = list()
-            self.plan_success_ratio_history: list = list()  # for 'bad' plan scoring
+            self.plan_history: List[List[str]] = list()
+            self.plan_success_ratio_history: List[float] = list()  # for 'bad' plan scoring
         if "preexplore" in self.if_variant:
             # get pre-exploration sequence for pre-explore adventures:
-            self.pre_explore_inputs = self.game_instance["visiting_commands"]
+            self.pre_explore_inputs: List[str] = self.game_instance["visiting_commands"]
         # get goal data set from game instance:
-        self.goals_required = set(self.game_instance["goal_state"])
-        self.goals_required_cnt = len(self.goals_required)
+        self.goals_required: Set[str] = set(self.game_instance["goal_state"])
+        self.goals_required_cnt: int = len(self.goals_required)
         # initially empty set of achieved goals:
-        self.goals_achieved = set()
+        self.goals_achieved: Set[str] = set()
         # get and record adventure information:
-        adventure_info: dict = {
+        adventure_info: Dict[str, Any] = {
             "variant": self.game_instance["variant"],
             "max_turns": self.game_instance["max_turns"],
             "optimal_turns": self.game_instance["optimal_turns"],
@@ -109,17 +170,23 @@ class AdventureGameMaster(DialogueGameMaster):
         }
         self.log_key("adventure_info", adventure_info)
         # if input history to detect loops:
-        self.if_input_history: list = list()
+        self.if_input_history: List[str] = list()
         self.loop_detected: bool = False
 
-    def _on_before_game(self):
+    def _on_before_game(self) -> None:
+        """Execute pre-game setup before the first turn.
+
+        For pre-explore variants, executes the pre-exploration sequence by visiting
+        specified rooms and adding the interaction history to the player's messages.
+        For regular variants, sets up the initial context with the room description.
+        """
         # pre-explore rooms for pre-explore variants:
         if "preexplore" in self.if_variant:
             # get initial room description from IF interpreter:
-            initial_room_desc = self.if_interpreter.get_full_room_desc()
+            initial_room_desc: str = self.if_interpreter.get_full_room_desc()
             # combine prompt with initial room description as first message:
-            first_message_content = self.game_instance["prompt"] + initial_room_desc
-            first_message = {
+            first_message_content: str = self.game_instance["prompt"] + initial_room_desc
+            first_message: Dict[str, str] = {
                 config.keys["message_role"]: config.keys["message_role_user"],
                 config.keys["message_content"]: first_message_content,
             }
@@ -132,7 +199,7 @@ class AdventureGameMaster(DialogueGameMaster):
                 ):  # only do this by simple history appending before last
                     # add IF input message to player message history:
                     if config.variants["plan"] in self.if_variant:
-                        input_message: dict = {
+                        input_message = {
                             config.keys["message_role"]: config.keys["message_role_assistant"],
                             config.keys[
                                 "message_content"
@@ -141,7 +208,7 @@ class AdventureGameMaster(DialogueGameMaster):
                             f"{config.delimiters['plan_separator'].join(self.pre_explore_inputs[pre_exp_idx+1:])}",
                         }
                     else:
-                        input_message: dict = {
+                        input_message = {
                             config.keys["message_role"]: config.keys["message_role_assistant"],
                             config.keys[
                                 "message_content"
@@ -153,7 +220,7 @@ class AdventureGameMaster(DialogueGameMaster):
                         pre_exp_action
                     )
                     # add IF response to player message history:
-                    response_message: dict = {
+                    response_message: Dict[str, str] = {
                         config.keys["message_role"]: config.keys["message_role_user"],
                         config.keys["message_content"]: if_response,
                     }
@@ -161,7 +228,7 @@ class AdventureGameMaster(DialogueGameMaster):
                 else:  # handle last pair by using set_context_for
                     # add IF input message to player message history:
                     if config.variants["plan"] in self.if_variant:
-                        input_message: dict = {
+                        input_message = {
                             config.keys["message_role"]: config.keys["message_role_assistant"],
                             config.keys[
                                 "message_content"
@@ -169,7 +236,7 @@ class AdventureGameMaster(DialogueGameMaster):
                             f"Next actions: {self.pre_explore_inputs[-1]}",
                         }
                     else:
-                        input_message: dict = {
+                        input_message = {
                             config.keys["message_role"]: config.keys["message_role_assistant"],
                             config.keys[
                                 "message_content"
@@ -190,19 +257,24 @@ class AdventureGameMaster(DialogueGameMaster):
             self.set_context_for(self.player, first_message)
 
     def _parse_response(self, player: Player, utterance: str) -> Tuple[str, bool]:
-        """
-        Decide if a response utterance should be modified. If not simply return the utterance.
-        When a modified utterance and a true value is returned, then a 'parse' event is logged.
+        """Parse and validate a player's response utterance.
 
-        For the planning variant, this extracts plans and adds them to the plan history for later processing.
+        Checks that the response follows the required format (starts with command prefix,
+        contains 'Next actions:' for plan variant). For planning variants, extracts the
+        planned action sequence and adds it to plan history.
 
         Args:
-            player: Clem player that produced the response.
-            utterance: The response string to be potentially modified.
+            player: The player instance that produced the response.
+            utterance: The raw response string from the player.
+
         Returns:
-            The (modified) response and if to log the parse action (default: True).
+            A tuple of (parsed_utterance, should_log) where parsed_utterance is the
+            potentially modified response and should_log indicates whether to log a
+            parse event (default: True).
+
         Raises:
-            ParseError if command tag or next actions are missing.
+            ParseError: If the command prefix is missing or 'Next actions:' is missing
+                in plan variant (except for DONE action).
         """
         # logger.info(f"Player response:\n{utterance}")
         # check player response:
@@ -253,18 +325,27 @@ class AdventureGameMaster(DialogueGameMaster):
 
         return utterance, True
 
-    def _on_before_round(self):
-        """
-        After turn increment, before prompting.
-        Logs current turn index for convenient comparison of runtime logs and transcripts.
+    def _on_before_round(self) -> None:
+        """Execute actions before each round.
+
+        Called after turn increment but before prompting the player.
+        Logs the current turn index for convenient comparison of runtime logs and transcripts.
         """
         self.log_to_self("metadata", f"Turn {self.current_round}")
 
     def _does_game_proceed(self) -> bool:
-        """
-        Checks if game proceeds.
-        Game does NOT proceed due to: Invalid output format, reaching the turn limit or model performing DONE action.
-        Achieving all goal states is recorded here, but does not end the episode.
+        """Check if the game should continue to the next turn.
+
+        The game stops if any of the following conditions are met:
+        - Invalid output format detected
+        - Turn limit reached
+        - Model performed DONE action
+        - Input loop detected (same action repeated multiple times)
+
+        Note: Achieving all goal states is recorded but does NOT stop the episode.
+
+        Returns:
+            True if the game should continue, False otherwise.
         """
         # record invalid format failures:
         if self.invalid_format:
@@ -302,9 +383,17 @@ class AdventureGameMaster(DialogueGameMaster):
         # otherwise keep playing:
         return True
 
-    def _advance_game(self, player: Player, parsed_response: Tuple[str, bool]):
-        """
-        Play loop hook: Called after all players have been prompted and their responses have been parsed+validated.
+    def _advance_game(self, player: Player, parsed_response: Tuple[str, bool]) -> None:
+        """Advance the game state after a player's action.
+
+        Main game loop hook called after all players have been prompted and their
+        responses have been parsed and validated. Processes the player's action through
+        the IF interpreter, updates goal tracking, handles plan evaluation (for plan
+        variant), and sets up context for the next turn.
+
+        Args:
+            player: The player instance that performed the action.
+            parsed_response: Tuple of (parsed_utterance, should_log) from _parse_response.
         """
         if self._does_game_proceed():  # only pass last message to IF if the game is still going
             # IF INTERACTION
@@ -430,66 +519,100 @@ class AdventureGameMaster(DialogueGameMaster):
             # record successful turn:
             self.turns.append(self.success)
 
-    def _on_after_game(self):
+    def _on_after_game(self) -> None:
+        """Execute cleanup and logging after the game episode ends.
+
+        Records the final game results including which goals were achieved and
+        whether the episode finished successfully.
+        """
         # record final results once game episode has ended:
-        game_result = {
+        game_result: Dict[str, Any] = {
             config.keys["goal_states_achieved"]: list(self.goals_achieved),
             config.keys["game_successfully_finished"]: self.finished,
         }
         self.log_to_self(config.event_types["game_result"], game_result)
 
-    def compute_turn_score(self):
-        """Return count of goal states achieved this turn as turn score."""
+    def compute_turn_score(self) -> int:
+        """Compute the score for the current turn.
+
+        Returns:
+            The number of goal states achieved during this turn (can be negative
+            if goals were unachieved).
+        """
         return self.turn_goal_score
 
-    def compute_episode_score(self):
-        """Return count of goal states achieved this episode as episode score."""
+    def compute_episode_score(self) -> int:
+        """Compute the total score for the entire episode.
+
+        Returns:
+            The total number of goal states achieved during this episode.
+        """
         return len(self.goals_achieved)
 
 
 class AdventureGameScorer(GameScorer):
-    """
-    GameScorer subclass for AdventureGame.
-    Reads episode records, counts failures, calculates scores and stores the results in score files.
+    """GameScorer subclass for AdventureGame.
+
+    Processes episode records to extract turn-level and episode-level metrics.
+    Computes action success/failure counts, goal achievement rates, planning metrics,
+    exploration metrics, and overall benchmark scores. Writes results to score files
+    for downstream analysis.
     """
 
-    def __init__(self, game_name: str, experiment: Dict, game_instance: Dict):
+    def __init__(self, game_name: str, experiment: Dict[str, Any], game_instance: Dict[str, Any]) -> None:
+        """Initialize the AdventureGameScorer.
+
+        Args:
+            game_name: Name of the game.
+            experiment: Experiment configuration dictionary.
+            game_instance: Game instance configuration dictionary.
+        """
         super().__init__(game_name, experiment, game_instance)
 
     def _extract_turn_metrics(
-        self, episode_interactions: Dict
-    ) -> Tuple[List[Dict], List[Dict], List[int], List[Dict], List[Dict], bool, List, bool, str]:
-        """
-        Extract and aggregate turn-level metrics from episode interactions.
+        self, episode_interactions: Dict[str, Any]
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, int]], List[int], List[Dict[str, Any]], List[Dict[str, Any]], bool, List[str], bool, str]:
+        """Extract and aggregate turn-level metrics from episode interactions.
+
+        Processes each turn's events to extract action failures, goal scores,
+        hallucinations, exploration info, and planning metrics.
 
         Args:
-            episode_interactions: Episode interaction data
+            episode_interactions: Episode interaction data containing turns and events.
 
         Returns:
-            Tuple of (turn_scores, turn_fails, turn_hallucinations, turn_explorations,
-                     plan_records, successfully_finished, final_goals_achieved, loop_abort, invalid_format)
+            A tuple containing:
+                - turn_scores: List of turn score dictionaries
+                - turn_fails: List of turn failure dictionaries
+                - turn_hallucinations: List of hallucination counts per turn
+                - turn_explorations: List of exploration info dictionaries
+                - plan_records: List of plan record dictionaries
+                - successfully_finished: Whether the episode finished successfully
+                - final_goals_achieved: List of achieved goal states
+                - loop_abort: Whether episode was aborted due to loop detection
+                - invalid_format: Invalid format error string if any
         """
-        fail_types = config.fail_types
-        plan_types = config.plan_metrics
+        fail_types: List[str] = config.fail_types
+        plan_types: List[str] = config.plan_metrics
 
-        turn_scores = []
-        turn_fails = []
-        turn_hallucinations = []
-        turn_explorations = []
-        plan_records = []
+        turn_scores: List[Dict[str, Any]] = []
+        turn_fails: List[Dict[str, int]] = []
+        turn_hallucinations: List[int] = []
+        turn_explorations: List[Dict[str, Any]] = []
+        plan_records: List[Dict[str, Any]] = []
 
-        invalid_format = ""
-        turn_limit_loss = False
-        successfully_finished = False
-        final_goals_achieved = []
-        loop_abort = False
+        invalid_format: str = ""
+        turn_limit_loss: bool = False
+        successfully_finished: bool = False
+        final_goals_achieved: List[str] = []
+        loop_abort: bool = False
 
         for turn_idx, turn in enumerate(episode_interactions["turns"]):
-            turn_score = {"request_count": 1, "goal_score": 0}
-            turn_fail = {fail_type: 0 for fail_type in fail_types}
-            plan_record = {plan_type: 0 for plan_type in plan_types}
-            hallucination = 0
-            turn_exploration = dict()
+            turn_score: Dict[str, Any] = {"request_count": 1, "goal_score": 0}
+            turn_fail: Dict[str, int] = {fail_type: 0 for fail_type in fail_types}
+            plan_record: Dict[str, Any] = {plan_type: 0 for plan_type in plan_types}
+            hallucination: int = 0
+            turn_exploration: Dict[str, Any] = dict()
 
             for event in turn:
                 action = event["action"]
@@ -578,37 +701,39 @@ class AdventureGameScorer(GameScorer):
 
     def _log_turn_level_scores(
         self,
-        episode_interactions: Dict,
-        turn_scores: List[Dict],
-        turn_fails: List[Dict],
+        episode_interactions: Dict[str, Any],
+        turn_scores: List[Dict[str, Any]],
+        turn_fails: List[Dict[str, int]],
         turn_hallucinations: List[int],
-        turn_explorations: List[Dict],
-        plan_records: List[Dict],
+        turn_explorations: List[Dict[str, Any]],
+        plan_records: List[Dict[str, Any]],
         invalid_format: str,
         loop_abort: bool,
     ) -> None:
-        """
-        Log all turn-level metrics to score files.
+        """Log all turn-level metrics to score files.
+
+        Writes metrics for each turn including request counts, parsing errors,
+        action failures, hallucinations, exploration info, and planning metrics.
 
         Args:
-            episode_interactions: Episode interaction data
-            turn_scores: List of turn score dicts
-            turn_fails: List of turn fail dicts
-            turn_hallucinations: List of hallucination counts
-            turn_explorations: List of exploration dicts
-            plan_records: List of plan records
-            invalid_format: Invalid format error string
-            loop_abort: Whether loop was detected
+            episode_interactions: Episode interaction data containing all turns.
+            turn_scores: List of turn score dictionaries (request/goal counts).
+            turn_fails: List of turn failure dictionaries (by type).
+            turn_hallucinations: List of hallucination counts per turn.
+            turn_explorations: List of exploration info dictionaries.
+            plan_records: List of plan record dictionaries.
+            invalid_format: Invalid format error string if any.
+            loop_abort: Whether episode was aborted due to loop detection.
         """
-        fail_types = config.fail_types
-        plan_types = config.plan_metrics
+        fail_types: List[str] = config.fail_types
+        plan_types: List[str] = config.plan_metrics
 
         for turn_idx in range(len(episode_interactions["turns"])):
-            turn_score = turn_scores[turn_idx]
-            turn_fail = turn_fails[turn_idx]
-            hallucination = turn_hallucinations[turn_idx]
-            turn_exploration = turn_explorations[turn_idx]
-            plan_record = plan_records[turn_idx]
+            turn_score: Dict[str, Any] = turn_scores[turn_idx]
+            turn_fail: Dict[str, int] = turn_fails[turn_idx]
+            hallucination: int = turn_hallucinations[turn_idx]
+            turn_exploration: Dict[str, Any] = turn_explorations[turn_idx]
+            plan_record: Dict[str, Any] = plan_records[turn_idx]
 
             self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT, turn_score["request_count"])
             self.log_round_score(turn_idx, metrics.METRIC_REQUEST_COUNT_PARSED, turn_score["parsed_request_count"])
@@ -653,93 +778,97 @@ class AdventureGameScorer(GameScorer):
 
     def _compute_and_log_episode_metrics(
         self,
-        turn_scores: List[Dict],
-        turn_fails: List[Dict],
+        turn_scores: List[Dict[str, Any]],
+        turn_fails: List[Dict[str, int]],
         turn_hallucinations: List[int],
         successfully_finished: bool,
-        final_goals_achieved: List,
-        adventure_info: Dict,
-        plan_records: List[Dict],
+        final_goals_achieved: List[str],
+        adventure_info: Dict[str, Any],
+        plan_records: List[Dict[str, Any]],
         invalid_format: str,
         turn_limit_loss: bool,
         loop_abort: bool,
     ) -> None:
-        """
-        Compute and log episode-level metrics.
+        """Compute and log episode-level metrics.
+
+        Aggregates turn-level metrics to compute episode-level statistics including
+        success rates, action failure counts, goal achievement ratios, speed metrics
+        (turns over par, turn ratio), and planning metrics (plan following, viability).
 
         Args:
-            turn_scores: List of turn score dicts
-            turn_fails: List of turn fail dicts
-            turn_hallucinations: List of hallucination counts
-            successfully_finished: Whether episode finished successfully
-            final_goals_achieved: List of achieved goals
-            adventure_info: Adventure metadata
-            plan_records: List of plan records
-            invalid_format: Invalid format error string
-            turn_limit_loss: Whether turn limit was reached
-            loop_abort: Whether loop was detected
+            turn_scores: List of turn score dictionaries.
+            turn_fails: List of turn failure dictionaries.
+            turn_hallucinations: List of hallucination counts per turn.
+            successfully_finished: Whether the episode finished successfully.
+            final_goals_achieved: List of goal states achieved.
+            adventure_info: Adventure metadata (variant, max_turns, optimal_turns, etc.).
+            plan_records: List of plan record dictionaries.
+            invalid_format: Invalid format error string if any.
+            turn_limit_loss: Whether the turn limit was reached.
+            loop_abort: Whether episode was aborted due to loop detection.
         """
-        fail_types = config.fail_types
+        fail_types: List[str] = config.fail_types
 
         # Request scores
-        violated_request_count = sum([turn["violated_request_count"] for turn in turn_scores])
+        violated_request_count: int = sum([turn["violated_request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_VIOLATED, violated_request_count)
-        parsed_request_count = sum([turn["parsed_request_count"] for turn in turn_scores])
+        parsed_request_count: int = sum([turn["parsed_request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT_PARSED, parsed_request_count)
-        request_count = sum([turn["request_count"] for turn in turn_scores])
+        request_count: int = sum([turn["request_count"] for turn in turn_scores])
         self.log_episode_score(metrics.METRIC_REQUEST_COUNT, request_count)
         self.log_episode_score(metrics.METRIC_REQUEST_SUCCESS_RATIO, parsed_request_count / request_count)
 
         # Hallucination scores
-        hallucination_count = sum(turn_hallucinations)
+        hallucination_count: int = sum(turn_hallucinations)
         self.log_episode_score("hallucination_count", hallucination_count)
 
         # Action fail scores
-        action_parsing_fail_count = sum([turn["parsing"] for turn in turn_fails])
+        action_parsing_fail_count: int = sum([turn["parsing"] for turn in turn_fails])
         self.log_episode_score("action_parsing_fail", action_parsing_fail_count)
-        action_resolution_fail_count = sum([turn["resolution"] for turn in turn_fails])
+        action_resolution_fail_count: int = sum([turn["resolution"] for turn in turn_fails])
         self.log_episode_score("action_resolution_fail", action_resolution_fail_count)
         for fail_type in fail_types[2:]:
-            type_fail_count = sum([turn[fail_type] for turn in turn_fails])
+            type_fail_count: int = sum([turn[fail_type] for turn in turn_fails])
             self.log_episode_score(fail_type, type_fail_count)
-        fail_sum = action_parsing_fail_count + action_resolution_fail_count
-        sucessful_actions = parsed_request_count - fail_sum
+        fail_sum: int = action_parsing_fail_count + action_resolution_fail_count
+        sucessful_actions: int = parsed_request_count - fail_sum
         self.log_episode_score("successful_actions", sucessful_actions)
 
         # Turn limit loss
         self.log_episode_score(config.log_keys["turn_limit_loss"], 1 if turn_limit_loss else 0)
 
         # Speed metrics
-        turn_count = len(turn_scores)
-        optimal_turns = adventure_info["optimal_turns"]
-        turns_over_par = turn_count - optimal_turns
+        turn_count: int = len(turn_scores)
+        optimal_turns: int = adventure_info["optimal_turns"]
+        turns_over_par: int = turn_count - optimal_turns
         if successfully_finished:
             self.log_episode_score("turns_over_par", turns_over_par)
         else:
             self.log_episode_score("turns_over_par", np.nan)
 
-        turn_range = adventure_info["max_turns"] - adventure_info["optimal_turns"]
-        turn_ratio = 1 - (turns_over_par / turn_range)
+        turn_range: int = adventure_info["max_turns"] - adventure_info["optimal_turns"]
+        turn_ratio: float = 1 - (turns_over_par / turn_range)
         if successfully_finished:
             self.log_episode_score("turn_ratio", turn_ratio)
         else:
             self.log_episode_score("turn_ratio", np.nan)
 
-        finish_speed_rating = 1 - turn_ratio
+        finish_speed_rating: float = 1 - turn_ratio
         if successfully_finished:
             self.log_episode_score("finish_speed", finish_speed_rating)
         else:
             self.log_episode_score("finish_speed", np.nan)
 
         # Goal achievement
-        final_goal_score = len(final_goals_achieved)
-        goal_count = adventure_info["goal_count"]
-        achieved_ratio = final_goal_score / goal_count
+        final_goal_score: int = len(final_goals_achieved)
+        goal_count: int = adventure_info["goal_count"]
+        achieved_ratio: float = final_goal_score / goal_count
         self.log_episode_score("achieved_goal_ratio", achieved_ratio)
-        partial_success_rating = achieved_ratio * 100
+        partial_success_rating: float = achieved_ratio * 100
         self.log_episode_score("achieved_goal_rating", partial_success_rating)
 
         # Main score
+        total_success_rating: int
         if successfully_finished:
             total_success_rating = config.scores["success"]
         else:
@@ -761,31 +890,35 @@ class AdventureGameScorer(GameScorer):
                 self.log_episode_score(metrics.METRIC_LOSE, 1)
 
         # Planning metrics
-        plan_followed_count = sum([turn["plan_followed"] for turn in plan_records[1:]])
-        plan_followed_ratio = plan_followed_count / turn_count
+        plan_followed_count: int = sum([turn["plan_followed"] for turn in plan_records[1:]])
+        plan_followed_ratio: float = plan_followed_count / turn_count
         self.log_episode_score("plan_followed_ratio", plan_followed_ratio)
 
-        plan_viability_sum = sum([turn["plan_command_success_ratio"] for turn in plan_records])
-        plan_average_viability_ratio = plan_viability_sum / turn_count
+        plan_viability_sum: float = sum([turn["plan_command_success_ratio"] for turn in plan_records])
+        plan_average_viability_ratio: float = plan_viability_sum / turn_count
         self.log_episode_score("plan_average_viability_ratio", plan_average_viability_ratio)
 
-        bad_plan_followed_sum = sum([turn["bad_plan_followed"] for turn in plan_records])
-        bad_plan_followed_ratio = bad_plan_followed_sum / turn_count
+        bad_plan_followed_sum: int = sum([turn["bad_plan_followed"] for turn in plan_records])
+        bad_plan_followed_ratio: float = bad_plan_followed_sum / turn_count
         self.log_episode_score("bad_plan_follow_ratio", bad_plan_followed_ratio)
-        bad_plan_dismiss_ratio = 1 - bad_plan_followed_ratio
+        bad_plan_dismiss_ratio: float = 1 - bad_plan_followed_ratio
         self.log_episode_score("bad_plan_dismiss_ratio", bad_plan_dismiss_ratio)
 
-    def compute_scores(self, episode_interactions: Dict) -> None:
-        """
-        Episode level scores.
-        Writes to score file in the episode directory.
-        :param episode_interactions: Dict containing episode records for entire episode and turns.
+    def compute_scores(self, episode_interactions: Dict[str, Any]) -> None:
+        """Compute episode-level scores from interaction records.
+
+        Main entry point for scoring. Extracts turn-level metrics, computes aggregated
+        episode-level metrics, and writes all scores to the episode's score file.
+
+        Args:
+            episode_interactions: Dictionary containing episode records for the entire
+                episode including all turns and events.
         """
 
         # TODO: update scoring to clemcore 3.0.2
 
         # Get adventure metadata
-        adventure_info: dict = episode_interactions[config.log_keys["adventure_info"]]
+        adventure_info: Dict[str, Any] = episode_interactions[config.log_keys["adventure_info"]]
 
         # Step 1: Extract turn-level metrics from episode interactions
         (
@@ -835,19 +968,58 @@ class AdventureGameScorer(GameScorer):
 
 
 class AdventureGameBenchmark(GameBenchmark):
-    def __init__(self, game_spec: GameSpec):
+    """GameBenchmark subclass for AdventureGame.
+
+    Factory class that creates game masters and scorers for benchmark runs.
+    Provides the game description and handles benchmark initialization.
+    """
+
+    def __init__(self, game_spec: GameSpec) -> None:
+        """Initialize the AdventureGameBenchmark.
+
+        Args:
+            game_spec: Game specification containing name, path, and configuration.
+        """
         super().__init__(game_spec)
 
-    def get_description(self):
+    def get_description(self) -> str:
+        """Get the game description.
+
+        Returns:
+            A string describing this game.
+        """
         return "Interactive Fiction clemgame"
 
-    def create_game_master(self, experiment: Dict, player_models: List[Model]) -> GameMaster:
+    def create_game_master(self, experiment: Dict[str, Any], player_models: List[Model]) -> GameMaster:
+        """Create a game master for running an episode.
+
+        Args:
+            experiment: Experiment configuration dictionary.
+            player_models: List of model instances for the players.
+
+        Returns:
+            An AdventureGameMaster instance configured for the experiment.
+        """
         return AdventureGameMaster(self.game_name, self.game_path, experiment, player_models)
 
-    def create_game_scorer(self, experiment: Dict, game_instance: Dict) -> GameScorer:
+    def create_game_scorer(self, experiment: Dict[str, Any], game_instance: Dict[str, Any]) -> GameScorer:
+        """Create a game scorer for computing episode scores.
+
+        Args:
+            experiment: Experiment configuration dictionary.
+            game_instance: Game instance configuration dictionary.
+
+        Returns:
+            An AdventureGameScorer instance configured for the experiment.
+        """
         return AdventureGameScorer(self.game_name, experiment, game_instance)
 
 
-def main():
-    game_path = os.path.dirname(os.path.abspath(__file__))
-    experiments = file_utils.load_json(config.paths["instances_file"], game_path)
+def main() -> None:
+    """Main entry point for the AdventureGame module.
+
+    Loads game instances from the configured instances file. This function is typically
+    not called directly; the game is run through the clemgame framework CLI.
+    """
+    game_path: str = os.path.dirname(os.path.abspath(__file__))
+    experiments: Dict[str, Any] = file_utils.load_json(config.paths["instances_file"], game_path)

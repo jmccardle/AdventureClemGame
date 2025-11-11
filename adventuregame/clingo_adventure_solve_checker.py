@@ -4,6 +4,7 @@ Was extensively used to create the ASP encodings for action definitions.
 """
 
 import logging
+from typing import List, Union, cast
 
 from clingo.control import Control
 
@@ -44,7 +45,9 @@ with ctl.solve(yield_=True) as solve:
 
 def convert_action_to_tuple(action: str):
     action_splice = action[9:-1]
-    action_split = action_splice.split(",")
+    action_split_temp = action_splice.split(",")
+    # Cast to allow both int and str in the list
+    action_split = cast(List[Union[int, str]], action_split_temp)
     action_split[0] = int(action_split[0])
     action_tuple = tuple(action_split)
     return action_tuple

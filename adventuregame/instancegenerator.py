@@ -6,29 +6,88 @@ Creates files in ./in
 
 import logging
 import os
+from typing import Any, Dict, List
 
 import clemcore
 import numpy as np
 from clemcore.clemgame import GameInstanceGenerator
-from config_loader import get_config
+from config_loader import ConfigLoader, get_config
 from tqdm import tqdm
+
+from adventuregame.exceptions import ConfigurationError, InstanceGenerationError
 
 logger = logging.getLogger(__name__)
 
-config = get_config()
+config: ConfigLoader = get_config()
 
 
 class AdventureGameInstanceGenerator(GameInstanceGenerator):
-    def __init__(self):
+    """Generates game instances for AdventureGame from raw adventure data.
+
+    This class processes raw adventure JSON files and creates structured game instances
+    with different variants (basic, planning, inventory-limited, pre-exploration).
+    It handles template substitution, new-word action shuffling, and variant-specific
+    configuration.
+
+    Attributes:
+        rng: NumPy random number generator for reproducible randomization.
+
+    Example:
+        >>> generator = AdventureGameInstanceGenerator()
+        >>> generator.generate(
+        ...     raw_adventures_files=["generated_potion_brewing_adventures"],
+        ...     variants=["basic"]
+        ... )
+    """
+
+    rng: np.random.Generator
+
+    def __init__(self) -> None:
+        """Initialize the instance generator.
+
+        Sets up the base directory and initializes the random number generator
+        with the configured seed for reproducible instance generation.
+        """
         super().__init__(os.path.dirname(os.path.abspath(__file__)))
         self.rng = np.random.default_rng(seed=config.random_seeds["default"])
 
-    def on_generate(self, raw_adventures_files: list, variants: list = ["basic"]):
-        """Generate both basic and planning variant instances from raw adventures.
+    def on_generate(
+        self,
+        raw_adventures_files: List[str],
+        variants: List[str] = ["basic"]
+    ) -> None:
+        """Generate game instances from raw adventures for specified variants.
+
+        This method processes raw adventure JSON files and creates game instances for each
+        specified variant. It handles template loading, placeholder substitution, new-word
+        action shuffling, and variant-specific configuration. Each adventure is processed
+        per difficulty level and instantiated with appropriate prompts and game parameters.
+
         Args:
-            raw_adventures_files: List of file names of the JSON files containing raw adventures data.
-            variants: Which variants to make instances for. Currently supported variants are "basic", "planning",
-                "basic_invlimit", "planning_invlimit".
+            raw_adventures_files: List of JSON file names (without path) containing raw
+                adventure data. Files should be located in the resources directory.
+            variants: List of variant types to generate instances for. Supported variants:
+                - "basic": Single action per turn
+                - "planning": Action with next planned actions
+                - "basic_preexplore": Basic with pre-exploration sequences
+                - "planning_preexplore": Planning with pre-exploration
+                - "basic_invlimit": Basic with inventory capacity limits
+                - "planning_invlimit": Planning with inventory limits
+                Defaults to ["basic"].
+
+        Raises:
+            InstanceGenerationError: If instance generation fails for any adventure.
+            ConfigurationError: If required configuration or templates are missing.
+
+        Example:
+            >>> generator = AdventureGameInstanceGenerator()
+            >>> generator.on_generate(
+            ...     raw_adventures_files=[
+            ...         "curated_home_deliver_three_adventures_v2_2_a",
+            ...         "generated_potion_brewing_adventures"
+            ...     ],
+            ...     variants=["basic", "planning", "basic_invlimit"]
+            ... )
         """
         for raw_adventures_file in raw_adventures_files:
             # load raw adventures:

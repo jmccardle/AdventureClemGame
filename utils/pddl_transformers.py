@@ -9,6 +9,8 @@ All transformer classes inherit from PDDLBaseTransformer which provides shared
 methods for common PDDL constructs like forall, when, and, or, not, predicates, etc.
 """
 
+from typing import Any, Dict, List
+
 import lark
 from lark import Transformer
 
@@ -307,7 +309,7 @@ class PDDLDomainTransformer(PDDLBaseTransformer):
 
     def functions(self, content):
         """Transform functions definition."""
-        functions_dict = {"functions": list()}
+        functions_dict: Dict[str, List[Any]] = {"functions": list()}
         for functions_item in content:
             if "function_def_predicate" in functions_item:
                 functions_dict["functions"].append(functions_item)
@@ -393,7 +395,7 @@ class PDDLEventTransformer(PDDLBaseTransformer):
 
     def functions(self, content):
         """Transform functions definition."""
-        functions_dict = {"functions": list()}
+        functions_dict: Dict[str, List[Any]] = {"functions": list()}
         for functions_item in content:
             if "function_def_predicate" in functions_item:
                 functions_dict["functions"].append(functions_item)

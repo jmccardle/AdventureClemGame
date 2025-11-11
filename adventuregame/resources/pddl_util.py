@@ -1,6 +1,8 @@
 """Utilities for PDDL"""
 
 import logging
+from typing import Any, Dict, List
+
 import lark
 from lark import Lark, Transformer
 
@@ -431,7 +433,7 @@ class PDDLDomainTransformer(Transformer):
         return {"variable": content[0].value}
 
     def functions(self, content):
-        functions_dict = {"functions": list()}
+        functions_dict: Dict[str, List[Any]] = {"functions": list()}
         for functions_item in content:
             if "function_def_predicate" in functions_item:
                 functions_dict["functions"].append(functions_item)

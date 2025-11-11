@@ -26,7 +26,7 @@ domain_def_parser = Lark(domain_def_grammar, start="define")
 domain_def_transformer = PDDLDomainTransformer()
 
 
-def action_to_asp(action_def: dict, trait_dict: dict):
+def action_to_asp(action_def: dict, trait_dict: dict = None):  # type: ignore[assignment]
     """Create ASP encoding rules from action definition PDDL.
     Args:
         action_def: A dict action definition.
@@ -157,7 +157,7 @@ def actions_file_to_asp(action_defs_file_path: str = "new_word_generation/new_ac
     return all_action_asp_rules
 
 
-def augment_action_defs_with_asp(action_defs: list, trait_dict: dict):
+def augment_action_defs_with_asp(action_defs: list, trait_dict: dict = None):  # type: ignore[assignment]
     """Create ASP encoding rules for action definitions and add them to existing definitions."""
     for action_def_idx, action_def in enumerate(action_defs):
         action_asp_rules = action_to_asp(action_def, trait_dict)

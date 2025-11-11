@@ -3,7 +3,7 @@ Utilities for handling WinoDict-generated new-words.
 """
 
 import logging
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Sequence, Set
 
 import nltk
 from nltk import corpus, lm
@@ -83,7 +83,7 @@ def generate_winodict_words(
     morphed_examples = add_morphology_to_examples(examples, morph_rules)
     logger.info("Winodict word generation: Successfully created %s final examples", len(morphed_examples))
 
-    return morphed_examples
+    return list(morphed_examples)
 
 
 def get_winodict_words(seed: int = 42) -> Dict:
@@ -91,7 +91,7 @@ def get_winodict_words(seed: int = 42) -> Dict:
     # generate new words list using winodict functions:
     generated_new_words = generate_winodict_words(seed=seed)
     # convert each new word list to dict:
-    new_words_dict = dict()
+    new_words_dict: Dict[str, Dict[str, Any]] = dict()
     for new_word in generated_new_words:
         new_word_str = new_word.scored_ngram.word
         new_words_dict[new_word_str] = dict()

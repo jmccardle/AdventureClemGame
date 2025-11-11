@@ -9,7 +9,7 @@ import os
 import sys
 from copy import deepcopy
 from pathlib import Path
-from typing import List, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import jinja2
 import lark
@@ -18,6 +18,15 @@ from adv_util import fact_str_to_tuple, fact_tuple_to_str
 from clemcore.clemgame import GameResourceLocator
 from config_loader import get_config
 from lark import Lark, Transformer
+
+# Import custom exceptions
+from adventuregame.exceptions import (
+    PDDLParseError,
+    ActionResolutionError,
+    InvalidStateError,
+    EventProcessingError,
+    ValidationError,
+)
 
 # Add parent directory to path to import utils module
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -40,12 +49,26 @@ logger = logging.getLogger(__name__)
 
 
 class IFTransformer(Transformer):
-    """
-    IF action grammar transformer to convert Lark parse to python dict for further use.
+    """IF action grammar transformer to convert Lark parse tree to Python dict.
+
+    Transforms parsed action commands from Lark parse trees into structured
+    dictionaries for action resolution. Extracts action types, arguments,
+    adjectives, and prepositions from the parse tree.
     """
 
-    # since this is solely for action command parse conversion, any input is converted to a parsed action dict:
-    def action(self, content):
+    def action(self, content: List[Any]) -> Dict[str, Any]:
+        """Transform a Lark parse tree into an action dictionary.
+
+        Args:
+            content: List containing the parsed Lark tree node
+
+        Returns:
+            Dictionary with action type and arguments:
+                - type: Action type (str)
+                - argN: Nth argument value (str)
+                - argN_adjs: Adjectives for Nth argument (List[str])
+                - prep: Preposition (str)
+        """
         action: lark.Tree = content[0]
         action_type = action.data  # main grammar rule the input was parsed as
         action_content = action.children  # all parsed arguments of the action 'VP'
@@ -87,73 +110,110 @@ class IFTransformer(Transformer):
 
 
 class AdventureIFInterpreter(GameResourceLocator):
-    """
-    IF interpreter for adventuregame.
-    Holds game world state and handles all interaction and feedback.
+    """Interactive Fiction interpreter for adventure game instances.
+
+    Maintains game world state, processes player actions, checks preconditions,
+    applies effects, handles events, and tracks goal achievement. Serves as the
+    core game engine that mediates between player commands and the game world.
+
+    The interpreter uses PDDL (Planning Domain Definition Language) for defining
+    actions, domains, and events, and employs Lark parsing for player input.
     """
 
     def __init__(
         self,
-        game_path,
-        game_instance: dict,
+        game_path: str,
+        game_instance: Dict[str, Any],
         name: str = GAME_NAME,
         verbose: bool = False,
         rng_seed: int = 42,
-    ):
+    ) -> None:
+        """Initialize the IF interpreter with a game instance.
+
+        Args:
+            game_path: Path to the game module directory
+            game_instance: Dictionary containing complete game instance data including
+                initial_state, goal_state, action_definitions, domain_definitions, etc.
+            name: Game name identifier
+            verbose: If True, enables detailed logging including grammar output
+            rng_seed: Random seed for numpy RNG (used for event randomization)
+        """
         super().__init__(name, game_path)
 
-        self.rng_seed = rng_seed
-        self.rng = np.random.default_rng(seed=self.rng_seed)
+        self.rng_seed: int = rng_seed
+        self.rng: np.random.Generator = np.random.default_rng(seed=self.rng_seed)
 
-        # game instance is the instance data as passed by the GameMaster class
-        self.game_instance: dict = game_instance
-        # surface strings (repr_str here) to spaceless internal identifiers:
-        self.repr_str_to_type_dict: dict = dict()
+        # Game instance is the instance data as passed by the GameMaster class
+        self.game_instance: Dict[str, Any] = game_instance
 
-        self.entity_types = dict()
+        # Surface strings (repr_str here) to spaceless internal identifiers
+        self.repr_str_to_type_dict: Dict[str, str] = dict()
+
+        # Entity and room type definitions
+        self.entity_types: Dict[str, Dict[str, Any]] = dict()
         self.initialize_entity_types()
 
-        self.room_types = dict()
+        self.room_types: Dict[str, Dict[str, Any]] = dict()
         self.initialize_room_types()
 
-        self.action_def_parser = None
-        self.action_def_transformer = PDDLActionTransformer()
-        self.domain_def_parser = None
-        self.domain_def_transformer = PDDLDomainTransformer()
+        # PDDL parsers and transformers
+        self.action_def_parser: Optional[Lark] = None
+        self.action_def_transformer: PDDLActionTransformer = PDDLActionTransformer()
+        self.domain_def_parser: Optional[Lark] = None
+        self.domain_def_transformer: PDDLDomainTransformer = PDDLDomainTransformer()
+        self.event_def_parser: Optional[Lark] = None
+        self.event_def_transformer: Optional[PDDLEventTransformer] = None
         if "event_definitions" in game_instance:
-            self.event_def_parser = None
             self.event_def_transformer = PDDLEventTransformer()
         self.initialize_pddl_definition_parsing()
 
-        self.act_parser = None
-        self.act_transformer = IFTransformer()
-        self.action_types = dict()
+        # Action parsing
+        self.act_parser: Optional[Lark] = None
+        self.act_transformer: IFTransformer = IFTransformer()
+        self.action_types: Dict[str, Dict[str, Any]] = dict()
         self.initialize_action_types()
 
-        self.domain = dict()
+        # Domain and event definitions
+        self.domain: Dict[str, Any] = dict()
         self.initialize_domain()
 
+        self.event_types: Dict[str, Dict[str, Any]] = dict()
         if "event_definitions" in game_instance:
-            self.event_types = dict()
             self.initialize_event_types()
 
-        self.world_state: set = set()
-        self.world_state_history: list = list()
-        self.goal_state: set = set()
-        self.goals_achieved: set = set()
-        self.initialize_states_from_strings()
+        # World state tracking
+        self.world_state: Set[Tuple[Any, ...]] = set()
+        self.world_state_history: List[Set[Tuple[Any, ...]]] = list()
+        self.goal_state: Set[Tuple[Any, ...]] = set()
+        self.goals_achieved: Set[Tuple[Any, ...]] = set()
 
+        # Entity and room instance mappings
+        self.inst_to_type_dict: Dict[str, str] = dict()
+        self.room_to_type_dict: Dict[str, str] = dict()
+
+        # Precondition tracing (for debugging/logging)
+        self.precon_trace: List[Dict[str, Any]] = list()
+        self.precon_tuples: List[Tuple[Any, ...]] = list()
+
+        # Event randomization tracking
+        self.event_randomization: Dict[str, str] = dict()
+
+        self.initialize_states_from_strings()
         self.initialize_action_parsing(print_lark_grammar=verbose)
 
-        self.exploration_history = list()
-        self.exploration_state = set()
-        # start tracking exploration:
+        # Exploration tracking
+        self.exploration_history: List[Set[Tuple[Any, ...]]] = list()
+        self.exploration_state: Set[Tuple[Any, ...]] = set()
         self.track_exploration()
 
-    def initialize_entity_types(self):
-        """
-        Load and process entity types in this adventure.
-        Definitions are loaded from external files.
+    def initialize_entity_types(self) -> None:
+        """Load and process entity types in this adventure.
+
+        Entity types define properties of game objects such as items, containers,
+        and other interactive elements. Definitions can come from external JSON
+        files or be embedded directly in the game instance.
+
+        This method populates self.entity_types and self.repr_str_to_type_dict.
         """
         # load entity type definitions in game instance:
         entity_definitions: list = list()
@@ -183,10 +243,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                         entity_definition[entity_attribute]
                     )
 
-    def initialize_room_types(self):
-        """
-        Load and process room types in this adventure.
-        Definitions are loaded from external files.
+    def initialize_room_types(self) -> None:
+        """Load and process room types in this adventure.
+
+        Room types define locations in the game world. Definitions can come from
+        external JSON files or be embedded directly in the game instance.
+
+        This method populates self.room_types and updates self.repr_str_to_type_dict.
         """
         # load room type definitions in game instance:
         room_definitions: list = list()
@@ -214,7 +277,13 @@ class AdventureIFInterpreter(GameResourceLocator):
                         room_attribute
                     ]
 
-    def initialize_pddl_definition_parsing(self):
+    def initialize_pddl_definition_parsing(self) -> None:
+        """Initialize PDDL parsers for actions, domains, and events.
+
+        Loads grammar files and creates Lark parsers for parsing PDDL definitions.
+        Sets up parsers for action definitions, domain definitions, and (if present)
+        event definitions.
+        """
         action_def_grammar = self.load_file(
             f"{config.paths['resources_dir']}{os.sep}{config.paths['grammar_files']['pddl_actions']}"
         )
@@ -235,10 +304,14 @@ class AdventureIFInterpreter(GameResourceLocator):
                 event_def_grammar, start=config.parser_settings["event_grammar_start_rule"]
             )
 
-    def initialize_action_types(self):
-        """
-        Load and process action types in this adventure.
-        Definitions are loaded from external files.
+    def initialize_action_types(self) -> None:
+        """Load and process action types in this adventure.
+
+        Action types define player commands with their PDDL preconditions and effects.
+        Definitions are loaded from external files or embedded in the game instance,
+        then parsed using the PDDL action grammar.
+
+        This method populates self.action_types with parsed action definitions.
         """
         # load action type definitions in game instance:
         action_definitions: list = list()
@@ -272,9 +345,15 @@ class AdventureIFInterpreter(GameResourceLocator):
             else:
                 raise KeyError
 
-    def initialize_domain(self):
+    def initialize_domain(self) -> None:
         """Load and process the domain(s) used in this adventure.
-        Definitions are loaded from external files.
+
+        Domains define types, predicates, and the structure of the game world.
+        Parses PDDL domain definitions and builds type hierarchies including
+        entity subtypes and trait types. Also identifies mutable predicates.
+
+        This method populates self.domain with types, supertypes, predicates,
+        and mutable_states.
         """
         # load domain definitions in game instance:
         domain_definitions: list = list()
@@ -355,9 +434,14 @@ class AdventureIFInterpreter(GameResourceLocator):
                 mutable_states.append(predicate["predicate_id"])
             self.domain["mutable_states"] = mutable_states
 
-    def initialize_event_types(self):
-        """Load and process the event(s) used in this adventure.
-        Definitions are loaded from external files.
+    def initialize_event_types(self) -> None:
+        """Load and process event types used in this adventure.
+
+        Events are reactive world changes triggered by conditions in the world state.
+        Definitions are loaded from external files or embedded in the game instance,
+        then parsed using the PDDL event grammar.
+
+        This method populates self.event_types with parsed event definitions.
         """
         # load event definitions in game instance:
         event_definitions: list = list()
@@ -394,10 +478,15 @@ class AdventureIFInterpreter(GameResourceLocator):
                 raise KeyError
 
 
-    def initialize_action_parsing(self, print_lark_grammar: bool = False):
-        """
-        Initialize the lark action input parser and transformer.
-        Constructs a lark grammar string from action definition lark snippets.
+    def initialize_action_parsing(self, print_lark_grammar: bool = False) -> None:
+        """Initialize Lark parser for player action input commands.
+
+        Dynamically constructs a Lark grammar from action definitions, combining
+        action-specific rules with core grammar components (prepositions, nouns,
+        adjectives, etc.). The grammar supports multi-word arguments and adjectives.
+
+        Args:
+            print_lark_grammar: If True, logs the complete grammar for debugging
         """
         act_grammar_rules = list()
         act_grammar_larks = list()
@@ -435,10 +524,18 @@ class AdventureIFInterpreter(GameResourceLocator):
         # initialize lark parser with the combined grammar:
         self.act_parser = Lark(act_grammar, start="action")
 
-    def initialize_states_from_strings(self):
-        """
-        Initialize the world state set from instance data.
-        Converts List[Str] world state format into Set[Tuple].
+    def initialize_states_from_strings(self) -> None:
+        """Initialize world state and goal state from game instance data.
+
+        Converts initial_state and goal_state from List[str] format to Set[Tuple]
+        format for efficient lookups. Also augments the world state by:
+        - Adding trait facts based on entity types
+        - Adding floor entities to rooms
+        - Building entity and room instance mappings
+        - Placing supported items on floors
+
+        This method populates self.world_state, self.goal_state,
+        self.inst_to_type_dict, and self.room_to_type_dict.
         """
         # INITIAL STATE:
         for fact_string in self.game_instance["initial_state"]:
@@ -617,12 +714,13 @@ class AdventureIFInterpreter(GameResourceLocator):
         inst_type = self._inst_to_type(inst)
 
         # get surface string for instance type:
+        inst_str: str
         if inst_type in self.entity_types:
-            inst_str: str = self.entity_types[inst_type]["repr_str"]
+            inst_str = self.entity_types[inst_type]["repr_str"]
         elif inst_type in self.room_types:
-            inst_str: str = self.room_types[inst_type]["repr_str"]
+            inst_str = self.room_types[inst_type]["repr_str"]
         else:  # fallback for potential edge cases
-            inst_str: str = inst_type
+            inst_str = inst_type
         # combine into full surface string:
         inst_adjs.append(inst_str)
         adj_str = " ".join(inst_adjs)
@@ -637,10 +735,11 @@ class AdventureIFInterpreter(GameResourceLocator):
             The type name string for the entity or room instance.
         """
         # get type of instance:
+        inst_type: str
         if inst in self.inst_to_type_dict:
-            inst_type: str = self.inst_to_type_dict[inst]
+            inst_type = self.inst_to_type_dict[inst]
         elif inst in self.room_to_type_dict:
-            inst_type: str = self.room_to_type_dict[inst]
+            inst_type = self.room_to_type_dict[inst]
         else:  # fallback for potential edge cases
             # TODO: retrace why this can fail
             logger.info(
@@ -658,6 +757,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         Get the current player location's internal room string ID.
         """
+        player_room: str = ""
         for fact in self.world_state:
             if fact[0] == "at" and fact[1] == "player1":
                 player_room = fact[2]
@@ -833,8 +933,9 @@ class AdventureIFInterpreter(GameResourceLocator):
         inventory_content: list = self.get_inventory_content()
         inv_list = inventory_content
         inv_item_cnt = len(inv_list)
+        inv_desc: str
         if inv_item_cnt == 0:
-            inv_desc = config.messages["empty_inventory"]
+            inv_desc = str(config.messages["empty_inventory"])
             return inv_desc
         elif inv_item_cnt == 1:
             inv_str = f"a {self._get_inst_str(inv_list[0])}"
@@ -842,7 +943,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             inv_strs = [f"a {self._get_inst_str(inv_item)}" for inv_item in inv_list]
             inv_str = ", ".join(inv_strs[:-1])
             inv_str += f" and {inv_strs[-1]}"
-        inv_desc = config.messages["inventory_description"].format(items=inv_str)
+        inv_desc = str(config.messages["inventory_description"].format(items=inv_str))
 
         return inv_desc
 
@@ -886,7 +987,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         """
         for fact in self.world_state:
             if fact[0] == "type" and fact[2] == entity:
-                return fact[1]
+                return str(fact[1])
         return ""
 
     def _strip_entity_id_suffix(self, entity_id: str) -> str:
@@ -934,18 +1035,17 @@ class AdventureIFInterpreter(GameResourceLocator):
         else:
             return f"There are {', '.join(supported_entities[:-1])} and {supported_entities[-1]} on the {self.entity_types[support_entity]['repr_str']}."
 
-    def get_entity_desc(self, entity) -> str:
-        """
-        Get a full description of an entity.
+    def get_entity_desc(self, entity: str) -> str:
+        """Get a full description of an entity.
 
         Used for the EXAMINE action. Generates description including base type,
         properties (openable, takeable, etc.), and contents if applicable.
 
         Args:
-            entity: Entity type string
+            entity: Entity type string identifier
 
         Returns:
-            Formatted description string
+            Formatted multi-line description string
         """
         if entity == config.entities["inventory_id"]:
             return self.get_inventory_desc()
@@ -1042,7 +1142,10 @@ class AdventureIFInterpreter(GameResourceLocator):
             if fact[1] == entity_id:
                 # return text fact content:
                 if fact[0] == config.predicates["text"]:
-                    return fact[2]
+                    return str(fact[2])
+
+        # Return empty string if no text fact is found
+        return ""
 
     def get_current_perceived(self) -> set:
         current_perceived: set = set()
@@ -1078,7 +1181,7 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return current_perceived
 
-    def track_exploration(self, world_state_effects: dict = None):
+    def track_exploration(self, world_state_effects: Optional[dict] = None):
         """Track exploration of the world state.
         Updates the exploration state with what the player perceives at the current turn and records it.
         """
@@ -1143,13 +1246,32 @@ class AdventureIFInterpreter(GameResourceLocator):
             self.exploration_state = self.get_current_perceived()
             self.exploration_history.append(self.exploration_state)
 
-    def parse_action_input(self, action_input: str) -> [bool, Union[dict, str], Union[dict, Set]]:
-        """
-        Parse input action command string to action dict.
-        Input is cleaned by removing trailing punctuation and lower-casing it.
-        Fail if action/entities are not defined or input command is not covered by grammar.
-        This method is effectively the parsing phase mentioned in the paper.
-        Returns tuple of: failure bool, parsed action dict or failure feedback, failure information dict or empty set.
+    def parse_action_input(
+        self, action_input: str
+    ) -> Tuple[bool, Union[Dict[str, Any], str], Union[Dict[str, Any], Set[Any]]]:
+        """Parse player action input command string into action dictionary.
+
+        Performs lexical and syntactic analysis of player input, converting natural
+        language commands into structured action dictionaries. Handles:
+        - Punctuation removal and normalization
+        - Lark parsing using dynamic action grammar
+        - Entity reference validation
+        - Action type validation
+        - Room vs entity disambiguation
+
+        Args:
+            action_input: Raw player command string (e.g., "take apple from table")
+
+        Returns:
+            Three-element tuple:
+            - success (bool): True if parsing succeeded, False otherwise
+            - result (Dict or str): Parsed action dict on success, error message on failure
+            - failure_info (Dict or Set): Failure details dict on error, empty set on success
+
+        Example:
+            >>> success, action_dict, fail_info = interpreter.parse_action_input("take apple")
+            >>> if success:
+            ...     print(action_dict)  # {"type": "take", "arg1": "apple"}
         """
         # remove final punctuation:
         if action_input.endswith(".") or action_input.endswith("!"):
@@ -1162,9 +1284,9 @@ class AdventureIFInterpreter(GameResourceLocator):
         # try parsing input, return lark_exception failure if parsing fails:
         try:
             parsed_command = self.act_parser.parse(action_input)
-        except Exception as exception:
-            logger.info(f"Parsing lark exception")
-            fail_dict: dict = {
+        except lark.exceptions.LarkError as exception:
+            logger.error("Failed to parse action input '%s': %s", action_input, exception)
+            fail_dict: Dict[str, str] = {
                 "phase": "parsing",
                 "fail_type": "lark_exception",
                 "arg": str(exception),
@@ -1177,7 +1299,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             if action_dict["arg1"] in self.action_types:
                 logger.info(f"Parsing unknown action with defined verb")
                 logger.info(f"{action_dict}")
-                fail_dict: dict = {
+                fail_dict = {
                     "phase": "parsing",
                     "fail_type": "malformed_command",
                     "arg": str(action_dict),
@@ -1187,7 +1309,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         if action_dict["type"] not in self.action_types:
             if "arg1" in action_dict:
                 logger.info(f"Parsing undefined action with undefined verb")
-                fail_dict: dict = {
+                fail_dict = {
                     "phase": "parsing",
                     "fail_type": "undefined_action_verb",
                     "arg": action_dict["arg1"],
@@ -1199,7 +1321,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 )
             else:
                 logger.info(f"Parsing undefined action without verb")
-                fail_dict: dict = {
+                fail_dict = {
                     "phase": "parsing",
                     "fail_type": "undefined_action",
                     "arg": action_input,
@@ -1217,7 +1339,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 action_dict["arg1"] = self.repr_str_to_type_dict[action_dict["arg1"]]
             else:
                 # in this case, the action is defined, but the first argument isn't, leading to corresponding feedback
-                fail_dict: dict = {
+                fail_dict = {
                     "phase": "parsing",
                     "fail_type": "undefined_repr_str",
                     "arg": action_dict["arg1"],
@@ -1236,7 +1358,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 if action_dict["arg1"] in self.room_types:
                     if action_dict["type"] in ["take", "put", "open", "close"]:
                         logger.info(f"Action type is '{action_dict['type']}', manipulating room")
-                        fail_dict: dict = {
+                        fail_dict = {
                             "phase": "parsing",
                             "fail_type": "manipulating_room",
                             "arg": action_dict["arg1"],
@@ -1260,7 +1382,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         return False, fail_response, fail_dict
                 else:
                     logger.info(f"Action arg1 {action_dict['arg1']} is not a room either")
-                    fail_dict: dict = {
+                    fail_dict = {
                         "phase": "parsing",
                         "fail_type": "undefined_argument_type",
                         "arg": action_dict["arg1"],
@@ -1283,7 +1405,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                     inventory_content = self.get_inventory_content()
                     for inventory_item in inventory_content:
                         if self.inst_to_type_dict[inventory_item] == action_dict["arg1"]:
-                            fail_dict: dict = {
+                            fail_dict = {
                                 "phase": "resolution",
                                 "fail_type": "taking_from_inventory",
                                 "arg": action_dict["arg1"],
@@ -1295,7 +1417,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 ),
                                 fail_dict,
                             )
-                    fail_dict: dict = {
+                    fail_dict = {
                         "phase": "parsing",
                         "fail_type": "taking_from_inventory",
                         "arg": action_dict["arg2"],
@@ -1310,7 +1432,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         "repr_str"
                     ]
                     if not action_dict["arg2"] == cur_room_str:
-                        fail_dict: dict = {
+                        fail_dict = {
                             "phase": "parsing",
                             "fail_type": "other_room_argument",
                             "arg": action_dict["arg2"],
@@ -1321,7 +1443,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                             fail_dict,
                         )
             else:
-                fail_dict: dict = {
+                fail_dict = {
                     "phase": "parsing",
                     "fail_type": "undefined_repr_str",
                     "arg": action_dict["arg2"],
@@ -1334,8 +1456,15 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return True, action_dict, {}
 
-    def check_fact(self, fact_tuple) -> bool:
-        """Check if a fact tuple is in the world state."""
+    def check_fact(self, fact_tuple: Tuple[Any, ...]) -> bool:
+        """Check if a fact tuple exists in the current world state.
+
+        Args:
+            fact_tuple: Tuple representing a PDDL predicate (e.g., ("at", "apple1", "kitchen"))
+
+        Returns:
+            True if the fact exists in world_state, False otherwise
+        """
         # logger.info(f"IF.check_fact() checking for {fact_tuple}")
         # always return True for fact tuples with None, as this marks optional action arguments
         if None in fact_tuple:
@@ -1485,13 +1614,27 @@ class AdventureIFInterpreter(GameResourceLocator):
         return predicate_tuple
 
     def check_conditions(
-        self, conditions, variable_map, check_precon_idx=True, precon_trace=True
-    ) -> bool:
-        """Check if a passed condition 'and'/'or' clause is true.
-        Full action preconditions must have a root 'and' clause!
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool = True,
+        precon_trace: bool = True,
+    ) -> Union[bool, Dict[str, Any]]:
+        """Check if PDDL condition clauses are satisfied in current world state.
 
-        This is the main dispatcher that routes to specialized handlers
-        for each condition type.
+        This is the main dispatcher that routes condition checking to specialized
+        handlers for each condition type (and, or, not, predicate, num_comp).
+        Full action preconditions must have a root 'and' clause.
+
+        Args:
+            conditions: Dictionary representing PDDL conditions (e.g., {"and": [...]})
+            variable_map: Mapping from PDDL variables to grounded entity instances
+            check_precon_idx: If True, tracks precondition indices for debugging
+            precon_trace: If True, returns detailed trace dict; if False, returns bool
+
+        Returns:
+            If precon_trace=True: Dict with "fulfilled" key and nested condition results
+            If precon_trace=False: Boolean indicating if conditions are satisfied
         """
         # Dispatch to appropriate handler based on condition type
         if "not" in conditions:
@@ -1508,7 +1651,13 @@ class AdventureIFInterpreter(GameResourceLocator):
         # NOTE: Handling forall conditions not implemented due to time constraints.
         return False
 
-    def _check_not_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+    def _check_not_condition(
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool,
+        precon_trace: bool,
+    ) -> Union[bool, Dict[str, Any]]:
         """Check NOT condition - inverts the result of inner condition.
 
         Args:
@@ -1530,6 +1679,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         )
 
         if precon_trace:
+            assert isinstance(inner_condition_is_fact, dict), "precon_trace should return dict"
             not_dict = {"not": inner_condition_is_fact}
             not_true = inner_condition_is_fact["fulfilled"] == conditions_polarity
             not_dict["fulfilled"] = not_true
@@ -1538,7 +1688,13 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return inner_condition_is_fact == conditions_polarity
 
-    def _check_predicate_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+    def _check_predicate_condition(
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool,
+        precon_trace: bool,
+    ) -> Union[bool, Dict[str, Any]]:
         """Check simple predicate condition against world state.
 
         Args:
@@ -1567,7 +1723,13 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return is_fact
 
-    def _check_num_comp_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+    def _check_num_comp_condition(
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool,
+        precon_trace: bool,
+    ) -> Union[bool, Dict[str, Any]]:
         """Check numeric comparison condition (=, <, <=, >, >=).
 
         Args:
@@ -1685,7 +1847,13 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return fulfilled, predicate_tuple
 
-    def _check_and_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+    def _check_and_condition(
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool,
+        precon_trace: bool,
+    ) -> Union[bool, Dict[str, Any]]:
         """Check AND condition - all sub-conditions must be satisfied.
 
         Args:
@@ -1701,7 +1869,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         conditions_list = conditions["and"]
 
         if precon_trace:
-            and_dict = {"and": []}
+            and_dict: Dict[str, Any] = {"and": []}
 
         for and_condition in conditions_list:
             fulfilled = self.check_conditions(
@@ -1712,6 +1880,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             )
 
             if precon_trace:
+                assert isinstance(fulfilled, dict), "precon_trace should return dict"
                 and_conditions_checklist.append(fulfilled["fulfilled"])
                 and_dict["and"].append(fulfilled)
             else:
@@ -1727,7 +1896,13 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return all_true
 
-    def _check_or_condition(self, conditions, variable_map, check_precon_idx, precon_trace):
+    def _check_or_condition(
+        self,
+        conditions: Dict[str, Any],
+        variable_map: Dict[str, str],
+        check_precon_idx: bool,
+        precon_trace: bool,
+    ) -> Union[bool, Dict[str, Any]]:
         """Check OR condition - at least one sub-condition must be satisfied.
 
         Args:
@@ -1743,7 +1918,7 @@ class AdventureIFInterpreter(GameResourceLocator):
         conditions_list = conditions["or"]
 
         if precon_trace:
-            or_dict = {"or": []}
+            or_dict: Dict[str, Any] = {"or": []}
 
         for or_condition in conditions_list:
             fulfilled = self.check_conditions(
@@ -1754,6 +1929,7 @@ class AdventureIFInterpreter(GameResourceLocator):
             )
 
             if precon_trace:
+                assert isinstance(fulfilled, dict), "precon_trace should return dict"
                 or_conditions_checklist.append(fulfilled["fulfilled"])
                 or_dict["or"].append(fulfilled)
             else:
@@ -1769,10 +1945,24 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return any_true
 
-    def resolve_forall(self, forall_clause, variable_map):
+    def resolve_forall(
+        self, forall_clause: Dict[str, Any], variable_map: Dict[str, str]
+    ) -> Dict[str, List[Tuple[Any, ...]]]:
+        """Resolve forall quantifier in PDDL effects.
+
+        Iterates over all entities (or type-matched entities) and applies
+        conditional effects to each. Used for mass updates to world state.
+
+        Args:
+            forall_clause: Forall clause dictionary with iteration variable and effects
+            variable_map: Current action parameter bindings
+
+        Returns:
+            Dictionary with "added" and "removed" lists of fact tuples
+        """
         forall_type = forall_clause["forall"]
 
-        forall_results = {"added": [], "removed": []}
+        forall_results: Dict[str, List[Tuple[Any, ...]]] = {"added": [], "removed": []}
 
         forall_variable_map = dict()  # all values can be expected to be lists
 
@@ -1849,8 +2039,21 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return forall_results
 
-    def resolve_when(self, when_clause, variable_map):
-        when_results = {"added": [], "removed": []}
+    def resolve_when(
+        self, when_clause: Dict[str, Any], variable_map: Dict[str, str]
+    ) -> Dict[str, List[Tuple[Any, ...]]]:
+        """Resolve conditional (when) effects in PDDL.
+
+        Evaluates the condition and applies effects only if condition is satisfied.
+
+        Args:
+            when_clause: When clause dictionary with condition and effects
+            variable_map: Current action parameter bindings
+
+        Returns:
+            Dictionary with "added" and "removed" lists of fact tuples
+        """
+        when_results: Dict[str, List[Tuple[Any, ...]]] = {"added": [], "removed": []}
 
         # when_items = when_clause['when']
         # get actual content:
@@ -1884,11 +2087,24 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return when_results
 
-    def resolve_effect(self, effect, variable_map):
-        """Add or remove fact from world state based on passed effect object."""
+    def resolve_effect(
+        self, effect: Dict[str, Any], variable_map: Dict[str, str]
+    ) -> Dict[str, List[Tuple[Any, ...]]]:
+        """Add or remove fact from world state based on effect object.
+
+        Processes a single PDDL effect, which can be either a positive predicate
+        (adds fact) or a negative predicate (removes fact).
+
+        Args:
+            effect: Effect dictionary with "predicate" or "not" key
+            variable_map: Current action parameter bindings
+
+        Returns:
+            Dictionary with "added" and "removed" lists of fact tuples
+        """
         # logger.info(f"effect passed to resolve_effect: {effect}")
 
-        resolve_effect_results = {"added": [], "removed": []}
+        resolve_effect_results: Dict[str, List[Tuple[Any, ...]]] = {"added": [], "removed": []}
 
         # catch 'not' effects:
         effect_polarity = True
@@ -2227,7 +2443,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                         "failed_action_type": action_dict["type"],
                         "failed_precon_predicate": "?s - receptacle",
                     }
-                    fail_dict: dict = {
+                    fail_dict: Dict[str, Any] = {
                         "phase": "resolution",
                         "fail_type": "take_non_takeable_object",
                         "arg": failed_action_info,
@@ -2250,7 +2466,7 @@ class AdventureIFInterpreter(GameResourceLocator):
                 "failed_precon_predicate": failed_precon_predicate,
             }
             fail_type = cur_action_def["failure_feedback"]["precondition"][feedback_idx][1]
-            fail_dict: dict = {
+            fail_dict = {
                 "phase": "resolution",
                 "fail_type": fail_type,
                 "arg": failed_action_info,
@@ -2258,9 +2474,10 @@ class AdventureIFInterpreter(GameResourceLocator):
 
             return False, (False, feedback_str, fail_dict)
 
-    def _apply_action_effects(self, effects: list, variable_map: dict) -> dict:
-        """
-        Apply action effects to world state.
+    def _apply_action_effects(
+        self, effects: List[Any], variable_map: Dict[str, str]
+    ) -> Dict[str, List[Tuple[Any, ...]]]:
+        """Apply action effects to world state.
 
         Args:
             effects: List of effect definitions
@@ -2339,9 +2556,10 @@ class AdventureIFInterpreter(GameResourceLocator):
         feedback_str = feedback_jinja.render(jinja_args)
         return feedback_str
 
-    def resolve_action(self, action_dict: dict) -> [bool, Union[Set, str], Union[dict, Set]]:
-        """
-        Resolve player action and update world state.
+    def resolve_action(
+        self, action_dict: Dict[str, Any]
+    ) -> Tuple[bool, Union[Set[Any], str], Union[Dict[str, Any], Set[Any]]]:
+        """Resolve player action and update world state.
 
         Main orchestrator function that coordinates action resolution:
         1. Build parameter variable map and check types
@@ -2353,10 +2571,15 @@ class AdventureIFInterpreter(GameResourceLocator):
             action_dict: Player action dictionary with type and arguments
 
         Returns:
-            Tuple of (success, feedback_str, result_dict)
-            - success: Boolean indicating if action succeeded
-            - feedback_str: Human-readable feedback message
-            - result_dict: Either world_state_effects dict or fail_dict
+            Three-element tuple:
+            - success (bool): True if action succeeded, False otherwise
+            - feedback_str (str): Human-readable feedback message
+            - result_dict (Dict or Set): world_state_effects dict on success, fail_dict or empty set on failure
+
+        Example:
+            >>> success, feedback, result = interpreter.resolve_action({"type": "take", "arg1": "apple"})
+            >>> if success:
+            ...     print(result["world_state_effects"])
         """
         # Save prior world state for change tracking
         prior_world_state = deepcopy(self.world_state)
@@ -2384,11 +2607,13 @@ class AdventureIFInterpreter(GameResourceLocator):
             return type_match_fails[0]
 
         # Step 3: Apply action effects
-        effects: list = cur_action_def["interaction"]["effect"]
+        effects: List[Any] = cur_action_def["interaction"]["effect"]
         if "and" in effects[0]:
-            effects: list = effects[0]["and"]
+            effects = effects[0]["and"]
 
-        world_state_effects = self._apply_action_effects(effects, variable_map)
+        world_state_effects: Dict[str, List[Tuple[Any, ...]]] = self._apply_action_effects(
+            effects, variable_map
+        )
 
         # Update world state history
         self.world_state_history.append(deepcopy(self.world_state))
@@ -2407,17 +2632,20 @@ class AdventureIFInterpreter(GameResourceLocator):
 
         return True, feedback_str, {"world_state_effects": world_state_effects}
 
-    def run_events(self):
+    def run_events(
+        self,
+    ) -> Tuple[bool, Union[str, List[str]], Union[Dict[str, Any], List[Tuple[Any, ...]]]]:
         """Check and trigger applicable events based on current world state.
 
         Iterates through all defined events, checks if their preconditions are
         satisfied for any variable binding, and triggers the first matching event.
+        Handles event randomization if defined.
 
         Returns:
-            Tuple of (triggered, feedback_str, result_dict)
-            - triggered: Boolean indicating if an event was triggered
-            - feedback_str: Event feedback message (empty if no event)
-            - result_dict: World state effects dict (empty if no event)
+            Three-element tuple:
+            - triggered (bool): True if an event was triggered
+            - feedback (str or List[str]): Event feedback message(s), empty if no event
+            - changes (Dict or List): World state effects, empty if no event
         """
         prior_world_state = deepcopy(self.world_state)
 
@@ -2713,7 +2941,7 @@ class AdventureIFInterpreter(GameResourceLocator):
     def get_exploration_info(
         self, action_type=None, full_exploration_state=False, full_exploration_history=False
     ):
-        exploration_info = dict()
+        exploration_info: Dict[str, Any] = dict()
 
         if full_exploration_state:
             exploration_info["exploration_state"] = list(self.exploration_state)
@@ -2851,8 +3079,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # logger.info(f"Post-process_action world state:\n{self.world_state}")
                 # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
-                events_feedback: list = list()
-                events_world_state_changes: list = list()
+                events_feedback = list()
+                events_world_state_changes = list()
                 event_triggered, event_feedback, event_world_state_changes = self.run_events()
                 while event_triggered:
                     events_feedback.append(event_feedback)
@@ -2869,14 +3097,15 @@ class AdventureIFInterpreter(GameResourceLocator):
 
                 # check goal achievement:
                 self.goals_achieved = self.goal_state & self.world_state
-                goals_achieved_response = list(self.goal_state & self.world_state)
+                goals_achieved_response_list = list(self.goal_state & self.world_state)
                 # convert to goal states to string version:
-                for goal_state_idx, goal_state in enumerate(goals_achieved_response):
-                    goals_achieved_response[goal_state_idx] = fact_tuple_to_str(goal_state)
-                goals_achieved_response = set(goals_achieved_response)
+                for goal_state_idx, goal_state in enumerate(goals_achieved_response_list):
+                    goals_achieved_response_list[goal_state_idx] = fact_tuple_to_str(goal_state)
+                goals_achieved_response = set(goals_achieved_response_list)
                 logger.info(f"Achieved goal states: {goals_achieved_response}")
 
                 # EXPLORATION TRACKING
+                assert isinstance(fail, dict), "fail should be dict in successful resolution"
                 self.track_exploration(fail["world_state_effects"])
 
                 # successful action returns extra information instead of failure information:
@@ -2893,8 +3122,8 @@ class AdventureIFInterpreter(GameResourceLocator):
                 # logger.info(f"Post-process_action world state:\n{self.world_state}")
                 # logger.info(f"itemcount 0 in world state post-process_action: {('itemcount', 'inventory', 0) in self.world_state}")
 
-                events_feedback: list = list()
-                events_world_state_changes: list = list()
+                events_feedback = list()
+                events_world_state_changes = list()
                 event_triggered, event_feedback, event_world_state_changes = self.run_events()
                 if event_world_state_changes:
                     pass
