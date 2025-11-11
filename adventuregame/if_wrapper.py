@@ -1584,44 +1584,45 @@ class AdventureIFInterpreter(GameResourceLocator):
                                 variable_map[variable] = type_matched_instances[0]
 
                         # create fact tuple to check for:
-                        match len(predicate_tuple):
-                            case 2:
-                                predicate_tuple = (predicate_tuple[0], type_matched_instances[0])
-                            case 3:
-                                if tuple_idx == 0:
-                                    predicate_tuple = (
-                                        predicate_tuple[0],
-                                        type_matched_instances[0],
-                                        predicate_tuple[2],
-                                    )
-                                elif tuple_idx == 1:
-                                    predicate_tuple = (
-                                        predicate_tuple[0],
-                                        predicate_tuple[1],
-                                        type_matched_instances[0],
-                                    )
-                            case 4:
-                                if tuple_idx == 0:
-                                    predicate_tuple = (
-                                        predicate_tuple[0],
-                                        type_matched_instances[0],
-                                        predicate_tuple[2],
-                                        predicate_tuple[3],
-                                    )
-                                elif tuple_idx == 1:
-                                    predicate_tuple = (
-                                        predicate_tuple[0],
-                                        predicate_tuple[1],
-                                        type_matched_instances[0],
-                                        predicate_tuple[3],
-                                    )
-                                elif tuple_idx == 2:
-                                    predicate_tuple = (
-                                        predicate_tuple[0],
-                                        predicate_tuple[1],
-                                        predicate_tuple[2],
-                                        type_matched_instances[0],
-                                    )
+                        # Using if/elif for Python 3.8+ compatibility (match requires 3.10+)
+                        predicate_len = len(predicate_tuple)
+                        if predicate_len == 2:
+                            predicate_tuple = (predicate_tuple[0], type_matched_instances[0])
+                        elif predicate_len == 3:
+                            if tuple_idx == 0:
+                                predicate_tuple = (
+                                    predicate_tuple[0],
+                                    type_matched_instances[0],
+                                    predicate_tuple[2],
+                                )
+                            elif tuple_idx == 1:
+                                predicate_tuple = (
+                                    predicate_tuple[0],
+                                    predicate_tuple[1],
+                                    type_matched_instances[0],
+                                )
+                        elif predicate_len == 4:
+                            if tuple_idx == 0:
+                                predicate_tuple = (
+                                    predicate_tuple[0],
+                                    type_matched_instances[0],
+                                    predicate_tuple[2],
+                                    predicate_tuple[3],
+                                )
+                            elif tuple_idx == 1:
+                                predicate_tuple = (
+                                    predicate_tuple[0],
+                                    predicate_tuple[1],
+                                    type_matched_instances[0],
+                                    predicate_tuple[3],
+                                )
+                            elif tuple_idx == 2:
+                                predicate_tuple = (
+                                    predicate_tuple[0],
+                                    predicate_tuple[1],
+                                    predicate_tuple[2],
+                                    type_matched_instances[0],
+                                )
 
         return predicate_tuple
 
