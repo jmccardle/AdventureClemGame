@@ -19,6 +19,7 @@ from clemcore.clemgame.master import RuleViolationError
 from clemcore.utils import file_utils
 from config_loader import get_config
 from if_wrapper import AdventureIFInterpreter
+
 from adventuregame.exceptions import AdventureGameError, ConfigurationError
 
 logger = logging.getLogger(__name__)
