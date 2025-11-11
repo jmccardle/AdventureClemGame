@@ -1169,7 +1169,7 @@ class ClingoAdventureGenerator(object):
             for goal in goal_facts:
                 goal_tuple = fact_str_to_tuple(goal)
                 goal_template: str = self.clingo_templates["pre_explore_goal"]
-                goal_clingo = goal_clingo.replace("$THING$", goal_tuple[1])
+                goal_clingo = goal_template.replace("$THING$", goal_tuple[1])
 
                 clingo_str += "\n" + goal_clingo
         else:
