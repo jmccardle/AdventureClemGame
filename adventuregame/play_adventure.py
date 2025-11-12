@@ -20,7 +20,6 @@ TODO:
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -117,9 +116,7 @@ def play_game(instance: Dict[str, Any], debug: bool = False) -> None:
     print("ADVENTUREGAME - Interactive Player (Proof of Concept)")
     print("=" * 70)
     print("\nNOTE: This is a minimal demonstration.")
-    print(
-        "Full implementation requires refactoring if_wrapper.py to support standalone mode."
-    )
+    print("Full implementation requires refactoring if_wrapper.py to support standalone mode.")
     print("\nExpected interface:")
     print("  - Initialize: AdventureIFInterpreter(game_path, instance)")
     print("  - Get description: interpreter.get_full_room_desc()")
@@ -220,7 +217,7 @@ def play_game(instance: Dict[str, Any], debug: bool = False) -> None:
 
 
 def main() -> None:
-    """Main entry point."""
+    """Run the interactive adventure game player."""
     parser = argparse.ArgumentParser(
         description="Interactive player for AdventureGame",
         formatter_class=argparse.RawDescriptionHelpFormatter,
