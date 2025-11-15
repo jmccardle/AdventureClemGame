@@ -1,6 +1,7 @@
 {
   "_comment": "Runtime configuration: paths, logging, and parser settings",
   "paths": {
+    "game_module_path": "adventuregame",
     "resources_dir": "resources/",
     "definitions_dir": "definitions/",
     "instances_dir": "in/",

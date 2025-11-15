@@ -71,11 +71,15 @@ def load_instance(instance_number: int = 0) -> Dict[str, Any]:
     return instances[instance_number]
 
 
-def print_metadata(result: Dict[str, Any], turn: int, max_turns: int) -> None:
+def print_metadata(
+    goals_achieved: set, info: Dict[str, Any], total_goals: int, turn: int, max_turns: int
+) -> None:
     """Print detailed metadata about the action result.
 
     Args:
-        result: Result dictionary from process_action
+        goals_achieved: Set of achieved goal states
+        info: Info dictionary from process_action (either fail dict or extra_action_info)
+        total_goals: Total number of goals required
         turn: Current turn number
         max_turns: Maximum allowed turns
     """
@@ -84,19 +88,28 @@ def print_metadata(result: Dict[str, Any], turn: int, max_turns: int) -> None:
     print("=" * 50)
     print(f"Turn: {turn}/{max_turns}")
 
-    if "parsed_action" in result:
-        print(f"Parsed Action: {result['parsed_action']}")
+    # Action type and success status
+    if "action_type" in info:
+        print(f"Action Type: {info['action_type']}")
+        status = "✓ SUCCESS"
+    elif "fail_type" in info:
+        print(f"Failure Type: {info.get('fail_type', 'unknown')}")
+        status = "✗ FAILED"
+    else:
+        status = "? UNKNOWN"
+    print(f"Action Status: {status}")
 
-    if "action_success" in result:
-        status = "✓ SUCCESS" if result["action_success"] else "✗ FAILED"
-        print(f"Action Status: {status}")
+    # Goal progress
+    achieved = len(goals_achieved)
+    required = total_goals
+    progress = "⬛" * achieved + "⬜" * (required - achieved)
+    print(f"Goals Progress: [{achieved}/{required}] {progress}")
 
-    if "goal_status" in result:
-        goals = result["goal_status"]
-        achieved = goals.get("achieved_cnt", 0)
-        required = goals.get("required_cnt", 0)
-        progress = "⬛" * achieved + "⬜" * (required - achieved)
-        print(f"Goals Progress: [{achieved}/{required}] {progress}")
+    # Exploration info (if available)
+    if "exploration_info" in info:
+        exp = info["exploration_info"]
+        print(f"Visited Rooms: {len(exp.get('visited_rooms', []))}")
+        print(f"Known Entities Ratio: {exp.get('known_entities_ratio', 0):.2%}")
 
     print("=" * 50 + "\n")
 
@@ -108,21 +121,11 @@ def play_game(instance: Dict[str, Any], debug: bool = False) -> None:
         instance: Game instance dictionary
         debug: If True, show detailed metadata after each action
     """
-    # NOTE: This is a PROOF OF CONCEPT showing the interface needed.
-    # The full implementation requires refactoring AdventureIFInterpreter
-    # to work without clemgame path dependencies.
+    from adventuregame.if_wrapper import AdventureIFInterpreter
 
     print("\n" + "=" * 70)
-    print("ADVENTUREGAME - Interactive Player (Proof of Concept)")
+    print("ADVENTUREGAME - Interactive Player")
     print("=" * 70)
-    print("\nNOTE: This is a minimal demonstration.")
-    print("Full implementation requires refactoring if_wrapper.py to support standalone mode.")
-    print("\nExpected interface:")
-    print("  - Initialize: AdventureIFInterpreter(game_path, instance)")
-    print("  - Get description: interpreter.get_full_room_desc()")
-    print("  - Process action: interpreter.process_action(action)")
-    print("  - Check goals: result['goal_achieved']")
-    print("\n" + "=" * 70)
 
     print("\n" + instance["prompt"])
     print("\nGame ID:", instance.get("game_id", "unknown"))
@@ -130,90 +133,81 @@ def play_game(instance: Dict[str, Any], debug: bool = False) -> None:
     print("Max Turns:", instance.get("max_turns", "unknown"))
     print("Optimal Turns:", instance.get("optimal_turns", "unknown"))
 
-    print("\n" + "-" * 70)
-    print("INITIAL STATE (sample):")
-    for i, fact in enumerate(instance.get("initial_state", [])[:10]):
-        print(f"  {fact}")
-    if len(instance.get("initial_state", [])) > 10:
-        print(f"  ... and {len(instance['initial_state']) - 10} more facts")
+    if debug:
+        print("\n" + "-" * 70)
+        print("INITIAL STATE (sample):")
+        for i, fact in enumerate(instance.get("initial_state", [])[:10]):
+            print(f"  {fact}")
+        if len(instance.get("initial_state", [])) > 10:
+            print(f"  ... and {len(instance['initial_state']) - 10} more facts")
 
-    print("\nGOAL STATE:")
-    for goal in instance.get("goal_state", []):
-        print(f"  {goal}")
+        print("\nGOAL STATE:")
+        for goal in instance.get("goal_state", []):
+            print(f"  {goal}")
+        print("-" * 70)
 
-    print("\n" + "-" * 70)
-    print("\nTODO: Initialize AdventureIFInterpreter here")
-    print("CHALLENGE: Needs refactoring to work without GameResourceLocator")
-    print("\nAttempting import to demonstrate the interface...")
+    # Initialize interpreter
+    game_path = str(Path(__file__).parent)
+    interpreter = AdventureIFInterpreter(game_path, instance)
 
-    try:
-        # This will likely fail due to path dependencies, but shows the interface
-        from adventuregame.if_wrapper import AdventureIFInterpreter
+    print("\n" + "=" * 70)
+    print("STARTING GAME")
+    print("=" * 70)
+    print("Commands: Type actions, or 'quit' to exit")
+    print("=" * 70 + "\n")
 
-        print("✓ AdventureIFInterpreter imported successfully!")
+    # Show initial room description
+    initial_desc = interpreter.get_full_room_desc()
+    print(initial_desc)
 
-        # Try to initialize (may fail due to clemgame dependencies)
-        try:
-            game_path = str(Path(__file__).parent)
-            interpreter = AdventureIFInterpreter(game_path, instance)
-            print("✓ Interpreter initialized!")
+    turn = 0
+    max_turns = instance.get("max_turns", 20)
+    total_goals = len(instance.get("goal_state", []))
 
+    while turn < max_turns:
+        turn += 1
+        action = input(f"\n[Turn {turn}] > ")
+
+        if action.lower() in ["quit", "exit", "q"]:
+            print("\nExiting game...")
+            break
+
+        # Process action - returns (goals_achieved, feedback, info)
+        goals_achieved, feedback, info = interpreter.process_action(action)
+
+        # Show feedback
+        print("\n" + feedback)
+
+        # Show metadata if debug mode
+        if debug:
+            print_metadata(goals_achieved, info, total_goals, turn, max_turns)
+
+        # Check if goal achieved
+        if len(goals_achieved) >= total_goals:
             print("\n" + "=" * 70)
-            print("STARTING GAME")
+            print("🎉 GOAL ACHIEVED!")
             print("=" * 70)
-            print("Commands: Type actions, or 'quit' to exit")
-            print("=" * 70 + "\n")
+            print(f"Turns taken: {turn}")
+            print(f"Optimal turns: {instance.get('optimal_turns', 'unknown')}")
+            break
 
-            # Show initial room description
-            initial_desc = interpreter.get_full_room_desc()
-            print(initial_desc)
+        # Check if done action was used
+        if info.get("done_action"):
+            print("\n" + "=" * 70)
+            if len(goals_achieved) >= total_goals:
+                print("🎉 GOAL ACHIEVED!")
+            else:
+                print("GAME ENDED (goals not fully achieved)")
+            print("=" * 70)
+            print(f"Turns taken: {turn}")
+            print(f"Goals achieved: {len(goals_achieved)}/{total_goals}")
+            break
 
-            turn = 0
-            max_turns = instance.get("max_turns", 20)
-
-            while turn < max_turns:
-                turn += 1
-                action = input(f"\n[Turn {turn}] > ")
-
-                if action.lower() in ["quit", "exit", "q"]:
-                    print("\nExiting game...")
-                    break
-
-                # Process action
-                result = interpreter.process_action(action)
-
-                # Show feedback
-                print("\n" + result.get("feedback", "No feedback"))
-
-                # Show metadata if debug mode
-                if debug:
-                    print_metadata(result, turn, max_turns)
-
-                # Check if goal achieved
-                if result.get("goal_achieved"):
-                    print("\n" + "=" * 70)
-                    print("🎉 GOAL ACHIEVED!")
-                    print("=" * 70)
-                    print(f"Turns taken: {turn}")
-                    print(f"Optimal turns: {instance.get('optimal_turns', 'unknown')}")
-                    break
-
-            if turn >= max_turns:
-                print("\n" + "=" * 70)
-                print("TURN LIMIT REACHED")
-                print("=" * 70)
-
-        except Exception as e:
-            print(f"\n✗ Could not initialize interpreter: {e}")
-            print("\nREASON: AdventureIFInterpreter requires clemgame path structure")
-            print("SOLUTION: Refactor if_wrapper.py to support standalone=True mode")
-            print("\nSee INTERACTIVE_ROADMAP.md Phase 1.1 for implementation details")
-
-    except ImportError as e:
-        print(f"\n✗ Could not import AdventureIFInterpreter: {e}")
-        print("\nMake sure you're running from the AdventureClemGame directory")
-        print("and all dependencies are installed:")
-        print("  pip install -r adventuregame/requirements.txt")
+    if turn >= max_turns:
+        print("\n" + "=" * 70)
+        print("TURN LIMIT REACHED")
+        print("=" * 70)
+        print(f"Goals achieved: {len(goals_achieved)}/{total_goals}")
 
 
 def main() -> None:

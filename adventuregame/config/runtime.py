@@ -28,6 +28,7 @@ class GrammarFiles:
 class Paths:
     """File system paths for the game."""
 
+    game_module_path: Path
     resources_dir: Path
     definitions_dir: Path
     instances_dir: Path
@@ -113,6 +114,7 @@ class RuntimeConfig:
         # Parse paths
         paths_data = data["paths"]
         paths = Paths(
+            game_module_path=Path(paths_data["game_module_path"]),
             resources_dir=Path(paths_data["resources_dir"]),
             definitions_dir=Path(paths_data["definitions_dir"]),
             instances_dir=Path(paths_data["instances_dir"]),

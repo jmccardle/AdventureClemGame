@@ -69,6 +69,7 @@ class CompatConfigLoader:
         """Get path configurations (compatibility)."""
         rt = self.runtime
         return {
+            "game_module_path": str(rt.paths.game_module_path),
             "resources_dir": str(rt.paths.resources_dir),
             "definitions_dir": str(rt.paths.definitions_dir),
             "instances_dir": str(rt.paths.instances_dir),

@@ -14,10 +14,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import jinja2
 import lark
 import numpy as np
-from adv_util import fact_str_to_tuple, fact_tuple_to_str
 from clemcore.clemgame import GameResourceLocator
 from lark import Lark, Transformer
 
+from adventuregame.adv_util import fact_str_to_tuple, fact_tuple_to_str
 from adventuregame.config.compat import get_config
 
 # Import custom exceptions
